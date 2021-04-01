@@ -32,6 +32,8 @@
 
 #include <arpa/inet.h>
 
+#include <netinet/in.h>
+
 #include "config.h"
 #include "current.h"
 #include "error.h"

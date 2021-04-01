@@ -36,6 +36,7 @@
 #include "current.h"
 #include "datetime.h"
 #include "debug.h"
+#include "error.h"
 #include "net.h"
 #include "report.h"
 #include "stage.h"
@@ -107,7 +108,7 @@ static ssize_t _talk_recv(ubwt_talk_payload_t *pkt) {
 	if (bit_test(&pkt->flags, UBWT_TALK_OP_FORCE_FAIL)) {
 		debug_info_talk_op(UBWT_TALK_OP_FORCE_FAIL, "RECV");
 
-		errno = ECANCELED;
+		errno = UBWT_ERROR_ABORT;
 
 		return -1;
 	}
@@ -116,6 +117,8 @@ static ssize_t _talk_recv(ubwt_talk_payload_t *pkt) {
 }
 
 static void _talk_send_abort(void) {
+	int errsv = errno;
+
 	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
 
 	debug_info_talk_op(UBWT_TALK_OP_FORCE_FAIL, "SEND");
@@ -127,6 +130,9 @@ static void _talk_send_abort(void) {
 	} else {
 		debug_info_talk_op(UBWT_TALK_OP_FORCE_FAIL, "FAIL");
 	}
+
+	if (errsv)
+		errno = errsv; /* Preserve original errno */
 }
 
 static long _talk_sender_handshake(void) {
@@ -161,10 +167,11 @@ static long _talk_sender_handshake(void) {
 		return -1L;
 	}
 
-	if (bit_test(&p.flags, UBWT_TALK_OP_PONG))
+	if (bit_test(&p.flags, UBWT_TALK_OP_PONG)) {
 		debug_info_talk_op(UBWT_TALK_OP_PONG, "RECV");
-	else
+	} else {
 		debug_info_talk_op(UBWT_TALK_OP_PONG, "MISS");
+	}
 
 	dt = datetime_now_us() - dt;
 
@@ -191,7 +198,7 @@ static int _talk_receiver_handshake(void) {
 	} else {
 		debug_info_talk_op(UBWT_TALK_OP_PING, "MISS");
 
-		errno = EBADE;
+		errno = UBWT_ERROR_MSG_UNEXPECTED;
 
 		return -1;
 	}
@@ -283,7 +290,7 @@ static int _talk_receiver_negotiate(uint32_t *count, uint32_t *latency) {
 	} else {
 		debug_info_talk_op(UBWT_TALK_OP_COUNT_REQ, "MISS");
 
-		errno = EBADE;
+		errno = UBWT_ERROR_MSG_UNEXPECTED;
 
 		return -1;
 	}
@@ -298,7 +305,7 @@ static int _talk_receiver_negotiate(uint32_t *count, uint32_t *latency) {
 	} else {
 		debug_info_talk_op(UBWT_TALK_OP_LATENCY_US, "MISS");
 
-		errno = EBADE;
+		errno = UBWT_ERROR_MSG_UNEXPECTED;
 
 		return -1;
 	}
@@ -337,7 +344,7 @@ static int _talk_sender_stream(uint32_t count) {
 
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "SEND");
 
-		for (i = 0; i < count; i ++, p.count ++)
+		for (i = 0; i < count; i ++, p.count ++) {
 			if (_talk_send(&p) < 0) {
 				debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "FAIL");
 
@@ -345,10 +352,11 @@ static int _talk_sender_stream(uint32_t count) {
 
 				return -1;
 			}
+		}
 
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "SENT");
 	} else {
-		errno = EBADE;
+		errno = UBWT_ERROR_MSG_UNEXPECTED;
 
 		return -1;
 	}
@@ -373,7 +381,7 @@ static int _talk_sender_stream(uint32_t count) {
 	} else {
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_END, "MISS");
 
-		errno = EBADE;
+		errno = UBWT_ERROR_MSG_UNEXPECTED;
 
 		return -1;
 	}
@@ -509,7 +517,7 @@ static int _talk_sender_report_exchange(void) {
 	} else {
 		debug_info_talk_op(UBWT_TALK_OP_REPORT, "MISS");
 
-		errno = EBADE;
+		errno = UBWT_ERROR_MSG_UNEXPECTED;
 
 		return -1;
 	}

@@ -1,0 +1,11 @@
+v0.01b-dev
+
+ - Added per-OS errno configuration (Issue #2 and #3)
+
+ - Added missing header netinet/in.h in src/net.c (Issue #2)
+
+ - Increased l4 proto name buffer (config.h) to avoid warnings on some
+   compilers (Issue #1): There is no undefined behaviour with the previous
+   value, but some compilers are too sensitive and they are not looking
+   ahead to find out that the string is being NULL-terminated correctly.
+

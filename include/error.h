@@ -23,6 +23,23 @@
 
 #define error_no_return() for (;;)
 
+/* Per-OS errno */
+#ifdef ECANCELED
+ #define UBWT_ERROR_ABORT	ECANCELED
+#else
+ #define UBWT_ERROR_ABORT	EAGAIN
+#endif
+
+#ifdef EBADE
+ #define UBWT_ERROR_MSG_UNEXPECTED	EBADE
+#else
+ #ifdef ENOMSG
+  #define UBWT_ERROR_MSG_UNEXPECTED	ENOMSG
+ #else
+  #define UBWT_ERROR_MSG_UNEXPECTED	EINVAL
+ #endif
+#endif
+
 typedef enum UBWT_ERROR_TYPES {
 	UBWT_ERROR_TYPE_NO_ERROR = 0,
 	UBWT_ERROR_TYPE_CONFIG_ARGV_1_INVALID,

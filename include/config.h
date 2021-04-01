@@ -78,7 +78,7 @@ ubwt_config {
 	uint16_t net_l3_ipv4_hdr_size;
 	uint16_t net_l3_ipv6_hdr_size;
 	uint16_t net_l4_hdr_size;
-	char     net_l4_proto[4];
+	char     net_l4_proto[16];
 
 	uint16_t talk_handshake_iter;
 	uint32_t talk_count_current;

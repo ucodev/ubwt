@@ -50,8 +50,6 @@ ubwt_talk_payload {
 	uint32_t count;
 	uint32_t latency;
 	uint32_t __reserved;
-	//uint8_t buf[1264];
-	//uint8_t buf[6112];
 	uint8_t buf[UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE - 16];
 } ubwt_talk_payload_t;
 #ifndef UBWT_NO_PRAGMA_PACK
