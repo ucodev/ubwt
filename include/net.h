@@ -55,6 +55,11 @@ static inline uint64_t net_htonll(uint64_t hostlonglong) {
 
 #define net_ntohll(netlonglong)	(net_htonll(netlonglong))
 
+enum UBWT_NET_PROTO_L4_VALUES {
+	UBWT_NET_PROTO_L4_TCP = 1,
+	UBWT_NET_PROTO_L4_UDP
+};
+
 #ifndef UBWT_NO_PRAGMA_PACK
  #pragma pack(push)
  #pragma pack(4)
@@ -74,6 +79,7 @@ __attribute__ ((packed, aligned(4)))
 #endif
 ubwt_net {
 	sock_t fd;
+	sock_t fd_listen;
 	struct ubwt_net_endpoint receiver;
 	struct ubwt_net_endpoint sender;
 };
@@ -81,8 +87,8 @@ ubwt_net {
  #pragma pack(pop)
 #endif
 
-int net_start_sender(void);
-int net_start_receiver(void);
+int net_sender_connect(void);
+int net_receiver_accept(void);
 int net_timeout_set(sock_t fd, time_t timeout);
 const char *net_sockaddr_ntop(const struct sockaddr_storage *n, char *p, socklen_t len);
 uint16_t net_sockaddr_port(const struct sockaddr_storage *n);
@@ -91,5 +97,6 @@ ssize_t net_read_from_receiver(void *buf, size_t len);
 ssize_t net_write_to_sender(const void *buf, size_t len);
 ssize_t net_write_to_receiver(const void *buf, size_t len);
 void net_init(void);
+void net_destroy(void);
 
 #endif

@@ -41,3 +41,9 @@ void current_update(void) {
 	current->time_us = datetime_now_us();
 }
 
+void current_destroy(void) {
+	stage_set(UBWT_STAGE_STATE_DESTROY_CURRENT, 0);
+
+	memset(&__current, 0, sizeof(struct ubwt_current));
+}
+

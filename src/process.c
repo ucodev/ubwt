@@ -29,19 +29,25 @@ void process_init(void) {
 	stage_set(UBWT_STAGE_STATE_INIT_PROCESS, 0);
 
 	current_update();
+}
 
+void process_run(void) {
 	if (net_im_receiver()) {
 		talk_receiver();
 	} else {
 		talk_sender();
 	}
-
-	process_report();
 }
 
 void process_report(void) {
 	stage_set(UBWT_STAGE_STATE_RUNTIME_REPORT_SHOW, 0);
 
 	report_results_show();
+}
+
+void process_destroy(void) {
+	stage_set(UBWT_STAGE_STATE_DESTROY_PROCESS, 0);
+
+	current_update();
 }
 

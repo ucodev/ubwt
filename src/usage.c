@@ -42,6 +42,7 @@ void usage_show(char *const *argv, int success) {
 		"       -d                  Enable debugging.\n"
 #endif
 		"       -h                  Display this help.\n"
+		"       -l <proto>          L4 protocol: 'tcp' or 'udp' (default: udp).\n"
 		"       -m <octets>         Link MTU (default: %u octets).\n"
 		"       -p <port>           UDP port to listen/connect to (default: %s).\n"
 		"       -s <octets>         L4 payload size (default: %u).\n"

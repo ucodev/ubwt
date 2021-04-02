@@ -18,12 +18,12 @@
 
 */
 
-#ifndef UBWT_PROCESS_H
-#define UBWT_PROCESS_H
+#include "process.h"
+#include "runtime.h"
 
-void process_init(void);
-void process_run(void);
-void process_report(void);
-void process_destroy(void);
+void runtime_do(void) {
+	process_run();
 
-#endif
+	process_report();
+}
+

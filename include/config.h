@@ -32,11 +32,13 @@
 #define UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_RUN		1
 #define UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END		20
 #define UBWT_CONFIG_NET_MTU				1500
+#define UBWT_CONFIG_NET_LISTEN_BACKLOG			10
 #define UBWT_CONFIG_NET_L2_HEADER_SIZE			26		/* Ethernet (no trailers) */
 #define UBWT_CONFIG_NET_L3_IPV4_HEADER_SIZE		20		/* IPv4 (minimum) */
 #define UBWT_CONFIG_NET_L3_IPV6_HEADER_SIZE		40		/* IPv6 (minimum) */
-#define UBWT_CONFIG_NET_L4_HEADER_SIZE			8		/* UDP */
-#define UBWT_CONFIG_NET_L4_PROTO			"udp"
+#define UBWT_CONFIG_NET_L4_UDP_HEADER_SIZE		8		/* UDP (fixed) */
+#define UBWT_CONFIG_NET_L4_TCP_HEADER_SIZE		20		/* TCP (minimum) */
+#define UBWT_CONFIG_NET_L4_PROTO_DEFAULT		"tcp"
 #define UBWT_CONFIG_TALK_HANDSHAKE_ITER			20
 #define UBWT_CONFIG_TALK_COUNT_DEFAULT			100
 #define UBWT_CONFIG_TALK_COUNT_MAX			100000000
@@ -78,7 +80,8 @@ ubwt_config {
 	uint16_t net_l3_ipv4_hdr_size;
 	uint16_t net_l3_ipv6_hdr_size;
 	uint16_t net_l4_hdr_size;
-	char     net_l4_proto[16];
+	char     net_l4_proto_name[16];
+	uint8_t  net_l4_proto_value;
 
 	uint16_t talk_handshake_iter;
 	uint32_t talk_count_current;
@@ -94,6 +97,7 @@ ubwt_config {
 #endif
 
 void config_init(int argc, char *const *argv);
+void config_destroy(void);
 
 #endif
 

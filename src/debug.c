@@ -66,7 +66,7 @@ void debug_info_config_show(void) {
 	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Mode      : %s\n", time_str, net_im_sender() ? "sender" : "receiver", current->config.im_sender ? "sender" : "receiver");
 	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Address   : %s\n", time_str, net_im_sender() ? "sender" : "receiver", current->config.addr);
 	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Port      : %s\n", time_str, net_im_sender() ? "sender" : "receiver", current->config.port);
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Protocol  : udp\n", time_str, net_im_sender() ? "sender" : "receiver");
+	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Protocol  : %s\n", time_str, net_im_sender() ? "sender" : "receiver", current->config.net_l4_proto_name);
 	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Time (us) : %" PRIu64 "\n", time_str, net_im_sender() ? "sender" : "receiver", current->time_us);
 }
 

@@ -1,3 +1,8 @@
+v0.01c-dev
+
+ - Included TCP support (default proto)
+
+
 v0.01b-dev
 
  - Added per-OS errno configuration (Issue #2 and #3)

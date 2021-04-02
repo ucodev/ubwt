@@ -554,6 +554,8 @@ void talk_sender(void) {
 	int i = 0, ret = 0;
 	uint32_t dt = 0;
 
+	net_sender_connect();
+
 	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE, 0);
 
 	for (i = 0; i < current->config.talk_handshake_iter; i ++) {
@@ -628,6 +630,8 @@ void talk_sender(void) {
 void talk_receiver(void) {
 	int i = 0, ret = 0;
 	uint32_t count = 0, latency = 0;
+
+	net_receiver_accept();
 
 	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE, 0);
 

@@ -53,6 +53,7 @@ extern struct ubwt_current *current;
 
 void current_init(void);
 void current_update(void);
+void current_destroy(void);
 
 #endif
 

@@ -24,8 +24,9 @@
 #include "current.h"
 #include "net.h"
 #include "process.h"
+#include "runtime.h"
 
-int main(int argc, char *argv[]) {
+static void _construct(int argc, char *const *argv) {
 	current_init();
 
 	config_init(argc, argv);
@@ -33,6 +34,24 @@ int main(int argc, char *argv[]) {
 	net_init();
 
 	process_init();
+}
+
+static void _destruct(void) {
+	process_destroy();
+
+	net_destroy();
+
+	config_destroy();
+
+	current_destroy();
+}
+
+int main(int argc, char *argv[]) {
+	_construct(argc, argv);
+
+	runtime_do();
+
+	_destruct();
 
 	return EXIT_SUCCESS;
 }

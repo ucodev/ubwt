@@ -40,6 +40,7 @@ static void _config_sanity(void) {
 
 	assert(current->config.net_mtu >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
 	assert(current->config.net_timeout_default > 0);
+	assert(current->config.net_l4_proto_value != 0);
 
 	assert(current->config.talk_handshake_iter > 0);
 
@@ -66,7 +67,7 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 #ifdef UBWT_CONFIG_DEBUG
 		"d"
 #endif
-		"hm:p:s:t:w:";
+		"hl:m:p:s:t:w:";
 
 	while ((opt = getopt(argc, argv, flags)) != -1) {
 		switch (opt) {
@@ -79,6 +80,21 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 			case 'h': {
 				usage_show(argv, 1);
 				error_no_return();
+			} break;
+
+			case 'l': {
+				assert(strlen(optarg) < sizeof(current->config.net_l4_proto_name));
+				strncpy(current->config.net_l4_proto_name, optarg, sizeof(current->config.net_l4_proto_name) - 1);
+				current->config.net_l4_proto_name[sizeof(current->config.net_l4_proto_name) - 1] = 0;
+
+				if (!strcmp(optarg, "tcp")) {
+					current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_TCP;
+				} else if (!strcmp(optarg, "udp")) {
+					current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_UDP;
+				} else {
+					usage_show(argv, 0);
+					error_no_return();
+				}
 			} break;
 
 			case 'm': {
@@ -162,9 +178,16 @@ void config_init(int argc, char *const *argv) {
 	current->config.net_l2_hdr_size = UBWT_CONFIG_NET_L2_HEADER_SIZE;
 	current->config.net_l3_ipv4_hdr_size = UBWT_CONFIG_NET_L3_IPV4_HEADER_SIZE;
 	current->config.net_l3_ipv6_hdr_size = UBWT_CONFIG_NET_L3_IPV6_HEADER_SIZE;
-	current->config.net_l4_hdr_size = UBWT_CONFIG_NET_L4_HEADER_SIZE;
-	strncpy(current->config.net_l4_proto, UBWT_CONFIG_NET_L4_PROTO, sizeof(current->config.net_l4_proto) - 1);
-	current->config.net_l4_proto[sizeof(current->config.net_l4_proto) - 1] = 0;
+	strncpy(current->config.net_l4_proto_name, UBWT_CONFIG_NET_L4_PROTO_DEFAULT, sizeof(current->config.net_l4_proto_name) - 1);
+	current->config.net_l4_proto_name[sizeof(current->config.net_l4_proto_name) - 1] = 0;
+
+	if (!strcmp(UBWT_CONFIG_NET_L4_PROTO_DEFAULT, "tcp")) {
+		current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_TCP;
+		current->config.net_l4_hdr_size = UBWT_CONFIG_NET_L4_TCP_HEADER_SIZE;
+	} else if (!strcmp(UBWT_CONFIG_NET_L4_PROTO_DEFAULT, "udp")) {
+		current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_UDP;
+		current->config.net_l4_hdr_size = UBWT_CONFIG_NET_L4_UDP_HEADER_SIZE;
+	}
 
 	current->config.talk_handshake_iter = UBWT_CONFIG_TALK_HANDSHAKE_ITER;
 
@@ -183,5 +206,13 @@ void config_init(int argc, char *const *argv) {
 	_config_sanity();
 
 	debug_info_config_show();
+}
+
+void config_destroy(void) {
+	stage_set(UBWT_STAGE_STATE_DESTROY_CONFIG, 0);
+
+#if 0 /* Do not wipe configuration memory as it may still be required... let current_destroy() deal with it */
+	memset(&current->config, 0, sizeof(current->config));
+#endif
 }
 
