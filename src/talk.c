@@ -554,7 +554,10 @@ void talk_sender(void) {
 	int i = 0, ret = 0;
 	uint32_t dt = 0;
 
-	net_sender_connect();
+	if (net_sender_connect() < 0) {
+		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_SENDER_INIT, "talk_sender(): net_sender_connect()");
+		error_no_return();
+	}
 
 	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE, 0);
 
@@ -631,7 +634,10 @@ void talk_receiver(void) {
 	int i = 0, ret = 0;
 	uint32_t count = 0, latency = 0;
 
-	net_receiver_accept();
+	if (net_receiver_accept() < 0) {
+		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_RECEIVER_INIT, "talk_receiver(): net_receiver_accept()");
+		error_no_return();
+	}
 
 	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE, 0);
 

@@ -153,9 +153,10 @@ void report_unmarshal(const void *storage, size_t len) {
 
 void report_results_show(void) {
 	size_t hdr_size = 0;
-	uint32_t bandwidth_estimated_mbps = 0, bandwidth_effective_mbps = 0, bandwidth_theoretical_mbps = 0;
+	uint32_t bandwidth_theoretical_mbps = 0;
 	uint64_t total_pkts = 0;
 	double packet_loss = 0, fragmentation_ratio = 0;
+	double bandwidth_estimated_mbps = 0, bandwidth_effective_mbps = 0;
 
 	/* Calculate results */
 
@@ -170,11 +171,11 @@ void report_results_show(void) {
 			? current->config.net_mtu
 			: current->config.talk_payload_current_size);
 
-	bandwidth_estimated_mbps = (uint32_t)
+	bandwidth_estimated_mbps =
 		((double) ((report_talk_stream_recv_bytes_get() + (total_pkts * hdr_size)) * 8) / 1000000.0)
 		/ (((double) report_talk_stream_time_get()) / 1000000.0);
 
-	bandwidth_effective_mbps = (uint32_t) ((double) (report_talk_stream_recv_bytes_get() * 8) / 1000000.0)
+	bandwidth_effective_mbps = ((double) (report_talk_stream_recv_bytes_get() * 8) / 1000000.0)
 		/ (((double) report_talk_stream_time_get()) / 1000000.0);
 
 	bandwidth_theoretical_mbps = _report_bandwidth_theoretical_mbps(bandwidth_effective_mbps);
@@ -192,7 +193,7 @@ void report_results_show(void) {
 	fprintf(stdout, "MTU                                 : %" PRIu16 " octets\n", current->config.net_mtu);
 	fprintf(stdout, "L3 Protocol                         : %s\n", current->net.receiver.saddr.ss_family == AF_INET6 ? "ipv6" : "ipv4");
 	fprintf(stdout, "L4 Protocol                         : %s\n", current->config.net_l4_proto_name);
-	fprintf(stdout, "L4 payload size                     : %" PRIu16 " octets\n", current->config.talk_payload_current_size);
+	fprintf(stdout, "Requested L4 payload size           : %" PRIu16 " octets\n", current->config.talk_payload_current_size);
 	fprintf(stdout, "Estimated headers size              : %zu octets\n", hdr_size);
 	fprintf(stdout, "Transmission time                   : %.4f s\n", report_talk_stream_time_get() / (double) 1000000.0);
 	fprintf(stdout, "Total L4 packets expected           : %" PRIu32 "\n", report_talk_count_get());
@@ -204,7 +205,7 @@ void report_results_show(void) {
 	fprintf(stdout, "Latency (L4 RTA)                    : %.3f ms\n", report_talk_latency_get() / (double) 1000.0);
 	fprintf(stdout, "Effective packet loss               : %.4f (%%)\n", packet_loss);
 	fprintf(stdout, "Theoretical L1 Bandwidth            : %" PRIu32 " Mbps\n", bandwidth_theoretical_mbps);
-	fprintf(stdout, "Estimated L2 Bandwidth              : %" PRIu32 " Mbps\n", bandwidth_estimated_mbps);
-	fprintf(stdout, "Effective L4 Bandwidth              : %" PRIu32 " Mbps\n", bandwidth_effective_mbps);
+	fprintf(stdout, "Estimated L2 Bandwidth              : %.3f Mbps\n", bandwidth_estimated_mbps);
+	fprintf(stdout, "Effective L4 Bandwidth              : %.3f Mbps\n", bandwidth_effective_mbps);
 }
 

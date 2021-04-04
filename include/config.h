@@ -33,6 +33,8 @@
 #define UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END		20
 #define UBWT_CONFIG_NET_MTU				1500
 #define UBWT_CONFIG_NET_LISTEN_BACKLOG			10
+#define UBWT_CONFIG_NET_REUSE_ADDRESS			1
+#define UBWT_CONFIG_NET_REUSE_PORT			1
 #define UBWT_CONFIG_NET_L2_HEADER_SIZE			26		/* Ethernet (no trailers) */
 #define UBWT_CONFIG_NET_L3_IPV4_HEADER_SIZE		20		/* IPv4 (minimum) */
 #define UBWT_CONFIG_NET_L3_IPV6_HEADER_SIZE		40		/* IPv6 (minimum) */
@@ -76,6 +78,8 @@ ubwt_config {
 	uint16_t net_timeout_talk_stream_run;
 	uint16_t net_timeout_talk_stream_end;
 	uint16_t net_mtu;
+	int      net_reuseaddr;
+	int      net_reuseport;
 	uint16_t net_l2_hdr_size;
 	uint16_t net_l3_ipv4_hdr_size;
 	uint16_t net_l3_ipv6_hdr_size;

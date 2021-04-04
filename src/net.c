@@ -292,6 +292,16 @@ static int _net_receiver_start(void) {
 		current->net.receiver.slen = rcur->ai_addrlen;
 		memcpy(&current->net.receiver.saddr, rcur->ai_addr, rcur->ai_addrlen);
 
+		if (current->config.net_reuseaddr) {
+			if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &current->config.net_reuseaddr, sizeof(current->config.net_reuseaddr)) < 0)
+				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_REUSEADDR_FAILED, "net_receiver_start(): setsockopt()");
+		}
+
+		if (current->config.net_reuseport) {
+			if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &current->config.net_reuseport, sizeof(current->config.net_reuseport)) < 0)
+				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_REUSEPORT_FAILED, "net_receiver_start(): setsockopt()");
+		}
+
 		if (bind(fd, (struct sockaddr *) &current->net.receiver.saddr, current->net.receiver.slen) < 0) {
 			close(fd);
 			continue;

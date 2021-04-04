@@ -175,6 +175,16 @@ void config_init(int argc, char *const *argv) {
 	current->config.net_timeout_talk_stream_end = UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END;
 
 	current->config.net_mtu = UBWT_CONFIG_NET_MTU;
+#if defined(UBWT_CONFIG_NET_REUSE_ADDRESS) && defined(SO_REUSEADDR) && UBWT_CONFIG_NET_REUSE_ADDRESS == 1
+	current->config.net_reuseaddr = 1;
+#else
+	current->config.net_reuseaddr = 0;
+#endif
+#if defined(UBWT_CONFIG_NET_REUSE_PORT) && defined(SO_REUSEPORT) && UBWT_CONFIG_NET_REUSE_PORT == 1
+	current->config.net_reuseport = 1;
+#else
+	current->config.net_reuseport = 0;
+#endif
 	current->config.net_l2_hdr_size = UBWT_CONFIG_NET_L2_HEADER_SIZE;
 	current->config.net_l3_ipv4_hdr_size = UBWT_CONFIG_NET_L3_IPV4_HEADER_SIZE;
 	current->config.net_l3_ipv6_hdr_size = UBWT_CONFIG_NET_L3_IPV6_HEADER_SIZE;
