@@ -26,6 +26,7 @@
 #include "error.h"
 #include "net.h"
 
+#define UBWT_CONFIG_VERSION_STR				"0.02a-dev"
 #define UBWT_CONFIG_DEBUG				1
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120
@@ -41,6 +42,7 @@
 #define UBWT_CONFIG_NET_L4_UDP_HEADER_SIZE		8		/* UDP (fixed) */
 #define UBWT_CONFIG_NET_L4_TCP_HEADER_SIZE		20		/* TCP (minimum) */
 #define UBWT_CONFIG_NET_L4_PROTO_DEFAULT		"tcp"
+#define UBWT_CONFIG_TALK_HANDSHAKE_INTERVAL_MSEC	0
 #define UBWT_CONFIG_TALK_HANDSHAKE_ITER			20
 #define UBWT_CONFIG_TALK_COUNT_DEFAULT			100
 #define UBWT_CONFIG_TALK_COUNT_MAX			100000000
@@ -64,13 +66,16 @@ struct
 __attribute__ ((packed, aligned(4)))
 #endif
 ubwt_config {
-	unsigned int im_sender;
-	unsigned int im_receiver;
+	unsigned int im_connector;
+	unsigned int im_listener;
 
 	char addr[1024];
 	char port[8];
 
 	uint8_t debug;
+	uint8_t report_full;
+	uint8_t bidirectional;
+	uint8_t fullduplex;
 
 	ubwt_error_level_t error_log_min_level;
 
@@ -87,6 +92,7 @@ ubwt_config {
 	char     net_l4_proto_name[16];
 	uint8_t  net_l4_proto_value;
 
+	uint16_t talk_handshake_interval;
 	uint16_t talk_handshake_iter;
 	uint32_t talk_count_current;
 	uint32_t talk_count_default;

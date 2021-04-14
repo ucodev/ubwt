@@ -34,23 +34,38 @@ _Noreturn
 #endif
 void usage_show(char *const *argv, int success) {
 	fprintf(stderr,
-		"Usage: %s [OPTIONS] {sender|receiver} ADDRESS\n"
+		"Usage: %s [OPTIONS] {connector|listener} {HOSTNAME|IPv4|IPv6}\n"
 		"\n"
 		"OPTIONS\n"
 		"\n"
 #ifdef UBWT_CONFIG_DEBUG
 		"       -d                  Enable debugging.\n"
 #endif
+		"       -b                  Perform a bi-directional test.\n"
+		"       -F                  Enable full/extended reporting.\n"
 		"       -h                  Display this help.\n"
-		"       -l <proto>          L4 protocol: 'tcp' or 'udp' (default: udp).\n"
+		"       -I <msec>           Interval between latency measurements (default: %u msec).\n"
 		"       -m <octets>         Link MTU (default: %u octets).\n"
-		"       -p <port>           UDP port to listen/connect to (default: %s).\n"
+		"       -N <iterations>     Number of handshake iterations (default: %u iterations).\n"
+		"       -p <proto>          L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
+		"       -P <port>           UDP port to listen/connect to (default: %s).\n"
 		"       -s <octets>         L4 payload size (default: %u).\n"
 		"       -t <seconds>        Minimum stream time (default: %u seconds).\n"
+		"       -v                  Display version information.\n"
 		"       -w <seconds>        Connection timeout (default: %u seconds).\n"
+		"\n"
+		"EXAMPLES\n"
+		"\n"
+		"       Unidirectional test :      im@listening ~ $ ubwt listener myaddress.local\n"
+		"                           :  im_the@connector ~ $ ubwt connector listening.local\n"
+		"\n"
+		"       Bidirectional test  :  term_1@localhost ~ $ ubwt -b listener 127.0.0.1\n"
+		"                           :  term_2@localhost ~ $ ubwt -b connector 127.0.0.1\n"
 		"\n",
 		argv[0],
+		UBWT_CONFIG_TALK_HANDSHAKE_INTERVAL_MSEC,
 		UBWT_CONFIG_NET_MTU,
+		UBWT_CONFIG_TALK_HANDSHAKE_ITER,
 		UBWT_CONFIG_PORT_DEFAULT,
 		UBWT_CONFIG_TALK_PAYLOAD_DEFAULT_SIZE,
 		UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME,
@@ -58,6 +73,20 @@ void usage_show(char *const *argv, int success) {
 	);
 
 	exit(success ? EXIT_SUCCESS : EXIT_FAILURE);
+
+	error_no_return();
+}
+
+#if !defined(__GNUC__) && !defined(__clang__)
+_Noreturn
+#endif
+void usage_version(void) {
+	fprintf(stdout, "ubwt (uCodev Bandwidth Tester) %s\n"
+		"Copyright (C) 2021 Pedro A. Hortas <pah at ucodev dot org>\n", UBWT_CONFIG_VERSION_STR);
+	fprintf(stdout, "This is free software; see the source for copying conditions.  There is NO\n"
+		"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+
+	exit(EXIT_SUCCESS);
 
 	error_no_return();
 }

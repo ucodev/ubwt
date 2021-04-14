@@ -1,7 +1,15 @@
+v0.02a-dev
+
+ - New command line usage
+ - Renamed some internal interfaces for clarity between connectors/listeners and senders/receivers
+ - Added support for bidirectional testing
+
+
 v0.01d-dev
 
  - Included floating point precision to bandwidth results
  - Included socket options for address and port reusage
+
 
 v0.01c-dev
 

@@ -42,6 +42,7 @@ static void _config_sanity(void) {
 	assert(current->config.net_timeout_default > 0);
 	assert(current->config.net_l4_proto_value != 0);
 
+	assert(current->config.talk_handshake_interval >= 0);
 	assert(current->config.talk_handshake_iter > 0);
 
 	assert(current->config.talk_count_current > 0);
@@ -67,7 +68,7 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 #ifdef UBWT_CONFIG_DEBUG
 		"d"
 #endif
-		"hl:m:p:s:t:w:";
+		"bFhI:l:m:N:p:P:s:t:vw:";
 
 	while ((opt = getopt(argc, argv, flags)) != -1) {
 		switch (opt) {
@@ -76,13 +77,35 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 				current->config.debug = 1;
 			} break;
 #endif
+			case 'b': {
+				current->config.bidirectional = 1;
+			} break;
+
+			case 'F': {
+				current->config.report_full = 1;
+			} break;
 
 			case 'h': {
 				usage_show(argv, 1);
 				error_no_return();
 			} break;
 
-			case 'l': {
+			case 'I': {
+				assert(atoi(optarg) >= 0 && atoi(optarg) < 65536);
+				current->config.talk_handshake_interval = (uint16_t) atoi(optarg);
+			} break;
+
+			case 'N': {
+				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
+				current->config.talk_handshake_iter = (uint16_t) atoi(optarg);
+			} break;
+
+			case 'm': {
+				assert(atoi(optarg) >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE && atoi(optarg) < 65536);
+				current->config.net_mtu = (uint16_t) atoi(optarg);
+			} break;
+
+			case 'p': {
 				assert(strlen(optarg) < sizeof(current->config.net_l4_proto_name));
 				strncpy(current->config.net_l4_proto_name, optarg, sizeof(current->config.net_l4_proto_name) - 1);
 				current->config.net_l4_proto_name[sizeof(current->config.net_l4_proto_name) - 1] = 0;
@@ -97,12 +120,7 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 				}
 			} break;
 
-			case 'm': {
-				assert(atoi(optarg) >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE && atoi(optarg) < 65536);
-				current->config.net_mtu = (uint16_t) atoi(optarg);
-			} break;
-
-			case 'p': {
+			case 'P': {
 				strncpy(current->config.port, optarg, sizeof(current->config.port) - 1);
 				current->config.port[sizeof(current->config.port) - 1] = 0;
 			} break;
@@ -115,6 +133,11 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 			case 't': {
 				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
 				current->config.talk_stream_minimum_time = (uint16_t) atoi(optarg);
+			} break;
+
+			case 'v': {
+				usage_version();
+				error_no_return();
 			} break;
 
 			case 'w': {
@@ -141,10 +164,10 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 		error_no_return();
 	}
 
-	if (!strcmp(argv[optind], "sender")) {
-		current->config.im_sender = 1;
-	} else if (!strcmp(argv[optind], "receiver")) {
-		current->config.im_receiver = 1;
+	if (!strcmp(argv[optind], "connector")) {
+		current->config.im_connector = 1;
+	} else if (!strcmp(argv[optind], "listener")) {
+		current->config.im_listener = 1;
 	} else {
 		errno = EINVAL;
 		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_1_INVALID, "config_init()");
@@ -199,6 +222,7 @@ void config_init(int argc, char *const *argv) {
 		current->config.net_l4_hdr_size = UBWT_CONFIG_NET_L4_UDP_HEADER_SIZE;
 	}
 
+	current->config.talk_handshake_interval = UBWT_CONFIG_TALK_HANDSHAKE_INTERVAL_MSEC;
 	current->config.talk_handshake_iter = UBWT_CONFIG_TALK_HANDSHAKE_ITER;
 
 	current->config.talk_count_default = UBWT_CONFIG_TALK_COUNT_DEFAULT;

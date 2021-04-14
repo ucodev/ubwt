@@ -21,9 +21,20 @@
 #ifndef UBWT_PROCESS_H
 #define UBWT_PROCESS_H
 
+#include <stdint.h>
+
+#define process_im_sender()	current->process.im_sender
+#define process_im_receiver()	current->process.im_receiver
+
+typedef struct ubwt_process {
+	uint8_t im_sender;
+	uint8_t im_receiver;
+} ubwt_process_t;
+
 void process_init(void);
 void process_run(void);
 void process_report(void);
 void process_destroy(void);
 
 #endif
+

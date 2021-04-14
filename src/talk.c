@@ -83,9 +83,9 @@ static ssize_t _talk_send(const ubwt_talk_payload_t *pkt) {
 	pktbuf.latency = htonl(pkt->latency);
 	pktbuf.__reserved = htonl(pkt->__reserved);
 
-	return net_im_sender() ?
-		net_write_to_receiver(&pktbuf, len) :
-		net_write_to_sender(&pktbuf, len);
+	return net_im_connector() ?
+		net_write_to_listener(&pktbuf, len) :
+		net_write_to_connector(&pktbuf, len);
 }
 
 static ssize_t _talk_recv(ubwt_talk_payload_t *pkt) {
@@ -93,9 +93,9 @@ static ssize_t _talk_recv(ubwt_talk_payload_t *pkt) {
 
 	len = stage_get() == UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE ? hdr_size : current->config.talk_payload_current_size;
 
-	ret = net_im_sender() ?
-		net_read_from_receiver(pkt, len) :
-		net_read_from_sender(pkt, len);
+	ret = net_im_connector() ?
+		net_read_from_listener(pkt, len) :
+		net_read_from_connector(pkt, len);
 
 	if (ret == len) {
 		pkt->flags = ntohl(pkt->flags);
@@ -136,7 +136,7 @@ static void _talk_send_abort(void) {
 }
 
 static long _talk_sender_handshake(void) {
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, current->config.talk_handshake_iter, 0, 0, { 0 } };
 	uint64_t dt = datetime_now_us();
 
 
@@ -173,6 +173,13 @@ static long _talk_sender_handshake(void) {
 		debug_info_talk_op(UBWT_TALK_OP_PONG, "MISS");
 	}
 
+	if (p.count != current->config.talk_handshake_iter) {
+		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_TALK_HANDSHAKE_NOMATCH, "_talk_sender_handshake(): Iteration count doesn't match between the two parties");
+		errno = EINVAL;
+
+		return -1L;
+	}
+
 	dt = datetime_now_us() - dt;
 
 	return (long) dt;
@@ -203,9 +210,18 @@ static int _talk_receiver_handshake(void) {
 		return -1;
 	}
 
+	if (p.count != current->config.talk_handshake_iter) {
+		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_TALK_HANDSHAKE_NOMATCH, "_talk_receiver_handshake(): Iteration count doesn't match between the two parties");
+		errno = EINVAL;
+
+		return -1;
+	}
+
 	memset(&p, 0, sizeof(p));
 
 	bit_set(&p.flags, UBWT_TALK_OP_PONG);
+
+	p.count = current->config.talk_handshake_iter;
 
 
 	/* Send PONG op reply */
@@ -554,11 +570,6 @@ void talk_sender(void) {
 	int i = 0, ret = 0;
 	uint32_t dt = 0;
 
-	if (net_sender_connect() < 0) {
-		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_SENDER_INIT, "talk_sender(): net_sender_connect()");
-		error_no_return();
-	}
-
 	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE, 0);
 
 	for (i = 0; i < current->config.talk_handshake_iter; i ++) {
@@ -572,11 +583,18 @@ void talk_sender(void) {
 		stage_inc(0);
 
 		dt += ret;
+
+		if (current->config.talk_handshake_interval)
+			usleep(current->config.talk_handshake_interval * 1000);
 	}
 
 	dt /= current->config.talk_handshake_iter;
 
-	report_net_receiver_connection_show();
+	if (net_im_connector()) {
+		report_net_listener_connection_show();
+	} else {
+		report_net_connector_connection_show();
+	}
 
 	debug_info_talk_latency(dt);
 
@@ -634,11 +652,6 @@ void talk_receiver(void) {
 	int i = 0, ret = 0;
 	uint32_t count = 0, latency = 0;
 
-	if (net_receiver_accept() < 0) {
-		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_RECEIVER_INIT, "talk_receiver(): net_receiver_accept()");
-		error_no_return();
-	}
-
 	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE, 0);
 
 	for (i = 0; i < current->config.talk_handshake_iter; i ++) {
@@ -652,7 +665,11 @@ void talk_receiver(void) {
 		stage_inc(0);
 	}
 
-	report_net_sender_connection_show();
+	if (net_im_listener()) {
+		report_net_connector_connection_show();
+	} else {
+		report_net_listener_connection_show();
+	}
 
 	stage_reset();
 
@@ -697,5 +714,23 @@ void talk_receiver(void) {
 		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_REPORT_EXCHANGE_FAILED, "talk_receiver(): _talk_receiver_report_exchange()");
 		error_no_return();
 	}
+}
+
+void talk_init(void) {
+	if (net_im_listener()) {
+		if (net_listener_accept() < 0) {
+			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_RECEIVER_INIT, "talk_init(): net_listener_accept()");
+			error_no_return();
+		}
+	} else {
+		if (net_connector_connect() < 0) {
+			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_SENDER_INIT, "talk_init(): net_connector_connect()");
+			error_no_return();
+		}
+	}
+}
+
+void talk_destroy(void) {
+	return;
 }
 

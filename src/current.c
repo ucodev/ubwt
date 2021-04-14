@@ -26,8 +26,8 @@
 #include "datetime.h"
 #include "stage.h"
 
-static struct ubwt_current __current;
-struct ubwt_current *current = &__current;
+ubwt_current_t __current;
+ubwt_current_t *current = &__current;
 
 void current_init(void) {
 	memset(&__current, 0, sizeof(struct ubwt_current));

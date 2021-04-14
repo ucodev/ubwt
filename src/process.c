@@ -25,6 +25,16 @@
 #include "stage.h"
 #include "talk.h"
 
+void process_set_im_sender(void) {
+	current->process.im_sender = 1;
+	current->process.im_receiver = 0;
+}
+
+void process_set_im_receiver(void) {
+	current->process.im_sender = 0;
+	current->process.im_receiver = 1;
+}
+
 void process_init(void) {
 	stage_set(UBWT_STAGE_STATE_INIT_PROCESS, 0);
 
@@ -32,16 +42,84 @@ void process_init(void) {
 }
 
 void process_run(void) {
-	if (net_im_receiver()) {
+	if (net_im_listener()) {
+		report_set_straight();
+
+		process_set_im_receiver();
+
+		talk_init();
+
 		talk_receiver();
-	} else {
+
+		if (!current->config.bidirectional) {
+			talk_destroy();
+			return ;
+		}
+
+
+		/* Reverse testing */
+
+		report_set_reverse();
+
+		process_set_im_sender();
+
 		talk_sender();
+
+		talk_destroy();
+	} else {
+		report_set_straight();
+
+		process_set_im_sender();
+
+		talk_init();
+
+		talk_sender();
+
+		if (!current->config.bidirectional) {
+			talk_destroy();
+			return ;
+		}
+
+
+		/* Reverse testing */
+
+		report_set_reverse();
+
+		process_set_im_receiver();
+
+		talk_receiver();
+
+		talk_destroy();
 	}
 }
 
 void process_report(void) {
 	stage_set(UBWT_STAGE_STATE_RUNTIME_REPORT_SHOW, 0);
 
+	if (net_im_listener()) {
+		process_set_im_receiver();
+	} else {
+		process_set_im_sender();
+	}
+
+	report_set_straight();
+	report_results_compute();
+	report_results_show();
+
+	if (!current->config.bidirectional)
+		return;
+
+
+	/* Reverse testing results */
+
+	if (net_im_listener()) {
+		process_set_im_sender();
+	} else {
+		process_set_im_receiver();
+	}
+
+	report_set_reverse();
+	report_results_compute();
 	report_results_show();
 }
 

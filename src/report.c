@@ -45,167 +45,190 @@ static uint32_t _report_bandwidth_theoretical_mbps(uint32_t bandwidth_effective)
 	return bandwidth_effective;
 }
 
+void report_set_straight(void) {
+	current->report.result = &current->report.results[0];
+}
+
+void report_set_reverse(void) {
+	current->report.result = &current->report.results[1];
+}
+
 void report_talk_latency_set(uint32_t dt) {
-	current->report.talk_latency_us = dt;
+	current->report.result->collected.talk_latency_us = dt;
 }
 
 uint32_t report_talk_latency_get(void) {
-	return current->report.talk_latency_us;
+	return current->report.result->collected.talk_latency_us;
 }
 
 void report_talk_latency_show(void) {
-	debug_info_report_latency(current->report.talk_latency_us);
+	debug_info_report_latency(current->report.result->collected.talk_latency_us);
 
 	/* TODO: stdout progress presentation */
 }
 
 void report_talk_count_set(uint32_t count) {
-	current->report.talk_count = count;
+	current->report.result->collected.talk_count = count;
 }
 
 uint32_t report_talk_count_get(void) {
-	return current->report.talk_count;
+	return current->report.result->collected.talk_count;
 }
 
 void report_talk_count_show(void) {
-	debug_info_report_count(current->report.talk_count);
+	debug_info_report_count(current->report.result->collected.talk_count);
 
 	/* TODO: stdout progress presentation */
 }
 
 void report_talk_stream_time_set(uint64_t t) {
-	current->report.talk_stream_time = t;
+	current->report.result->collected.talk_stream_time = t;
 }
 
 uint64_t report_talk_stream_time_get(void) {
-	return current->report.talk_stream_time;
+	return current->report.result->collected.talk_stream_time;
 }
 
 void report_talk_stream_recv_pkts_set(uint64_t recv_pkts) {
-	current->report.talk_stream_recv_pkts = recv_pkts;
+	current->report.result->collected.talk_stream_recv_pkts = recv_pkts;
 }
 
 uint64_t report_talk_stream_recv_pkts_get(void) {
-	return current->report.talk_stream_recv_pkts;
+	return current->report.result->collected.talk_stream_recv_pkts;
 }
 
 void report_talk_stream_recv_bytes_set(uint64_t recv_bytes) {
-	current->report.talk_stream_recv_bytes = recv_bytes;
+	current->report.result->collected.talk_stream_recv_bytes = recv_bytes;
 }
 
 uint64_t report_talk_stream_recv_bytes_get(void) {
-	return current->report.talk_stream_recv_bytes;
+	return current->report.result->collected.talk_stream_recv_bytes;
 }
 
-void report_net_sender_connection_show(void) {
+void report_net_connector_connection_show(void) {
 	char ip[256] = { 0 };
-	uint16_t port = net_sockaddr_port(&current->net.sender.saddr);
+	uint16_t port = net_sockaddr_port(&current->net.connector.saddr);
 
-	if (!net_sockaddr_ntop(&current->net.sender.saddr, ip, sizeof(ip) - 1)) {
-		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_REPORT_CONNECTION_FAILED, "report_net_sender_connection_show(): net_sockaddr_ntop()");
+	if (!net_sockaddr_ntop(&current->net.connector.saddr, ip, sizeof(ip) - 1)) {
+		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_REPORT_CONNECTION_FAILED, "report_net_connector_connection_show(): net_sockaddr_ntop()");
 		return ;
 	}
 
-	debug_info_report_connection("Sender", ip, port);
+	debug_info_report_connection("Connector", ip, port);
 
 	/* TODO: stdout progress presentation */
 }
 
-void report_net_receiver_connection_show(void) {
+void report_net_listener_connection_show(void) {
 	char ip[256] = { 0 };
-	uint16_t port = net_sockaddr_port(&current->net.receiver.saddr);
+	uint16_t port = net_sockaddr_port(&current->net.listener.saddr);
 
-	if (!net_sockaddr_ntop(&current->net.receiver.saddr, ip, sizeof(ip) - 1)) {
-		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_REPORT_CONNECTION_FAILED, "report_net_receiver_connection_show(): net_sockaddr_ntop()");
+	if (!net_sockaddr_ntop(&current->net.listener.saddr, ip, sizeof(ip) - 1)) {
+		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_REPORT_CONNECTION_FAILED, "report_net_listener_connection_show(): net_sockaddr_ntop()");
 		return ;
 	}
 
-	debug_info_report_connection("Receiver", ip, port);
+	debug_info_report_connection("Listener", ip, port);
 
 	/* TODO: stdout progress presentation */
 }
 
 void report_marshal(void *storage, size_t len) {
-	ubwt_report_t *r = (ubwt_report_t *) storage;
+	ubwt_report_collect_t *r = (ubwt_report_collect_t *) storage;
 
-	assert(len >= sizeof(ubwt_report_t));
+	assert(len >= sizeof(ubwt_report_collect_t));
 
 	memset(storage, 0, len);
 
-	r->talk_latency_us = htonl(current->report.talk_latency_us);
-	r->talk_count = htonl(current->report.talk_count);
-	r->talk_stream_time = htonl(current->report.talk_stream_time);
-	r->talk_stream_recv_pkts = htonl(current->report.talk_stream_recv_pkts);
-	r->talk_stream_recv_bytes = net_htonll(current->report.talk_stream_recv_bytes);
+	r->talk_latency_us = htonl(current->report.result->collected.talk_latency_us);
+	r->talk_count = htonl(current->report.result->collected.talk_count);
+	r->talk_stream_time = htonl(current->report.result->collected.talk_stream_time);
+	r->talk_stream_recv_pkts = htonl(current->report.result->collected.talk_stream_recv_pkts);
+	r->talk_stream_recv_bytes = net_htonll(current->report.result->collected.talk_stream_recv_bytes);
 }
 
 void report_unmarshal(const void *storage, size_t len) {
-	const ubwt_report_t *r = (ubwt_report_t *) storage;
+	const ubwt_report_collect_t *r = (ubwt_report_collect_t *) storage;
 
-	assert(len >= sizeof(ubwt_report_t));
+	assert(len >= sizeof(ubwt_report_collect_t));
 
-	current->report.talk_latency_us = ntohl(r->talk_latency_us);
-	current->report.talk_count = ntohl(r->talk_count);
-	current->report.talk_stream_time = ntohl(r->talk_stream_time);
-	current->report.talk_stream_recv_pkts = ntohl(r->talk_stream_recv_pkts);
-	current->report.talk_stream_recv_bytes = net_ntohll(r->talk_stream_recv_bytes);
+	current->report.result->collected.talk_latency_us = ntohl(r->talk_latency_us);
+	current->report.result->collected.talk_count = ntohl(r->talk_count);
+	current->report.result->collected.talk_stream_time = ntohl(r->talk_stream_time);
+	current->report.result->collected.talk_stream_recv_pkts = ntohl(r->talk_stream_recv_pkts);
+	current->report.result->collected.talk_stream_recv_bytes = net_ntohll(r->talk_stream_recv_bytes);
 }
 
-void report_results_show(void) {
-	size_t hdr_size = 0;
-	uint32_t bandwidth_theoretical_mbps = 0;
-	uint64_t total_pkts = 0;
-	double packet_loss = 0, fragmentation_ratio = 0;
-	double bandwidth_estimated_mbps = 0, bandwidth_effective_mbps = 0;
-
+void report_results_compute(void) {
 	/* Calculate results */
 
-	hdr_size = current->config.net_l2_hdr_size
-		+ (current->net.receiver.saddr.ss_family == AF_INET6
+	current->report.result->computed.hdr_size = current->config.net_l2_hdr_size
+		+ (current->net.listener.saddr.ss_family == AF_INET6
 			? current->config.net_l3_ipv6_hdr_size
 			: current->config.net_l3_ipv4_hdr_size)
 		+ current->config.net_l4_hdr_size;
 
-	total_pkts = report_talk_stream_recv_bytes_get()
+	current->report.result->computed.total_pkts = report_talk_stream_recv_bytes_get()
 		/ (current->config.net_mtu < current->config.talk_payload_current_size
 			? current->config.net_mtu
 			: current->config.talk_payload_current_size);
 
-	bandwidth_estimated_mbps =
-		((double) ((report_talk_stream_recv_bytes_get() + (total_pkts * hdr_size)) * 8) / 1000000.0)
+	current->report.result->computed.bandwidth_estimated_mbps =
+		((double) ((report_talk_stream_recv_bytes_get() + 
+		(current->report.result->computed.total_pkts *
+			current->report.result->computed.hdr_size)) * 8) / 1000000.0)
 		/ (((double) report_talk_stream_time_get()) / 1000000.0);
 
-	bandwidth_effective_mbps = ((double) (report_talk_stream_recv_bytes_get() * 8) / 1000000.0)
+	current->report.result->computed.bandwidth_effective_mbps =
+		((double) (report_talk_stream_recv_bytes_get() * 8) / 1000000.0)
 		/ (((double) report_talk_stream_time_get()) / 1000000.0);
 
-	bandwidth_theoretical_mbps = _report_bandwidth_theoretical_mbps(bandwidth_effective_mbps);
+	current->report.result->computed.bandwidth_theoretical_mbps =
+		_report_bandwidth_theoretical_mbps(current->report.result->computed.bandwidth_effective_mbps);
 
-	packet_loss = (double) ((report_talk_count_get() - report_talk_stream_recv_pkts_get()) * 100)
+	current->report.result->computed.packet_loss =
+		(double) ((report_talk_count_get() - report_talk_stream_recv_pkts_get()) * 100)
 		/ (double) report_talk_count_get();
 
-	fragmentation_ratio = (double) current->config.net_mtu >= current->config.talk_payload_current_size
+	current->report.result->computed.fragmentation_ratio =
+			(double) current->config.net_mtu >= current->config.talk_payload_current_size
 			? (double) 1
 			: (double) current->config.talk_payload_current_size / (double) current->config.net_mtu;
+}
 
-
+void report_results_show(void) {
 	/* Show results */
 
-	fprintf(stdout, "MTU                                 : %" PRIu16 " octets\n", current->config.net_mtu);
-	fprintf(stdout, "L3 Protocol                         : %s\n", current->net.receiver.saddr.ss_family == AF_INET6 ? "ipv6" : "ipv4");
-	fprintf(stdout, "L4 Protocol                         : %s\n", current->config.net_l4_proto_name);
-	fprintf(stdout, "Requested L4 payload size           : %" PRIu16 " octets\n", current->config.talk_payload_current_size);
-	fprintf(stdout, "Estimated headers size              : %zu octets\n", hdr_size);
-	fprintf(stdout, "Transmission time                   : %.4f s\n", report_talk_stream_time_get() / (double) 1000000.0);
-	fprintf(stdout, "Total L4 packets expected           : %" PRIu32 "\n", report_talk_count_get());
-	fprintf(stdout, "Total L4 packets transfered         : %" PRIu64 "\n", report_talk_stream_recv_pkts_get());
-	fprintf(stdout, "Total L4 octets transfered          : %" PRIu64 "\n", report_talk_stream_recv_bytes_get());
-	fprintf(stdout, "Estimated L3 packets transfered     : %" PRIu64 "\n", total_pkts);
-	fprintf(stdout, "Estimated L3 fragmentation ratio    : %.0f:1\n", ceil(fragmentation_ratio));
-	fprintf(stdout, "Estimated L2 octets transfered      : %" PRIu64 "\n", report_talk_stream_recv_bytes_get() + (total_pkts * hdr_size));
-	fprintf(stdout, "Latency (L4 RTA)                    : %.3f ms\n", report_talk_latency_get() / (double) 1000.0);
-	fprintf(stdout, "Effective packet loss               : %.4f (%%)\n", packet_loss);
-	fprintf(stdout, "Theoretical L1 Bandwidth            : %" PRIu32 " Mbps\n", bandwidth_theoretical_mbps);
-	fprintf(stdout, "Estimated L2 Bandwidth              : %.3f Mbps\n", bandwidth_estimated_mbps);
-	fprintf(stdout, "Effective L4 Bandwidth              : %.3f Mbps\n", bandwidth_effective_mbps);
+	if (current->config.report_full) {
+		puts("");
+		fprintf(stdout, "Direction                           : %s\n", process_im_receiver() ? "Download" : "Upload");
+		fprintf(stdout, "MTU                                 : %" PRIu16 " octets\n", current->config.net_mtu);
+		fprintf(stdout, "L3 Protocol                         : %s\n", current->net.listener.saddr.ss_family == AF_INET6 ? "ipv6" : "ipv4");
+		fprintf(stdout, "L4 Protocol                         : %s\n", current->config.net_l4_proto_name);
+		fprintf(stdout, "Requested L4 payload size           : %" PRIu16 " octets\n", current->config.talk_payload_current_size);
+		fprintf(stdout, "Estimated headers size              : %zu octets\n", current->report.result->computed.hdr_size);
+		fprintf(stdout, "Transmission time                   : %.4f s\n", report_talk_stream_time_get() / (double) 1000000.0);
+		fprintf(stdout, "Total L4 packets expected           : %" PRIu32 "\n", report_talk_count_get());
+		fprintf(stdout, "Total L4 packets transfered         : %" PRIu64 "\n", report_talk_stream_recv_pkts_get());
+		fprintf(stdout, "Total L4 octets transfered          : %" PRIu64 "\n", report_talk_stream_recv_bytes_get());
+		fprintf(stdout, "Estimated L3 packets transfered     : %" PRIu64 "\n", current->report.result->computed.total_pkts);
+		fprintf(stdout, "Estimated L3 fragmentation ratio    : %.0f:1\n", ceil(current->report.result->computed.fragmentation_ratio));
+		fprintf(stdout, "Estimated L2 octets transfered      : %" PRIu64 "\n", report_talk_stream_recv_bytes_get() + (current->report.result->computed.total_pkts * current->report.result->computed.hdr_size));
+		fprintf(stdout, "Latency (L4 RTA)                    : %.3f ms\n", report_talk_latency_get() / (double) 1000.0);
+		fprintf(stdout, "Effective packet loss               : %.4f (%%)\n", current->report.result->computed.packet_loss);
+		fprintf(stdout, "Theoretical L1 Bandwidth            : %" PRIu32 " Mbps\n", current->report.result->computed.bandwidth_theoretical_mbps);
+		fprintf(stdout, "Estimated L2 Bandwidth              : %.3f Mbps\n", current->report.result->computed.bandwidth_estimated_mbps);
+		fprintf(stdout, "Effective L4 Bandwidth              : %.3f Mbps\n", current->report.result->computed.bandwidth_effective_mbps);
+	} else {
+		fprintf(stdout, "%12s : %.3f Mbps\n", process_im_receiver() ? "Download" : "Upload", current->report.result->computed.bandwidth_estimated_mbps);
+	}
+}
+
+void report_init(void) {
+	current->report.result = &current->report.results[0];
+}
+
+void report_destroy(void) {
+	current->report.result = NULL;
 }
 

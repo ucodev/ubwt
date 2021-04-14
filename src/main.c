@@ -33,11 +33,15 @@ static void _construct(int argc, char *const *argv) {
 
 	net_init();
 
+	report_init();
+
 	process_init();
 }
 
 static void _destruct(void) {
 	process_destroy();
+
+	report_destroy();
 
 	net_destroy();
 

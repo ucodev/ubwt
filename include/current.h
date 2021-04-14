@@ -28,28 +28,19 @@
 #include "net.h"
 #include "report.h"
 #include "stage.h"
+#include "process.h"
 
-#ifndef UBWT_NO_PRAGMA_PACK
- #pragma pack(push)
- #pragma pack(4)
-#endif
-struct
-#ifdef UBWT_NO_PRAGMA_PACK
-__attribute__ ((packed, aligned(4)))
-#endif
-ubwt_current {
+typedef struct ubwt_current {
 	struct ubwt_config config;
 	struct ubwt_net net;
 	uint64_t time_us;
 	ubwt_stage_t stage;
 	ubwt_error_t error;
 	ubwt_report_t report;
-};
-#ifndef UBWT_NO_PRAGMA_PACK
- #pragma pack(pop)
-#endif
+	ubwt_process_t process;
+} ubwt_current_t;
 
-extern struct ubwt_current *current;
+extern ubwt_current_t *current;
 
 void current_init(void);
 void current_update(void);

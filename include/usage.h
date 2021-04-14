@@ -22,7 +22,7 @@
 #define UBWT_USAGE_H
 
 #if !defined(__GNUC__) && !defined(__clang__)
-#include <stdnoreturn.h>
+ #include <stdnoreturn.h>
 #endif
 
 #if !defined(__GNUC__) && !defined(__clang__)
@@ -35,4 +35,15 @@ void usage_show(char *const *argv, int success)
 	;
 #endif
 
+#if !defined(__GNUC__) && !defined(__clang__)
+_Noreturn
 #endif
+void usage_version(void)
+#if defined(__GNUC__) || defined(__clang__)
+	__attribute__((noreturn));
+#else
+	;
+#endif
+
+#endif
+

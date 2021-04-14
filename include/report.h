@@ -31,7 +31,8 @@ typedef struct
 #ifdef UBWT_NO_PRAGMA_PACK
 __attribute__ ((packed, aligned(4)))
 #endif
-ubwt_report {
+ubwt_report_collect {
+	/* Collected data */
 	uint32_t talk_latency_us;
 	uint32_t talk_count;
 	uint32_t talk_stream_time;
@@ -39,11 +40,37 @@ ubwt_report {
 	uint32_t __reserved1;
 	uint32_t __reserved2;
 	uint64_t talk_stream_recv_bytes;
-} ubwt_report_t;
+} ubwt_report_collect_t;
 #ifndef UBWT_NO_PRAGMA_PACK
  #pragma pack(pop)
 #endif
 
+typedef struct ubwt_report_compute {
+	/* Computed data */
+	uint32_t bandwidth_theoretical_mbps;
+	double   bandwidth_estimated_mbps;
+	double   bandwidth_effective_mbps;
+	double   packet_loss;
+	double   fragmentation_ratio;
+	uint64_t total_pkts;
+	size_t   hdr_size;
+} ubwt_report_compute_t;
+
+typedef struct ubwt_report_result {
+	/* Collected data */
+	ubwt_report_collect_t collected;
+
+	/* Computed data */
+	ubwt_report_compute_t computed;
+} ubwt_report_result_t;
+
+typedef struct ubwt_report {
+	ubwt_report_result_t *result;
+	ubwt_report_result_t  results[2];
+} ubwt_report_t;
+
+void report_set_straight(void);
+void report_set_reverse(void);
 void report_talk_latency_set(uint32_t dt);
 uint32_t report_talk_latency_get(void);
 void report_talk_latency_show(void);
@@ -56,11 +83,14 @@ void report_talk_stream_recv_pkts_set(uint64_t recv_pkts);
 uint64_t report_talk_stream_recv_pkts_get(void);
 void report_talk_stream_recv_bytes_set(uint64_t recv_bytes);
 uint64_t report_talk_stream_recv_bytes_get(void);
-void report_net_sender_connection_show(void);
-void report_net_receiver_connection_show(void);
+void report_net_connector_connection_show(void);
+void report_net_listener_connection_show(void);
 void report_marshal(void *storage, size_t len);
 void report_unmarshal(const void *storage, size_t len);
+void report_results_compute(void);
 void report_results_show(void);
+void report_init(void);
+void report_destroy(void);
 
 #endif
 

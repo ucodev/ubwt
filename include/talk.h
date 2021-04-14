@@ -57,6 +57,8 @@ ubwt_talk_payload {
 #endif
 
 const char *talk_op_to_str(ubwt_talk_ops_t op);
+void talk_init(void);
+void talk_destroy(void);
 void talk_sender(void);
 void talk_receiver(void);
 

@@ -37,7 +37,7 @@
 
 static const char *__errors[] = {
 	"[%s]: ERROR: %s: No error: %s: %s\n",
-	"[%s]: ERROR: %s: First parameter must be 'sender' or 'receiver': %s: %s\n",
+	"[%s]: ERROR: %s: First parameter must be 'connector' or 'listener': %s: %s\n",
 	"[%s]: ERROR: %s: Second parameter must be a valid IP or hostname: %s: %s\n",
 	"[%s]: ERROR: %s: Invalid command line option: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to get current time in microseconds: %s: %s\n",
@@ -52,10 +52,11 @@ static const char *__errors[] = {
 	"[%s]: ERROR: %s: An error occured while connecting to the remote endpoint: %s: %s\n",
 	"[%s]: ERROR: %s: An error occured while preparing the listenening socket for incoming connections: %s: %s\n",
 	"[%s]: ERROR: %s: An error occured while trying to accept for incoming connections: %s: %s\n",
-	"[%s]: ERROR: %s: Unable to initialize sender: %s: %s\n",
-	"[%s]: ERROR: %s: Unable to initialize receiver: %s: %s\n",
+	"[%s]: ERROR: %s: Unable to initialize connector: %s: %s\n",
+	"[%s]: ERROR: %s: Unable to initialize listener: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to send data to the remote endpoint: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to receive data from the remote endpoint: %s: %s\n",
+	"[%s]: ERROR: %s: Unable to complete handshake - exchanged values mismatch: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to complete handshake stage: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to complete negotiation stage: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to complete stream stage: %s: %s\n",

@@ -29,8 +29,8 @@
 
 #include <arpa/inet.h>
 
-#define net_im_sender() current->config.im_sender
-#define net_im_receiver() current->config.im_receiver
+#define net_im_connector() current->config.im_connector
+#define net_im_listener() current->config.im_listener
 
 typedef int sock_t;
 
@@ -80,22 +80,22 @@ __attribute__ ((packed, aligned(4)))
 ubwt_net {
 	sock_t fd;
 	sock_t fd_listen;
-	struct ubwt_net_endpoint receiver;
-	struct ubwt_net_endpoint sender;
+	struct ubwt_net_endpoint listener;
+	struct ubwt_net_endpoint connector;
 };
 #ifndef UBWT_NO_PRAGMA_PACK
  #pragma pack(pop)
 #endif
 
-int net_sender_connect(void);
-int net_receiver_accept(void);
+int net_connector_connect(void);
+int net_listener_accept(void);
 int net_timeout_set(sock_t fd, time_t timeout);
 const char *net_sockaddr_ntop(const struct sockaddr_storage *n, char *p, socklen_t len);
 uint16_t net_sockaddr_port(const struct sockaddr_storage *n);
-ssize_t net_read_from_sender(void *buf, size_t len);
-ssize_t net_read_from_receiver(void *buf, size_t len);
-ssize_t net_write_to_sender(const void *buf, size_t len);
-ssize_t net_write_to_receiver(const void *buf, size_t len);
+ssize_t net_read_from_connector(void *buf, size_t len);
+ssize_t net_read_from_listener(void *buf, size_t len);
+ssize_t net_write_to_connector(const void *buf, size_t len);
+ssize_t net_write_to_listener(const void *buf, size_t len);
 void net_init(void);
 void net_destroy(void);
 
