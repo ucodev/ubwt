@@ -30,17 +30,19 @@
 #include "stage.h"
 #include "process.h"
 
-typedef struct ubwt_current {
+struct ubwt_current {
 	struct ubwt_config config;
 	struct ubwt_net net;
 	uint64_t time_us;
+
 	ubwt_stage_t stage;
 	ubwt_error_t error;
-	ubwt_report_t report;
-	ubwt_process_t process;
-} ubwt_current_t;
 
-extern ubwt_current_t *current;
+	struct ubwt_report report;
+	struct ubwt_process process;
+};
+
+extern struct ubwt_current *current;
 
 void current_init(void);
 void current_update(void);

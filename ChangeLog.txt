@@ -1,3 +1,9 @@
+v0.02b-dev
+
+ - Included a delay before reverse testing initiates
+ - Added finish talk stage
+
+
 v0.02a-dev
 
  - New command line usage

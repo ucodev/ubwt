@@ -45,7 +45,7 @@ ubwt_report_collect {
  #pragma pack(pop)
 #endif
 
-typedef struct ubwt_report_compute {
+struct ubwt_report_compute {
 	/* Computed data */
 	uint32_t bandwidth_theoretical_mbps;
 	double   bandwidth_estimated_mbps;
@@ -54,20 +54,20 @@ typedef struct ubwt_report_compute {
 	double   fragmentation_ratio;
 	uint64_t total_pkts;
 	size_t   hdr_size;
-} ubwt_report_compute_t;
+};
 
-typedef struct ubwt_report_result {
+struct ubwt_report_result {
 	/* Collected data */
 	ubwt_report_collect_t collected;
 
 	/* Computed data */
-	ubwt_report_compute_t computed;
-} ubwt_report_result_t;
+	struct ubwt_report_compute computed;
+};
 
-typedef struct ubwt_report {
-	ubwt_report_result_t *result;
-	ubwt_report_result_t  results[2];
-} ubwt_report_t;
+struct ubwt_report {
+	struct ubwt_report_result *result;
+	struct ubwt_report_result  results[2];
+};
 
 void report_set_straight(void);
 void report_set_reverse(void);

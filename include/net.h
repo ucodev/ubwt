@@ -60,32 +60,17 @@ enum UBWT_NET_PROTO_L4_VALUES {
 	UBWT_NET_PROTO_L4_UDP
 };
 
-#ifndef UBWT_NO_PRAGMA_PACK
- #pragma pack(push)
- #pragma pack(4)
-#endif
-struct
-#ifdef UBWT_NO_PRAGMA_PACK
-__attribute__ ((packed, aligned(4)))
-#endif
-ubwt_net_endpoint {
+struct ubwt_net_endpoint {
 	socklen_t slen;
 	struct sockaddr_storage saddr;
 };
 
-struct
-#ifdef UBWT_NO_PRAGMA_PACK
-__attribute__ ((packed, aligned(4)))
-#endif
-ubwt_net {
+struct ubwt_net {
 	sock_t fd;
 	sock_t fd_listen;
 	struct ubwt_net_endpoint listener;
 	struct ubwt_net_endpoint connector;
 };
-#ifndef UBWT_NO_PRAGMA_PACK
- #pragma pack(pop)
-#endif
 
 int net_connector_connect(void);
 int net_listener_accept(void);

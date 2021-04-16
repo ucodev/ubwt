@@ -61,6 +61,7 @@ static const char *__errors[] = {
 	"[%s]: ERROR: %s: Unable to complete negotiation stage: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to complete stream stage: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to complete report exchange stage: %s: %s\n",
+	"[%s]: ERROR: %s: Unable to complete finish stage: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to retrieve connection address information: %s: %s\n"
 };
 

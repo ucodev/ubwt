@@ -53,6 +53,7 @@ static const char *__talk_ops_str[] = {
 	"UBWT_TALK_OP_STREAM_END",
 	"UBWT_TALK_OP_STREAM_WEAK",
 	"UBWT_TALK_OP_REPORT",
+	"UBWT_TALK_OP_FINISH",
 	"UBWT_TALK_OP_FORCE_FAIL"
 };
 
@@ -566,6 +567,49 @@ static int _talk_receiver_report_exchange(void) {
 	return 0;
 }
 
+static int _talk_sender_finish(void) {
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+
+	/* Send FINISH */
+
+	debug_info_talk_op(UBWT_TALK_OP_FINISH, "SEND");
+
+	bit_set(&p.flags, UBWT_TALK_OP_FINISH);
+
+	if (_talk_send(&p) < 0) {
+		debug_info_talk_op(UBWT_TALK_OP_FINISH, "FAIL");
+
+		/* Not critical */
+		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_TALK_SEND_FAILED, "_talk_sender_finish(): _talk_send()");
+	} else {
+		debug_info_talk_op(UBWT_TALK_OP_FINISH, "SENT");
+	}
+
+	return 0;
+}
+
+static int _talk_receiver_finish(void) {
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+
+	/* Wait for FINISH */
+
+	debug_info_talk_op(UBWT_TALK_OP_FINISH, "WAIT");
+
+	if (_talk_recv(&p) < 0) {
+		debug_info_talk_op(UBWT_TALK_OP_FINISH, "FAIL");
+
+		/* Not critical */
+		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_TALK_RECV_FAILED, "_talk_receiver_finish(): _talk_recv()");
+	} else if (bit_test(&p.flags, UBWT_TALK_OP_FINISH)) {
+		debug_info_talk_op(UBWT_TALK_OP_FINISH, "RECV");
+	} else {
+		/* Not critical */
+		debug_info_talk_op(UBWT_TALK_OP_FINISH, "MISS");
+	}
+
+	return 0;
+}
+
 void talk_sender(void) {
 	int i = 0, ret = 0;
 	uint32_t dt = 0;
@@ -646,6 +690,12 @@ void talk_sender(void) {
 		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_REPORT_EXCHANGE_FAILED, "talk_sender(): _talk_sender_report_exchange()");
 		error_no_return();
 	}
+
+	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_FINISH, 0);
+
+	if (_talk_sender_finish() < 0) {
+		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_TALK_FINISH_FAILED, "talk_sender(): _talk_sender_finish()");
+	}
 }
 
 void talk_receiver(void) {
@@ -713,6 +763,12 @@ void talk_receiver(void) {
 
 		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_REPORT_EXCHANGE_FAILED, "talk_receiver(): _talk_receiver_report_exchange()");
 		error_no_return();
+	}
+
+	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_FINISH, 0);
+
+	if (_talk_receiver_finish() < 0) {
+		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_TALK_FINISH_FAILED, "talk_receiver(): _talk_receiver_finish()");
 	}
 }
 

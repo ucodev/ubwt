@@ -42,7 +42,9 @@ static void _config_sanity(void) {
 	assert(current->config.net_timeout_default > 0);
 	assert(current->config.net_l4_proto_value != 0);
 
-	assert(current->config.talk_handshake_interval >= 0);
+	assert(current->config.process_reverse_delay > 0);
+
+	//assert(current->config.talk_handshake_interval >= 0);
 	assert(current->config.talk_handshake_iter > 0);
 
 	assert(current->config.talk_count_current > 0);
@@ -221,6 +223,8 @@ void config_init(int argc, char *const *argv) {
 		current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_UDP;
 		current->config.net_l4_hdr_size = UBWT_CONFIG_NET_L4_UDP_HEADER_SIZE;
 	}
+
+	current->config.process_reverse_delay = UBWT_CONFIG_PROCESS_REVERSE_DELAY_SEC;
 
 	current->config.talk_handshake_interval = UBWT_CONFIG_TALK_HANDSHAKE_INTERVAL_MSEC;
 	current->config.talk_handshake_iter = UBWT_CONFIG_TALK_HANDSHAKE_ITER;

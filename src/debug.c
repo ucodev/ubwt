@@ -34,7 +34,7 @@
 #include "talk.h"
 
 void debug_info_talk_op(ubwt_talk_ops_t op, const char *msg) {
-	char time_str[32] = { 0 };
+	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
 	if (!current->config.debug)
 		return;
@@ -45,7 +45,7 @@ void debug_info_talk_op(ubwt_talk_ops_t op, const char *msg) {
 }
 
 void debug_info_talk_latency(uint64_t dt) {
-	char time_str[32] = { 0 };
+	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
 	if (!current->config.debug)
 		return;
@@ -56,7 +56,7 @@ void debug_info_talk_latency(uint64_t dt) {
 }
 
 void debug_info_config_show(void) {
-	char time_str[32] = { 0 };
+	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
 	if (!current->config.debug)
 		return;
@@ -71,7 +71,7 @@ void debug_info_config_show(void) {
 }
 
 void debug_info_stage_show(void) {
-	char time_str[32] = { 0 };
+	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
 	if (!current->config.debug)
 		return;
@@ -82,7 +82,7 @@ void debug_info_stage_show(void) {
 }
 
 void debug_info_report_latency(uint32_t dt) {
-	char time_str[32] = { 0 };
+	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
 	if (!current->config.debug)
 		return;
@@ -93,7 +93,7 @@ void debug_info_report_latency(uint32_t dt) {
 }
 
 void debug_info_report_count(uint32_t count) {
-	char time_str[32] = { 0 };
+	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
 	if (!current->config.debug)
 		return;
@@ -104,7 +104,7 @@ void debug_info_report_count(uint32_t count) {
 }
 
 void debug_info_report_connection(const char *src, const char *ip, uint16_t port) {
-	char time_str[32] = { 0 };
+	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
 	if (!current->config.debug)
 		return;

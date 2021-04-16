@@ -18,6 +18,8 @@
 
 */
 
+#include <unistd.h>
+
 #include "config.h"
 #include "current.h"
 #include "net.h"
@@ -56,6 +58,9 @@ void process_run(void) {
 			return ;
 		}
 
+		/* Wait a bit before transmitting */
+
+		sleep(current->config.process_reverse_delay);
 
 		/* Reverse testing */
 
@@ -79,7 +84,6 @@ void process_run(void) {
 			talk_destroy();
 			return ;
 		}
-
 
 		/* Reverse testing */
 

@@ -26,8 +26,9 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.02a-dev"
+#define UBWT_CONFIG_VERSION_STR				"0.02b-dev"
 #define UBWT_CONFIG_DEBUG				1
+#define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120
 #define UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_RUN		1
@@ -42,7 +43,9 @@
 #define UBWT_CONFIG_NET_L4_UDP_HEADER_SIZE		8		/* UDP (fixed) */
 #define UBWT_CONFIG_NET_L4_TCP_HEADER_SIZE		20		/* TCP (minimum) */
 #define UBWT_CONFIG_NET_L4_PROTO_DEFAULT		"tcp"
-#define UBWT_CONFIG_TALK_HANDSHAKE_INTERVAL_MSEC	0
+#define UBWT_CONFIG_PROCESS_REVERSE_DELAY_SEC		2
+#define UBWT_CONFIG_TALK_PROTO_VER			1
+#define UBWT_CONFIG_TALK_HANDSHAKE_INTERVAL_MSEC	1
 #define UBWT_CONFIG_TALK_HANDSHAKE_ITER			20
 #define UBWT_CONFIG_TALK_COUNT_DEFAULT			100
 #define UBWT_CONFIG_TALK_COUNT_MAX			100000000
@@ -51,21 +54,14 @@
 #define UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE		8192
 #define UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME		2
 
+//#define UBWT_NO_PRAGMA_PACK 1
+//
 #if defined(UBWT_CONFIG_DEBUG) && (UBWT_CONFIG_DEBUG == 0)
  #undef UBWT_CONFIG_DEBUG
 #endif
 
-//#define UBWT_NO_PRAGMA_PACK 1
 
-#ifndef UBWT_NO_PRAGMA_PACK
- #pragma pack(push)
- #pragma pack(4)
-#endif
-struct
-#ifdef UBWT_NO_PRAGMA_PACK
-__attribute__ ((packed, aligned(4)))
-#endif
-ubwt_config {
+struct ubwt_config {
 	unsigned int im_connector;
 	unsigned int im_listener;
 
@@ -92,6 +88,8 @@ ubwt_config {
 	char     net_l4_proto_name[16];
 	uint8_t  net_l4_proto_value;
 
+	uint16_t process_reverse_delay;
+
 	uint16_t talk_handshake_interval;
 	uint16_t talk_handshake_iter;
 	uint32_t talk_count_current;
@@ -102,9 +100,7 @@ ubwt_config {
 	uint16_t talk_payload_max_size;
 	uint16_t talk_stream_minimum_time;
 };
-#ifndef UBWT_NO_PRAGMA_PACK
- #pragma pack(pop)
-#endif
+
 
 void config_init(int argc, char *const *argv);
 void config_destroy(void);

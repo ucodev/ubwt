@@ -26,10 +26,10 @@
 #define process_im_sender()	current->process.im_sender
 #define process_im_receiver()	current->process.im_receiver
 
-typedef struct ubwt_process {
+struct ubwt_process {
 	uint8_t im_sender;
 	uint8_t im_receiver;
-} ubwt_process_t;
+};
 
 void process_init(void);
 void process_run(void);
