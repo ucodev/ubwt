@@ -1,3 +1,9 @@
+v0.04a-dev
+
+ - Minor documentation fixes
+ - Included experimental support for Microsoft Windows
+
+
 v0.03a-dev
 
  - Integrated uConf for auto-configuration

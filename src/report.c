@@ -25,8 +25,6 @@
 #include <assert.h>
 #include <math.h>
 
-#include <arpa/inet.h>
-
 #include "config.h"
 #include "current.h"
 #include "debug.h"

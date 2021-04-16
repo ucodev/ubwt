@@ -31,8 +31,6 @@
 
 #include <sys/types.h>
 
-#include <arpa/inet.h>
-
 #include "bitops.h"
 #include "config.h"
 #include "current.h"

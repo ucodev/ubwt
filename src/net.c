@@ -394,7 +394,7 @@ static void _net_connector_stop(void) {
 void net_init(void) {
 #ifdef COMPILE_WIN32
 	WORD wVer;
-	WSADATA wsaData
+	WSADATA wsaData;
 
 	wVer = MAKEWORD(2, 2);
 

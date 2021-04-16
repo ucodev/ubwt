@@ -26,8 +26,6 @@
 #include <errno.h>
 
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netdb.h>
 
 #if !defined(__GNUC__) && !defined(__clang__)
 #include <stdnoreturn.h>

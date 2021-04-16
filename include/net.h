@@ -33,7 +33,7 @@
  #include <windows.h>
  #include <ws2tcpip.h>
 
- typedef SOCKET sock_t
+ typedef SOCKET sock_t;
 #else
  #include <sys/socket.h>
 

@@ -1,0 +1,67 @@
+# Project: ubwt
+# Makefile created by Embarcadero Dev-C++ 6.3
+
+CPP      = g++.exe
+CC       = gcc.exe
+WINDRES  = windres.exe
+OBJ      = ../src/bitops.o ../src/config.o ../src/current.o ../src/datetime.o ../src/debug.o ../src/error.o ../src/main.o ../src/net.o ../src/process.o ../src/report.o ../src/runtime.o ../src/stage.o ../src/talk.o ../src/usage.o
+LINKOBJ  = ../src/bitops.o ../src/config.o ../src/current.o ../src/datetime.o ../src/debug.o ../src/error.o ../src/main.o ../src/net.o ../src/process.o ../src/report.o ../src/runtime.o ../src/stage.o ../src/talk.o ../src/usage.o
+LIBS     = -L"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib" -L"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/lib" -static-libgcc -lws2_32
+INCS     = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include" -I"../include"
+CXXINCS  = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include/c++" -I"../include"
+BIN      = ubwt.exe
+CXXFLAGS = $(CXXINCS) 
+CFLAGS   = $(INCS) -DCOMPILE_WIN32
+DEL      = C:\Program Files (x86)\Embarcadero\Dev-Cpp\devcpp.exe INTERNAL_DEL
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${DEL} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CC) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+../src/bitops.o: ../src/bitops.c
+	$(CC) -c ../src/bitops.c -o ../src/bitops.o $(CFLAGS)
+
+../src/config.o: ../src/config.c
+	$(CC) -c ../src/config.c -o ../src/config.o $(CFLAGS)
+
+../src/current.o: ../src/current.c
+	$(CC) -c ../src/current.c -o ../src/current.o $(CFLAGS)
+
+../src/datetime.o: ../src/datetime.c
+	$(CC) -c ../src/datetime.c -o ../src/datetime.o $(CFLAGS)
+
+../src/debug.o: ../src/debug.c
+	$(CC) -c ../src/debug.c -o ../src/debug.o $(CFLAGS)
+
+../src/error.o: ../src/error.c
+	$(CC) -c ../src/error.c -o ../src/error.o $(CFLAGS)
+
+../src/main.o: ../src/main.c
+	$(CC) -c ../src/main.c -o ../src/main.o $(CFLAGS)
+
+../src/net.o: ../src/net.c
+	$(CC) -c ../src/net.c -o ../src/net.o $(CFLAGS)
+
+../src/process.o: ../src/process.c
+	$(CC) -c ../src/process.c -o ../src/process.o $(CFLAGS)
+
+../src/report.o: ../src/report.c
+	$(CC) -c ../src/report.c -o ../src/report.o $(CFLAGS)
+
+../src/runtime.o: ../src/runtime.c
+	$(CC) -c ../src/runtime.c -o ../src/runtime.o $(CFLAGS)
+
+../src/stage.o: ../src/stage.c
+	$(CC) -c ../src/stage.c -o ../src/stage.o $(CFLAGS)
+
+../src/talk.o: ../src/talk.c
+	$(CC) -c ../src/talk.c -o ../src/talk.o $(CFLAGS)
+
+../src/usage.o: ../src/usage.c
+	$(CC) -c ../src/usage.c -o ../src/usage.o $(CFLAGS)
