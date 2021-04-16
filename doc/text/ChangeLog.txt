@@ -1,3 +1,8 @@
+v0.04b-dev
+
+ - Changed win32 compilation flags
+
+
 v0.04a-dev
 
  - Minor documentation fixes

@@ -9,7 +9,7 @@ Libs=
 PrivateResource=
 ResourceIncludes=
 MakeIncludes=
-Compiler=-DCOMPILE_WIN32_@@_
+Compiler=-DCOMPILE_WIN32=1_@@_-DUBWT_CONFIG_DEBUG=1_@@_-DUBWT_CONFIG_NET_REUSE_ADDRESS=1_@@_-DUBWT_CONFIG_NET_USE_SETSOCKOPT=1_@@_
 CppCompiler=
 Linker=-lws2_32_@@_
 IsCpp=0
