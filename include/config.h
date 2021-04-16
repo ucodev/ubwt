@@ -3,6 +3,8 @@
     ubwt - uCodev Bandwidth Tester
     Copyright (C) 2021  Pedro A. Hortas <pah@ucodev.org>
 
+    This file is part of ubwt - uCodev Bandwidth Tester
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -26,8 +28,7 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.02c-dev"
-#define UBWT_CONFIG_DEBUG				1
+#define UBWT_CONFIG_VERSION_STR				"0.03a-dev"
 #define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120
@@ -35,8 +36,6 @@
 #define UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END		20
 #define UBWT_CONFIG_NET_MTU				1500
 #define UBWT_CONFIG_NET_LISTEN_BACKLOG			10
-#define UBWT_CONFIG_NET_REUSE_ADDRESS			1
-#define UBWT_CONFIG_NET_REUSE_PORT			1
 #define UBWT_CONFIG_NET_L2_HEADER_SIZE			26		/* Ethernet (no trailers) */
 #define UBWT_CONFIG_NET_L3_IPV4_HEADER_SIZE		20		/* IPv4 (minimum) */
 #define UBWT_CONFIG_NET_L3_IPV6_HEADER_SIZE		40		/* IPv6 (minimum) */
@@ -54,12 +53,33 @@
 #define UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE		8192
 #define UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME		2
 
-//#define UBWT_NO_PRAGMA_PACK 1
-//
+/* uConf */
+//#define UBWT_CONFIG_DEBUG				1
+//#define UBWT_CONFIG_NO_PRAGMA_PACK			1
+//#define UBWT_CONFIG_NET_REUSE_ADDRESS			1
+//#define UBWT_CONFIG_NET_REUSE_PORT			1
+//#define UBWT_CONFIG_NET_USE_SETSOCKOPT		1
+
 #if defined(UBWT_CONFIG_DEBUG) && (UBWT_CONFIG_DEBUG == 0)
  #undef UBWT_CONFIG_DEBUG
 #endif
 
+#if defined(UBWT_CONFIG_NO_PRAGMA_PACK) && (UBWT_CONFIG_NO_PRAGMA_PACK == 0)
+ #undef UBWT_CONFIG_NO_PRAGMA_PACK
+#endif
+
+#if defined(UBWT_CONFIG_NET_REUSE_ADDRESS) && (UBWT_CONFIG_NET_REUSE_ADDRESS == 0)
+ #undef UBWT_CONFIG_NET_REUSE_ADDRESS
+#endif
+
+#if defined(UBWT_CONFIG_NET_REUSE_PORT) && (UBWT_CONFIG_NET_REUSE_PORT == 0)
+ #undef UBWT_CONFIG_NET_REUSE_PORT
+#endif
+
+#if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && (UBWT_CONFIG_NET_USE_SETSOCKOPT == 0)
+ #undef UBWT_CONFIG_NET_USE_SETSOCKOPT
+#endif
+/* !uConf */
 
 struct ubwt_config {
 	unsigned int im_connector;

@@ -3,6 +3,8 @@
     ubwt - uCodev Bandwidth Tester
     Copyright (C) 2021  Pedro A. Hortas <pah@ucodev.org>
 
+    This file is part of ubwt - uCodev Bandwidth Tester
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -25,14 +27,26 @@
 #include <stdint.h>
 
 #include <sys/types.h>
-#include <sys/socket.h>
 
-#include <arpa/inet.h>
+#ifdef COMPILE_WIN32
+ #include <winsock2.h>
+ #include <windows.h>
+ #include <ws2tcpip.h>
+
+ typedef SOCKET sock_t
+#else
+ #include <sys/socket.h>
+
+ #include <arpa/inet.h>
+ #include <netdb.h>
+
+ #include <netinet/in.h>
+
+ typedef int sock_t;
+#endif
 
 #define net_im_connector() current->config.im_connector
 #define net_im_listener() current->config.im_listener
-
-typedef int sock_t;
 
 #if defined(__clang__) && !defined(__cplusplus)
 #define net_htonll(hostlonglong) 	(*(unsigned char *) (unsigned int [1]) { 1 }) ? ((uint64_t) htonl(((uint32_t *) &((uint64_t [1]) { (hostlonglong) }[0]))[0]) << 32) | htonl(((uint32_t *) &((uint64_t [1]) { (hostlonglong) }[0]))[1]) : (hostlonglong)

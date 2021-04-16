@@ -3,6 +3,8 @@
     ubwt - uCodev Bandwidth Tester
     Copyright (C) 2021  Pedro A. Hortas <pah@ucodev.org>
 
+    This file is part of ubwt - uCodev Bandwidth Tester
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -23,12 +25,12 @@
 
 #include <stdint.h>
 
-#ifndef UBWT_NO_PRAGMA_PACK
+#ifndef UBWT_CONFIG_NO_PRAGMA_PACK
  #pragma pack(push)
  #pragma pack(4)
 #endif
 typedef struct
-#ifdef UBWT_NO_PRAGMA_PACK
+#ifdef UBWT_CONFIG_NO_PRAGMA_PACK
 __attribute__ ((packed, aligned(4)))
 #endif
 ubwt_report_collect {
@@ -41,7 +43,7 @@ ubwt_report_collect {
 	uint32_t __reserved2;
 	uint64_t talk_stream_recv_bytes;
 } ubwt_report_collect_t;
-#ifndef UBWT_NO_PRAGMA_PACK
+#ifndef UBWT_CONFIG_NO_PRAGMA_PACK
  #pragma pack(pop)
 #endif
 

@@ -1,0 +1,32 @@
+1. Installation
+
+ The following command will automatically build and install ubwt (privileged user):
+
+   # ./deploy
+
+
+ Alternatively, if you want to only build ubwt and test it without installation (unprivileged user):
+
+   $ ./do
+   $ cd src
+   $ ./ubwt -h
+
+
+ For Raspberry PI deployment, set the build target before any of the commands above:
+
+   $ ./target rpi
+
+
+ You can enable stack protection (when available in the compiler) by run the following command before build or deploying:
+
+   $ ./addon stackprot
+
+
+ If you're building the ubwt on a Cygwin environment, the following command shall be executed before deployment in order to avoid privilege checks during the installation:
+
+   $ touch .nopriv
+   $ touch .nopriv_install
+
+
+ See README.md for usage information
+

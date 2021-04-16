@@ -3,6 +3,8 @@
     ubwt - uCodev Bandwidth Tester
     Copyright (C) 2021  Pedro A. Hortas <pah@ucodev.org>
 
+    This file is part of ubwt - uCodev Bandwidth Tester
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -47,7 +49,9 @@ void usage_show(char *const *argv, int success) {
 		"       -I <msec>           Interval between latency measurements (default: %u msec).\n"
 		"       -m <octets>         Link MTU (default: %u octets).\n"
 		"       -N <iterations>     Number of handshake iterations (default: %u iterations).\n"
+#if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1
 		"       -p <proto>          L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
+#endif
 		"       -P <port>           UDP port to listen/connect to (default: %s).\n"
 		"       -s <octets>         L4 payload size (default: %u).\n"
 		"       -t <seconds>        Minimum stream time (default: %u seconds).\n"

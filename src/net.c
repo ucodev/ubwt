@@ -3,6 +3,8 @@
     ubwt - uCodev Bandwidth Tester
     Copyright (C) 2021  Pedro A. Hortas <pah@ucodev.org>
 
+    This file is part of ubwt - uCodev Bandwidth Tester
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -26,13 +28,6 @@
 
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-
-#include <netdb.h>
-
-#include <arpa/inet.h>
-
-#include <netinet/in.h>
 
 #include "config.h"
 #include "current.h"
@@ -67,6 +62,7 @@ int net_listener_accept(void) {
 }
 
 int net_timeout_set(sock_t fd, time_t timeout) {
+#if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1
 	struct timeval tv = { 0, 0 };
 
 	tv.tv_sec = timeout;
@@ -75,7 +71,7 @@ int net_timeout_set(sock_t fd, time_t timeout) {
 		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_TIMEO_SET, "net_timeout_set(): setsockopt()");
 		return -1;
 	}
-
+#endif
 	return 0;
 }
 
@@ -94,7 +90,11 @@ ssize_t net_read_from_connector(void *buf, size_t len) {
 
 	while (count < (ssize_t) len) {
 		if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+#ifdef COMPILE_WIN32
+			ret = recv(current->net.fd, ((char *) buf + count), len - count, MSG_WAITALL);
+#else
 			ret = read(current->net.fd, ((char *) buf + count), len - count);
+#endif
 		} else {
 			current->net.connector.slen = sizeof(current->net.connector.saddr);
 
@@ -106,7 +106,13 @@ ssize_t net_read_from_connector(void *buf, size_t len) {
 				continue;
 
 			if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+#ifdef COMPILE_WIN32
+				current->error.l_wsaerr = WSAGetLastError();
+
+				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_connector(): recv()");
+#else
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_connector(): read()");
+#endif
 			} else {
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_connector(): recvfrom()");
 			}
@@ -125,7 +131,11 @@ ssize_t net_read_from_listener(void *buf, size_t len) {
 
 	while (count < (ssize_t) len) {
 		if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+#ifdef COMPILE_WIN32
+			ret = recv(current->net.fd, ((char *) buf + count), len - count, MSG_WAITALL);
+#else
 			ret = read(current->net.fd, ((char *) buf + count), len - count);
+#endif
 		} else {
 			current->net.listener.slen = sizeof(current->net.listener.saddr);
 
@@ -137,7 +147,13 @@ ssize_t net_read_from_listener(void *buf, size_t len) {
 				continue;
 
 			if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+#ifdef COMPILE_WIN32
+				current->error.l_wsaerr = WSAGetLastError();
+
+				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_listener(): recv()");
+#else
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_listener(): read()");
+#endif
 			} else {
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_listener(): recvfrom()");
 			}
@@ -156,7 +172,11 @@ ssize_t net_write_to_connector(const void *buf, size_t len) {
 
 	while (count < (ssize_t) len) {
 		if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+#ifdef COMPILE_WIN32
+			ret = send(current->net.fd, ((const char *) buf) + count, len - count, 0);
+#else
 			ret = write(current->net.fd, ((const char *) buf) + count, len - count);
+#endif
 		} else {
 			ret = sendto(current->net.fd, ((const char *) buf) + count, len - count, 0, (struct sockaddr *) &current->net.connector.saddr, current->net.connector.slen);
 		}
@@ -166,7 +186,13 @@ ssize_t net_write_to_connector(const void *buf, size_t len) {
 				continue;
 
 			if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+#ifdef COMPILE_WIN32
+				current->error.l_wsaerr = WSAGetLastError();
+
+				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED, "net_write_to_connector(): send()");
+#else
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED, "net_write_to_connector(): write()");
+#endif
 			} else {
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED, "net_write_to_connector(): sendto()");
 			}
@@ -185,7 +211,11 @@ ssize_t net_write_to_listener(const void *buf, size_t len) {
 
 	while (count < (ssize_t) len) {
 		if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+#ifdef COMPILE_WIN32
+			ret = send(current->net.fd, ((const char *) buf) + count, len - count, 0);
+#else
 			ret = write(current->net.fd, ((const char *) buf) + count, len - count);
+#endif
 		} else {
 			ret = sendto(current->net.fd, ((const char *) buf) + count, len - count, 0 /*MSG_CONFIRM*/, (struct sockaddr *) &current->net.listener.saddr, current->net.listener.slen);
 		}
@@ -195,7 +225,13 @@ ssize_t net_write_to_listener(const void *buf, size_t len) {
 				continue;
 
 			if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+#ifdef COMPILE_WIN32
+				current->error.l_wsaerr = WSAGetLastError();
+
+				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED, "net_write_to_listener(): send()");
+#else
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED, "net_write_to_listener(): write()");
+#endif
 			} else {
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED, "net_write_to_listener(): sendto()");
 			}
@@ -292,15 +328,19 @@ static int _net_listener_start(void) {
 		current->net.listener.slen = rcur->ai_addrlen;
 		memcpy(&current->net.listener.saddr, rcur->ai_addr, rcur->ai_addrlen);
 
+#if defined(UBWT_CONFIG_NET_REUSE_ADDRESS) && UBWT_CONFIG_NET_REUSE_ADDRESS == 1 && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1
 		if (current->config.net_reuseaddr) {
 			if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &current->config.net_reuseaddr, sizeof(current->config.net_reuseaddr)) < 0)
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_REUSEADDR_FAILED, "net_listener_start(): setsockopt()");
 		}
+#endif
 
+#if defined(UBWT_CONFIG_NET_REUSE_PORT) && UBWT_CONFIG_NET_REUSE_PORT == 1 && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1
 		if (current->config.net_reuseport) {
 			if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &current->config.net_reuseport, sizeof(current->config.net_reuseport)) < 0)
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_REUSEPORT_FAILED, "net_listener_start(): setsockopt()");
 		}
+#endif
 
 		if (bind(fd, (struct sockaddr *) &current->net.listener.saddr, current->net.listener.slen) < 0) {
 			close(fd);
@@ -334,15 +374,36 @@ static int _net_listener_start(void) {
 }
 
 static void _net_listener_stop(void) {
+#ifdef COMPILE_WIN32
+	closesocket(current->net.fd);
+	closesocket(current->net.fd_listen);
+#else
 	close(current->net.fd);
 	close(current->net.fd_listen);
+#endif
 }
 
 static void _net_connector_stop(void) {
+#ifdef COMPILE_WIN32
+	closesocket(current->net.fd);
+#else
 	close(current->net.fd);
+#endif
 }
 
 void net_init(void) {
+#ifdef COMPILE_WIN32
+	WORD wVer;
+	WSADATA wsaData
+
+	wVer = MAKEWORD(2, 2);
+
+	if (WSAStartup(wVer, &wsaData)) {
+		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_NET_INIT, "net_init(): WSAStartup()");
+		error_no_return();
+	}
+#endif
+
 	stage_set(UBWT_STAGE_STATE_INIT_NET, 0);
 
 	if ((net_im_listener() ? _net_listener_start() : _net_connector_start()) < 0) {
@@ -360,6 +421,9 @@ void net_destroy(void) {
 		_net_connector_stop();
 	}
 
+#ifdef COMPILE_WIN32
+	WSACleanup();
+#endif
 	memset(&current->net, 0, sizeof(current->net));
 }
 

@@ -1,9 +1,13 @@
-CC=cc
-ECFLAGS=-Wall -Wextra -Werror -O3
-DLFLAGS=-lm
+CC=`cat ../.compiler`
+ECFLAGS=`cat ../.ecflags`
+CCFLAGS=-O2
+LDFLAGS=
+ELFLAGS=`cat ../.elflags`
+ARCHFLAGS=`cat ../.archflags`
 INCLUDEDIRS=-I../include
 OBJS=bitops.o config.o current.o datetime.o debug.o error.o main.o net.o process.o report.o runtime.o stage.o talk.o usage.o
 TARGET=ubwt
+SYSSBINDIR=`cat ../.dirsbin`
 
 all:
 	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c bitops.c
@@ -20,7 +24,13 @@ all:
 	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c stage.c
 	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c talk.c
 	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c usage.c
-	${CC} -o ${TARGET} ${OBJS} ${DLFLAGS}
+	${CC} -o ${TARGET} ${OBJS} ${LDFLAGS} ${ELFLAGS}
+
+install:
+	cp ${TARGET} ${SYSSBINDIR}/
+
+uninstall:
+	rm ${SYSSBINDIR}/${TARGET}
 
 clean:
 	rm -f ${TARGET} ${OBJS}

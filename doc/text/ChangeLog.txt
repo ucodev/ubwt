@@ -1,0 +1,45 @@
+v0.03a-dev
+
+ - Integrated uConf for auto-configuration
+
+
+v0.02c-dev
+
+ - Minor error condition traceback fix
+
+
+v0.02b-dev
+
+ - Included a delay before reverse testing initiates
+ - Added finish talk stage
+
+
+v0.02a-dev
+
+ - New command line usage
+ - Renamed some internal interfaces for clarity between connectors/listeners and senders/receivers
+ - Added support for bidirectional testing
+
+
+v0.01d-dev
+
+ - Included floating point precision to bandwidth results
+ - Included socket options for address and port reusage
+
+
+v0.01c-dev
+
+ - Included TCP support (default proto)
+
+
+v0.01b-dev
+
+ - Added per-OS errno configuration (Issue #2 and #3)
+
+ - Added missing header netinet/in.h in src/net.c (Issue #2)
+
+ - Increased l4 proto name buffer (config.h) to avoid warnings on some
+   compilers (Issue #1): There is no undefined behaviour with the previous
+   value, but some compilers are too sensitive and they are not looking
+   ahead to find out that the string is being NULL-terminated correctly.
+

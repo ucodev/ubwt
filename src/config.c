@@ -3,6 +3,8 @@
     ubwt - uCodev Bandwidth Tester
     Copyright (C) 2021  Pedro A. Hortas <pah@ucodev.org>
 
+    This file is part of ubwt - uCodev Bandwidth Tester
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -70,7 +72,11 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 #ifdef UBWT_CONFIG_DEBUG
 		"d"
 #endif
-		"bFhI:l:m:N:p:P:s:t:vw:";
+		"bFhI:l:m:N:"
+#if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1 && !defined(COMPILE_WIN32)
+		"p:"
+#endif
+		"P:s:t:vw:";
 
 	while ((opt = getopt(argc, argv, flags)) != -1) {
 		switch (opt) {
@@ -114,8 +120,10 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 
 				if (!strcmp(optarg, "tcp")) {
 					current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_TCP;
+#if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1 && !defined(COMPILE_WIN32)
 				} else if (!strcmp(optarg, "udp")) {
 					current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_UDP;
+#endif
 				} else {
 					usage_show(argv, 0);
 					error_no_return();

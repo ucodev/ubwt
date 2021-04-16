@@ -3,6 +3,8 @@
     ubwt - uCodev Bandwidth Tester
     Copyright (C) 2021  Pedro A. Hortas <pah@ucodev.org>
 
+    This file is part of ubwt - uCodev Bandwidth Tester
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -38,12 +40,12 @@ typedef enum UBWT_TALK_OPS {
 	UBWT_TALK_OP_FORCE_FAIL
 } ubwt_talk_ops_t;
 
-#ifndef UBWT_NO_PRAGMA_PACK
+#ifndef UBWT_CONFIG_NO_PRAGMA_PACK
  #pragma pack(push)
  #pragma pack(4)
 #endif
 typedef struct
-#ifdef UBWT_NO_PRAGMA_PACK
+#ifdef UBWT_CONFIG_NO_PRAGMA_PACK
 __attribute__ ((packed, aligned(4)))
 #endif
 ubwt_talk_payload {
@@ -53,7 +55,7 @@ ubwt_talk_payload {
 	uint32_t __reserved;
 	uint8_t buf[UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE - 16];
 } ubwt_talk_payload_t;
-#ifndef UBWT_NO_PRAGMA_PACK
+#ifndef UBWT_CONFIG_NO_PRAGMA_PACK
  #pragma pack(pop)
 #endif
 

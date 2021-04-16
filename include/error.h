@@ -3,6 +3,8 @@
     ubwt - uCodev Bandwidth Tester
     Copyright (C) 2021  Pedro A. Hortas <pah@ucodev.org>
 
+    This file is part of ubwt - uCodev Bandwidth Tester
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -82,6 +84,9 @@ typedef enum UBWT_ERROR_LEVELS {
 typedef struct ubwt_error {
 	int l_errno;
 	int l_eai;
+#ifdef COMPILE_WIN32
+	int l_wsaerr;
+#endif
 } ubwt_error_t;
 
 void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char *origin);

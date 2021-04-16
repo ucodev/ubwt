@@ -3,6 +3,8 @@
     ubwt - uCodev Bandwidth Tester
     Copyright (C) 2021  Pedro A. Hortas <pah@ucodev.org>
 
+    This file is part of ubwt - uCodev Bandwidth Tester
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -25,12 +27,17 @@
 
 #include <sys/time.h>
 
-#include "error.h"
+#include "config.h"
 #include "datetime.h"
+#include "error.h"
 
 uint64_t datetime_now_us(void) {
 	struct timeval tv = { 0, 0 };
 	uint64_t t_us = 0;
+
+#ifdef COMPILE_WIN32
+	_tzset();
+#endif
 
 	if (gettimeofday(&tv, NULL) < 0) {
 		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TIME_GET, "time_now_us(): gettimeofday()");
@@ -43,14 +50,24 @@ uint64_t datetime_now_us(void) {
 }
 
 char *datetime_now_str(char *buf) {
-	time_t t = time(NULL);
+	time_t t;
+
+#ifdef COMPILE_WIN32
+	_tzset();
+#endif
+
+	t = time(NULL);
 
 	if (t == (time_t) -1) {
 		buf[0] = 0;
 		return NULL;
 	}
 
+#ifdef COMPILE_WIN32
+	if (!ctime_s(buf, UBWT_CONFIG_CTIME_SIZE, &t)) {
+#else
 	if (!ctime_r(&t, buf)) {
+#endif
 		buf[0] = 0;
 		return NULL;
 	}

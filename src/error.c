@@ -3,6 +3,8 @@
     ubwt - uCodev Bandwidth Tester
     Copyright (C) 2021  Pedro A. Hortas <pah@ucodev.org>
 
+    This file is part of ubwt - uCodev Bandwidth Tester
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -34,6 +36,7 @@
 #include "current.h"
 #include "datetime.h"
 #include "error.h"
+#include "net.h"
 
 static const char *__errors[] = {
 	"[%s]: ERROR: %s: No error: %s: %s\n",
@@ -92,8 +95,11 @@ static void _error_post_nonfatal(void) {
 }
 
 void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char *origin) {
-	char time_str[32] = { 0 }, level_str[16] = { 0 };
+	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 }, level_str[16] = { 0 };
 	void (*post_process) (void) = &_error_post_fatal;
+#ifdef COMPILE_WIN32
+	char wsaerr_str[32] = { 0 };
+#endif
 
 	current->error.l_errno = errno;
 
@@ -125,7 +131,19 @@ void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char 
 	}
 
 	if (level >= current->config.error_log_min_level) {
+#ifdef COMPILE_WIN32
+		if (current->error.l_wsaerr) {
+			memset(wsaerr_str, 0, sizeof(wsaerr_str));
+
+			snprintf(wsaerr_str, sizeof(wsaerr_str) - 1, "%ld", current->error.l_wsaerr);
+
+			fprintf(stderr, __errors[type], time_str, level_str, origin ? origin : "unknown_origin", wsaerr_str);
+		} else {
+			fprintf(stderr, __errors[type], time_str, level_str, origin ? origin : "unknown_origin", current->error.l_eai ? gai_strerror(current->error.l_eai) : strerror(current->error.l_errno));
+		}
+#else
 		fprintf(stderr, __errors[type], time_str, level_str, origin ? origin : "unknown_origin", current->error.l_eai ? gai_strerror(current->error.l_eai) : strerror(current->error.l_errno));
+#endif
 	}
 
 	post_process();
