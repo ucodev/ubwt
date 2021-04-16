@@ -1,3 +1,8 @@
+v0.02c-dev
+
+ - Minor error condition traceback fix
+
+
 v0.02b-dev
 
  - Included a delay before reverse testing initiates

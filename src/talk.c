@@ -581,9 +581,11 @@ static int _talk_sender_finish(void) {
 
 		/* Not critical */
 		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_TALK_SEND_FAILED, "_talk_sender_finish(): _talk_send()");
-	} else {
-		debug_info_talk_op(UBWT_TALK_OP_FINISH, "SENT");
+
+		return -1;
 	}
+
+	debug_info_talk_op(UBWT_TALK_OP_FINISH, "SENT");
 
 	return 0;
 }
@@ -600,11 +602,19 @@ static int _talk_receiver_finish(void) {
 
 		/* Not critical */
 		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_TALK_RECV_FAILED, "_talk_receiver_finish(): _talk_recv()");
-	} else if (bit_test(&p.flags, UBWT_TALK_OP_FINISH)) {
+
+		return -1;
+	}
+
+	if (bit_test(&p.flags, UBWT_TALK_OP_FINISH)) {
 		debug_info_talk_op(UBWT_TALK_OP_FINISH, "RECV");
 	} else {
 		/* Not critical */
 		debug_info_talk_op(UBWT_TALK_OP_FINISH, "MISS");
+
+		errno = UBWT_ERROR_MSG_UNEXPECTED;
+
+		return -1;
 	}
 
 	return 0;

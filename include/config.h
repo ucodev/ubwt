@@ -26,7 +26,7 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.02b-dev"
+#define UBWT_CONFIG_VERSION_STR				"0.02c-dev"
 #define UBWT_CONFIG_DEBUG				1
 #define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
