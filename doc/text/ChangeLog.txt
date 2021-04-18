@@ -1,3 +1,9 @@
+v0.04c-dev
+
+ - Updated README.md
+ - Added ubwt.8 manual page
+
+
 v0.04b-dev
 
  - Changed win32 compilation flags

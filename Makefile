@@ -8,6 +8,10 @@ clean:
 install:
 	cd src && make install && cd ..
 
+install_doc:
+	cd doc && make && make install && cd ..
+
+
 uninstall:
 	cd src && make uninstall && cd ..
 

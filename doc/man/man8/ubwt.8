@@ -1,0 +1,73 @@
+.\" This file is part of the uCodev Bandwidth Tester (ubwt) project (https://www.ucodev.org)
+.TH UBWT "8" "April 2021" "uCodev Bandwidth Tester" "User Commands"
+.SH NAME
+ubwt \- uCodev Bandwidth Tester
+.SH SYNOPSIS
+.B ubwt
+[ \fIOPTIONS\fR ] { \fIconnector\fR | \fIlisterner\fR } { \fIHOSTNAME\fR | \fIIPv4\fR | \fIIPv6\fR }
+.SH DESCRIPTION
+.PP
+The \fBubwt\fR(8) (uCodev Bandwidth Tester) is a command line binary utility designed to perform network bandwidth testing. It allows unidirectional and bidirectional testing, providing a summary of the network bandwidth capabilities.
+.PP
+.PP
+The available command line OPTIONS are:
+.PP
+.TP
+\fB\-d\fR
+Enable debugging.
+.TP
+\fB\-b\fR
+Perform a bi-directional test.
+.TP
+\fB\-F\fR
+Enable full/extended reporting.
+.TP
+\fB\-h\fR
+Prints the help.
+.TP
+\fB\-I\fR \fImsec\fR
+Interval between latency measurements (default: 1 msec).
+.TP
+\fB\-m\fR \fIoctets\fR
+Link MTU (default: 1500 octets).
+.TP
+\fB\-N\fR \fIiterations\fR
+Number of handshake iterations (default: 20 iterations).
+.TP
+\fB\-p\fR \fIprotocol\fR
+L4 protocol: 'tcp' or 'udp' (default: tcp).
+.TP
+\fB\-P\fR \fIport\fR
+TCP or UDP port to listen/connect to (default: 19991).
+.TP
+\fB\-s\fR \fIoctets\fR
+L4 payload size (default: 1432).
+.TP
+\fB\-t\fR \fIseconds\fR
+Minimum stream time (default: 2 seconds).
+.TP
+\fB\-v\fR
+Display version information.
+.TP
+\fB\-w\fR \fIseconds\fR
+Connection timeout (default: 120 seconds).
+.SH EXAMPLE
+.TP
+alice@serv.my.lan ~ $ ubwt listener 0.0.0.0
+.TP
+bob@client.my.lan ~ $ ubwt connector serv.my.lan
+.SH AUTHOR
+Written by Pedro A. Hortas (pah@ucodev.org).
+.SH "REPORTING BUGS"
+Report ubwt bugs to \fIpah@ucodev.org\fR
+.SH COPYRIGHT
+.PP
+Copyright \(co 2021  Pedro A. Hortas (pah@ucodev.org)
+.PP
+License: GNU GPL version 3 or later <http://gplv3.fsf.org/>
+.PP
+This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+.PP
+.SH "SEE ALSO"
+\fBiptraf\fR(8)
+.PP
