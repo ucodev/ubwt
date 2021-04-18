@@ -1,3 +1,8 @@
+v0.04d-dev
+
+ - Updated command line usage wording
+
+
 v0.04c-dev
 
  - Updated README.md

@@ -50,9 +50,9 @@ void usage_show(char *const *argv, int success) {
 		"       -m <octets>         Link MTU (default: %u octets).\n"
 		"       -N <iterations>     Number of handshake iterations (default: %u iterations).\n"
 #if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1
-		"       -p <proto>          L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
+		"       -p <protocol>       L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
 #endif
-		"       -P <port>           UDP port to listen/connect to (default: %s).\n"
+		"       -P <port>           TCP or UDP port to listen/connect to (default: %s).\n"
 		"       -s <octets>         L4 payload size (default: %u).\n"
 		"       -t <seconds>        Minimum stream time (default: %u seconds).\n"
 		"       -v                  Display version information.\n"
