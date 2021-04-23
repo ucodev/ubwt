@@ -42,7 +42,7 @@
 uint64_t __current_time_us;
 struct ubwt_current __current;
 
-#if !defined(UBWT_CONFIG_MULTI_THREADED)
+#ifndef UBWT_CONFIG_MULTI_THREADED
 struct ubwt_current *current = &__current;
 #else
 struct ubwt_current *current_get(ubwt_worker_t worker_id) {
@@ -51,34 +51,32 @@ struct ubwt_current *current_get(ubwt_worker_t worker_id) {
 	do {
 		if (c->worker_id == worker_id)
 			return c;
-	} while ((c = current->next));
+	} while ((c = c->next));
 
-	abort();
+	error_abort(__FILE__, __LINE__, "current_get");
 
-	error_no_return();
-
-	return &__current;
+	return NULL;
 }
 #endif
 
 void current_init(void) {
 	memset(&__current, 0, sizeof(struct ubwt_current));
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	__current.worker_id = worker_self();
+
+	__current.worker_barrier_global = __worker_barrier_global;
+	__current.worker_mutex_global = &__worker_mutex_global;
+#endif
+
+	__current.config = &__config;
+	memset(__current.config, 0, sizeof(struct ubwt_config));
+
 	stage_set(UBWT_STAGE_STATE_INIT_CURRENT, 0);
 
-	current->time_us = &__current_time_us;
-	*current->time_us = datetime_now_us();
+	__current.time_us = &__current_time_us;
 
-	current->config = &__config;
-	memset(current->config, 0, sizeof(struct ubwt_config));
-
-#ifdef UBWT_CONFIG_MULTI_THREADED
-	current->worker_id = worker_self();
-
-	current->worker_barrier_sf = &__worker_barrier_straight_first;
-	current->worker_barrier_rf = &__worker_barrier_reverse_first;
-	current->worker_mutex_global = &__worker_mutex_global;
-#endif
+	*__current.time_us = datetime_now_us();
 }
 
 void current_update(void) {
@@ -103,6 +101,8 @@ void current_fork(void) {
 	c->time_us = __current.time_us;
 
 	c->worker_id = worker_self();
+
+	if (pthread_mutex_init(&c->worker_mutex_local, NULL)) error_abort(__FILE__, __LINE__, "pthread_mutex_init");
 
 	c->prev = &__current;
 	c->next = __current.next;

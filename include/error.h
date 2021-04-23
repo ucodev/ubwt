@@ -25,6 +25,10 @@
 
 #include <errno.h>
 
+#if !defined(__GNUC__) && !defined(__clang__)
+ #include <stdnoreturn.h>
+#endif
+
 #define error_no_return() for (;;)
 
 /* Per-OS errno */
@@ -92,6 +96,16 @@ typedef struct ubwt_error {
 } ubwt_error_t;
 
 void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char *origin);
+#if !defined(__GNUC__) && !defined(__clang__)
+_Noreturn
+#endif
+void error_abort(const char *file, int line, const char *func)
+#if defined(__GNUC__) || defined(__clang__)
+	__attribute__((noreturn));
+#else
+	;
+#endif
+
 
 #endif
 

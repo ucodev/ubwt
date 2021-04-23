@@ -1,3 +1,8 @@
+v0.05b-dev
+
+ - Minor refactoring
+
+
 v0.05a-dev
 
  - Included support for GNU/Hurd

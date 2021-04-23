@@ -28,15 +28,33 @@
 #ifdef UBWT_CONFIG_MULTI_THREADED
 #include <pthread.h>
 
+typedef enum UBWT_WORKER_TASK_TYPES {
+	UBWT_WORKER_TASK_TYPE_INT = 1,
+	UBWT_WORKER_TASK_TYPE_VOID
+} ubwt_worker_task_type_t;
+
 typedef pthread_t ubwt_worker_t;
 typedef pthread_barrier_t ubwt_worker_barrier_t;
 typedef pthread_mutex_t ubwt_worker_mutex_t;
 
-extern ubwt_worker_barrier_t __worker_barrier_straight_first;
-extern ubwt_worker_barrier_t __worker_barrier_reverse_first;
+typedef struct ubwt_worker_task {
+	ubwt_worker_task_type_t type;
+
+	union {
+		void (*fi) (int);
+		void (*fv) (void *);
+	};
+
+	union {
+		int vi;
+		void *vv;
+	};
+} ubwt_worker_task_t;
+
+extern ubwt_worker_barrier_t __worker_barrier_global[2];
 extern ubwt_worker_mutex_t   __worker_mutex_global;
 
-void worker_create(void *f);
+void worker_create(ubwt_worker_task_t *t);
 void worker_exit(void);
 void worker_wait(ubwt_worker_barrier_t *barrier);
 void worker_lock(ubwt_worker_mutex_t *mutex);
@@ -44,6 +62,7 @@ void worker_trylock(ubwt_worker_mutex_t *mutex);
 void worker_unlock(ubwt_worker_mutex_t *mutex);
 ubwt_worker_t worker_self(void);
 int worker_im_cancelled(void);
+int worker_is_joinable(ubwt_worker_t tid);
 void worker_cancel(ubwt_worker_t worker_id);
 void worker_join(ubwt_worker_t worker_id);
 #endif

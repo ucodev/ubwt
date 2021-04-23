@@ -198,7 +198,7 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 void config_init(int argc, char *const *argv) {
 	stage_set(UBWT_STAGE_STATE_INIT_CONFIG, 0);
 
-	memset(&current->config, 0, sizeof(current->config));
+	memset(current->config, 0, sizeof(struct ubwt_config));
 
 	current->config->error_log_min_level = UBWT_ERROR_LEVEL_CRITICAL;
 
@@ -248,6 +248,11 @@ void config_init(int argc, char *const *argv) {
 	current->config->talk_payload_max_size = UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE;
 
 	current->config->talk_stream_minimum_time = UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME;
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	current->config->worker_straight_first_count = 1;
+	current->config->worker_reverse_first_count = 1;
+#endif
 
 	_config_cmdopt_process(argc, argv);
 

@@ -452,6 +452,8 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	t = datetime_now_us();
 
+	report_talk_stream_time_start_set(t);
+
 	for (i = 0; i < count; i ++) {
 		if ((ret = _talk_recv(&p)) < 0)
 			break; /* NOTE: Timeout (likely...) */
@@ -466,7 +468,7 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	/* Store report data */
 
-	report_talk_stream_time_set(t);
+	report_talk_stream_time_duration_set(t);
 	report_talk_stream_recv_pkts_set(i);
 	report_talk_stream_recv_bytes_set(len);
 

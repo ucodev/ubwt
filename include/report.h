@@ -37,10 +37,12 @@ ubwt_report_collect {
 	/* Collected data */
 	uint32_t talk_latency_us;
 	uint32_t talk_count;
-	uint32_t talk_stream_time;
 	uint32_t talk_stream_recv_pkts;
 	uint32_t __reserved1;
 	uint32_t __reserved2;
+	uint32_t __reserved3;
+	uint64_t talk_stream_time_duration; /* Duration of stream run (usec) */
+	uint64_t talk_stream_time_start; /* Start time of stream run (UNIX time in usec) */
 	uint64_t talk_stream_recv_bytes;
 } ubwt_report_collect_t;
 #ifndef UBWT_CONFIG_NO_PRAGMA_PACK
@@ -79,8 +81,10 @@ void report_talk_latency_show(void);
 void report_talk_count_set(uint32_t count);
 uint32_t report_talk_count_get(void);
 void report_talk_count_show(void);
-void report_talk_stream_time_set(uint64_t t);
-uint64_t report_talk_stream_time_get(void);
+void report_talk_stream_time_start_set(uint64_t t);
+uint64_t report_talk_stream_time_start_get(void);
+void report_talk_stream_time_duration_set(uint64_t t);
+uint64_t report_talk_stream_time_duration_get(void);
 void report_talk_stream_recv_pkts_set(uint64_t recv_pkts);
 uint64_t report_talk_stream_recv_pkts_get(void);
 void report_talk_stream_recv_bytes_set(uint64_t recv_bytes);

@@ -59,10 +59,12 @@ struct ubwt_current {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	ubwt_worker_t worker_id;
 
-	ubwt_worker_barrier_t *worker_barrier_sf, *worker_barrier_rf;
+	ubwt_worker_barrier_t *worker_barrier_global;
 	ubwt_worker_mutex_t *worker_mutex_global;
+	ubwt_worker_mutex_t worker_mutex_local;
 
 	uint8_t worker_cancel_requested;
+	uint8_t worker_cancel_completed;
 
 	struct ubwt_current *next, *prev;
 #endif

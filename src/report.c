@@ -81,12 +81,20 @@ void report_talk_count_show(void) {
 	/* TODO: stdout progress presentation */
 }
 
-void report_talk_stream_time_set(uint64_t t) {
-	current->report.result->collected.talk_stream_time = t;
+void report_talk_stream_time_start_set(uint64_t t) {
+	current->report.result->collected.talk_stream_time_start = t;
 }
 
-uint64_t report_talk_stream_time_get(void) {
-	return current->report.result->collected.talk_stream_time;
+uint64_t report_talk_stream_time_start_get(void) {
+	return current->report.result->collected.talk_stream_time_start;
+}
+
+void report_talk_stream_time_duration_set(uint64_t t) {
+	current->report.result->collected.talk_stream_time_duration = t;
+}
+
+uint64_t report_talk_stream_time_duration_get(void) {
+	return current->report.result->collected.talk_stream_time_duration;
 }
 
 void report_talk_stream_recv_pkts_set(uint64_t recv_pkts) {
@@ -142,7 +150,8 @@ void report_marshal(void *storage, size_t len) {
 
 	r->talk_latency_us = htonl(current->report.result->collected.talk_latency_us);
 	r->talk_count = htonl(current->report.result->collected.talk_count);
-	r->talk_stream_time = htonl(current->report.result->collected.talk_stream_time);
+	r->talk_stream_time_start = net_htonll(current->report.result->collected.talk_stream_time_start);
+	r->talk_stream_time_duration = net_htonll(current->report.result->collected.talk_stream_time_duration);
 	r->talk_stream_recv_pkts = htonl(current->report.result->collected.talk_stream_recv_pkts);
 	r->talk_stream_recv_bytes = net_htonll(current->report.result->collected.talk_stream_recv_bytes);
 }
@@ -154,7 +163,8 @@ void report_unmarshal(const void *storage, size_t len) {
 
 	current->report.result->collected.talk_latency_us = ntohl(r->talk_latency_us);
 	current->report.result->collected.talk_count = ntohl(r->talk_count);
-	current->report.result->collected.talk_stream_time = ntohl(r->talk_stream_time);
+	current->report.result->collected.talk_stream_time_start = net_ntohll(r->talk_stream_time_start);
+	current->report.result->collected.talk_stream_time_duration = net_ntohll(r->talk_stream_time_duration);
 	current->report.result->collected.talk_stream_recv_pkts = ntohl(r->talk_stream_recv_pkts);
 	current->report.result->collected.talk_stream_recv_bytes = net_ntohll(r->talk_stream_recv_bytes);
 }
@@ -177,11 +187,11 @@ void report_results_compute(void) {
 		((double) ((report_talk_stream_recv_bytes_get() + 
 		(current->report.result->computed.total_pkts *
 			current->report.result->computed.hdr_size)) * 8) / 1000000.0)
-		/ (((double) report_talk_stream_time_get()) / 1000000.0);
+		/ (((double) report_talk_stream_time_duration_get()) / 1000000.0);
 
 	current->report.result->computed.bandwidth_effective_mbps =
 		((double) (report_talk_stream_recv_bytes_get() * 8) / 1000000.0)
-		/ (((double) report_talk_stream_time_get()) / 1000000.0);
+		/ (((double) report_talk_stream_time_duration_get()) / 1000000.0);
 
 	current->report.result->computed.bandwidth_theoretical_mbps =
 		_report_bandwidth_theoretical_mbps(current->report.result->computed.bandwidth_effective_mbps);
@@ -207,7 +217,7 @@ void report_results_show(void) {
 		fprintf(stdout, "L4 Protocol                         : %s\n", current->config->net_l4_proto_name);
 		fprintf(stdout, "Requested L4 payload size           : %" PRIu16 " octets\n", current->config->talk_payload_current_size);
 		fprintf(stdout, "Estimated headers size              : %zu octets\n", current->report.result->computed.hdr_size);
-		fprintf(stdout, "Transmission time                   : %.4f s\n", report_talk_stream_time_get() / (double) 1000000.0);
+		fprintf(stdout, "Transmission time                   : %.4f s\n", report_talk_stream_time_duration_get() / (double) 1000000.0);
 		fprintf(stdout, "Total L4 packets expected           : %" PRIu32 "\n", report_talk_count_get());
 		fprintf(stdout, "Total L4 packets transfered         : %" PRIu64 "\n", report_talk_stream_recv_pkts_get());
 		fprintf(stdout, "Total L4 octets transfered          : %" PRIu64 "\n", report_talk_stream_recv_bytes_get());

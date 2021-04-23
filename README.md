@@ -21,7 +21,7 @@ See [LICENSE](https://github.com/ucodev/ubwt/blob/main/doc/text/LICENSE)
 
 ## Portability
 
-ubwt is designed to be compliant with any POSIX-based operating system. It was successfully tested under **Linux**, **GNU Hurd**, **FreeBSD**, **OpenBSD**, **SunOS**, **Minix** and **Darwin**. Microsoft Windows operating systems are not officially supported by ubwt - but they will, in a near future.
+ubwt is designed to be compliant with any POSIX-based operating system. It was successfully tested under **GNU Linux**, **GNU Hurd**, **FreeBSD**, **OpenBSD**, **SunOS**, **Minix** and **Darwin**. Microsoft Windows operating systems are not officially supported by ubwt - but they will, in a near future.
 
 Also, ubwt is architecture independent - it was also successfully tested under **x86/64**, **ARM**, **MIPS (mips/mipsel)** and **SPARC**.
 
@@ -47,7 +47,7 @@ or see [INSTALL](https://github.com/ucodev/ubwt/blob/main/doc/text/INSTALL)
 
 ## Command-Line Usage Examples
 
-### Unidirectional Test - Short Summary ###
+### Unidirectional Test - Short Summary
 
       |     im@listening ~ $ ubwt -b listener 10.10.10.1
       |         Download : 943.485 Mbps
@@ -57,7 +57,7 @@ or see [INSTALL](https://github.com/ucodev/ubwt/blob/main/doc/text/INSTALL)
       |           Upload : 943.485 Mbps
       |     im@connector ~ $ 
 
-### Bidirectional Test - Short Summary ###
+### Bidirectional Test - Short Summary
 
       |     im@listening ~ $ ubwt -b listener 10.10.10.1
       |         Download : 968.273 Mbps
@@ -69,7 +69,7 @@ or see [INSTALL](https://github.com/ucodev/ubwt/blob/main/doc/text/INSTALL)
       |         Download : 940.265 Mbps
       |     im@connector ~ $ 
  
-### Bidirectional Test - Full Report ###
+### Bidirectional Test - Full Report
 
       |     im@listening ~ $ ubwt -F -b listener 10.10.10.1
       |     Direction                           : Download

@@ -28,7 +28,7 @@
 #include <sys/types.h>
 
 #if !defined(__GNUC__) && !defined(__clang__)
-#include <stdnoreturn.h>
+ #include <stdnoreturn.h>
 #endif
 
 #include "current.h"
@@ -147,5 +147,16 @@ void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char 
 	}
 
 	post_process();
+}
+
+#if !defined(__GNUC__) && !defined(__clang__)
+_Noreturn
+#endif
+void error_abort(const char *file, int line, const char *func) {
+	fprintf(stderr, "Program execution will be aborted due to an unrecoverable error state: %s:%d:%s(): %s\n", file, line, func, strerror(errno));
+
+	abort();
+
+	error_no_return();
 }
 
