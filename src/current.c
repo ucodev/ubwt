@@ -21,31 +21,125 @@
 */
 
 #include <string.h>
-
+#include <stdint.h>
 #include <errno.h>
+
+#include "config.h"
 
 #include "current.h"
 #include "datetime.h"
+#include "error.h"
 #include "stage.h"
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
+ #include <assert.h>
+ #include <stdlib.h>
+ #include <pthread.h>
+
+ #include "worker.h"
+#endif
+
+uint64_t __current_time_us;
 struct ubwt_current __current;
+
+#if !defined(UBWT_CONFIG_MULTI_THREADED)
 struct ubwt_current *current = &__current;
+#else
+struct ubwt_current *current_get(ubwt_worker_t worker_id) {
+	struct ubwt_current *c = &__current;
+
+	do {
+		if (c->worker_id == worker_id)
+			return c;
+	} while ((c = current->next));
+
+	abort();
+
+	error_no_return();
+
+	return &__current;
+}
+#endif
 
 void current_init(void) {
 	memset(&__current, 0, sizeof(struct ubwt_current));
 
 	stage_set(UBWT_STAGE_STATE_INIT_CURRENT, 0);
 
-	current->time_us = datetime_now_us();
+	current->time_us = &__current_time_us;
+	*current->time_us = datetime_now_us();
+
+	current->config = &__config;
+	memset(current->config, 0, sizeof(struct ubwt_config));
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	current->worker_id = worker_self();
+
+	current->worker_barrier_sf = &__worker_barrier_straight_first;
+	current->worker_barrier_rf = &__worker_barrier_reverse_first;
+	current->worker_mutex_global = &__worker_mutex_global;
+#endif
 }
 
 void current_update(void) {
-	current->time_us = datetime_now_us();
+	*current->time_us = datetime_now_us();
 }
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+void current_fork(void) {
+	struct ubwt_current *c = NULL;
+
+	if (!(c = malloc(sizeof(struct ubwt_current)))) {
+		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CURRENT_FORK_FAILED, "current_fork(): malloc()");
+		error_no_return();
+	}
+
+	memset(c, 0, sizeof(struct ubwt_current));
+
+	/* Always fork from HEAD */
+
+	memcpy(&c->net, &__current.net, sizeof(struct ubwt_net));
+	c->config = __current.config;
+	c->time_us = __current.time_us;
+
+	c->worker_id = worker_self();
+
+	c->prev = &__current;
+	c->next = __current.next;
+	__current.next = c;
+}
+
+void current_join(ubwt_worker_t worker_id) {
+	struct ubwt_current *c = &__current;
+
+	do {
+		if (c->worker_id == worker_id)
+			break;
+	} while ((c = current->next));
+
+	assert(c != NULL);
+
+	if (c->prev && c->next) {
+		c->prev->next = c->next;
+		c->next->prev = c->prev;
+	} else if (c->prev) {
+		/* tail */
+		c->prev->next = NULL;
+	} else if (c->next) {
+		/* head */
+		c->next->prev = NULL;
+	}
+
+	memset(c, 0, sizeof(struct ubwt_current));
+
+	free(c);
+}
+#endif
 
 void current_destroy(void) {
 	stage_set(UBWT_STAGE_STATE_DESTROY_CURRENT, 0);
 
+	memset(__current.config, 0, sizeof(struct ubwt_config));
 	memset(&__current, 0, sizeof(struct ubwt_current));
 }
 

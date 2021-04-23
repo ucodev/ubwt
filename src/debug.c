@@ -38,7 +38,7 @@
 void debug_info_talk_op(ubwt_talk_ops_t op, const char *msg) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config.debug)
+	if (!current->config->debug)
 		return;
 
 	datetime_now_str(time_str);
@@ -49,7 +49,7 @@ void debug_info_talk_op(ubwt_talk_ops_t op, const char *msg) {
 void debug_info_talk_latency(uint64_t dt) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config.debug)
+	if (!current->config->debug)
 		return;
 
 	datetime_now_str(time_str);
@@ -60,22 +60,22 @@ void debug_info_talk_latency(uint64_t dt) {
 void debug_info_config_show(void) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config.debug)
+	if (!current->config->debug)
 		return;
 
 	datetime_now_str(time_str);
 
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Mode      : %s\n", time_str, net_im_connector() ? "connector" : "listener", current->config.im_connector ? "connector" : "listener");
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Address   : %s\n", time_str, net_im_connector() ? "connector" : "listener", current->config.addr);
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Port      : %s\n", time_str, net_im_connector() ? "connector" : "listener", current->config.port);
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Protocol  : %s\n", time_str, net_im_connector() ? "connector" : "listener", current->config.net_l4_proto_name);
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Time (us) : %" PRIu64 "\n", time_str, net_im_connector() ? "connector" : "listener", current->time_us);
+	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Mode      : %s\n", time_str, net_im_connector() ? "connector" : "listener", current->config->im_connector ? "connector" : "listener");
+	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Address   : %s\n", time_str, net_im_connector() ? "connector" : "listener", current->config->addr);
+	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Port      : %s\n", time_str, net_im_connector() ? "connector" : "listener", current->config->port);
+	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Protocol  : %s\n", time_str, net_im_connector() ? "connector" : "listener", current->config->net_l4_proto_name);
+	fprintf(stderr, "[%s]: DEBUG => INFO => %s => CONFIG: Time (us) : %" PRIu64 "\n", time_str, net_im_connector() ? "connector" : "listener", *current->time_us);
 }
 
 void debug_info_stage_show(void) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config.debug)
+	if (!current->config->debug)
 		return;
 
 	datetime_now_str(time_str);
@@ -86,7 +86,7 @@ void debug_info_stage_show(void) {
 void debug_info_report_latency(uint32_t dt) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config.debug)
+	if (!current->config->debug)
 		return;
 
 	datetime_now_str(time_str);
@@ -97,7 +97,7 @@ void debug_info_report_latency(uint32_t dt) {
 void debug_info_report_count(uint32_t count) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config.debug)
+	if (!current->config->debug)
 		return;
 
 	datetime_now_str(time_str);
@@ -108,7 +108,7 @@ void debug_info_report_count(uint32_t count) {
 void debug_info_report_connection(const char *src, const char *ip, uint16_t port) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config.debug)
+	if (!current->config->debug)
 		return;
 
 	datetime_now_str(time_str);

@@ -45,8 +45,8 @@
  typedef int sock_t;
 #endif
 
-#define net_im_connector() current->config.im_connector
-#define net_im_listener() current->config.im_listener
+#define net_im_connector() current->config->im_connector
+#define net_im_listener() current->config->im_listener
 
 #if defined(__clang__) && !defined(__cplusplus)
 #define net_htonll(hostlonglong) 	(*(unsigned char *) (unsigned int [1]) { 1 }) ? ((uint64_t) htonl(((uint32_t *) &((uint64_t [1]) { (hostlonglong) }[0]))[0]) << 32) | htonl(((uint32_t *) &((uint64_t [1]) { (hostlonglong) }[0]))[1]) : (hostlonglong)

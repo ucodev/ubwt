@@ -34,7 +34,7 @@ struct ubwt_process {
 };
 
 void process_init(void);
-void process_run(void);
+void process_run(int reverse_first);
 void process_report(void);
 void process_destroy(void);
 

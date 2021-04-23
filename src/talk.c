@@ -75,7 +75,7 @@ static ssize_t _talk_send(const ubwt_talk_payload_t *pkt) {
 	if (stage_get() == UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE) {
 		len = hdr_size;
 	} else {
-		len = current->config.talk_payload_current_size;
+		len = current->config->talk_payload_current_size;
 		memcpy(((char *) &pktbuf) + hdr_size, ((const char *) pkt) + hdr_size, len - hdr_size);
 	}
 
@@ -92,7 +92,7 @@ static ssize_t _talk_send(const ubwt_talk_payload_t *pkt) {
 static ssize_t _talk_recv(ubwt_talk_payload_t *pkt) {
 	ssize_t ret = 0, len = 0, hdr_size = offsetof(ubwt_talk_payload_t, buf);
 
-	len = stage_get() == UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE ? hdr_size : current->config.talk_payload_current_size;
+	len = stage_get() == UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE ? hdr_size : current->config->talk_payload_current_size;
 
 	ret = net_im_connector() ?
 		net_read_from_listener(pkt, len) :
@@ -137,7 +137,7 @@ static void _talk_send_abort(void) {
 }
 
 static long _talk_sender_handshake(void) {
-	ubwt_talk_payload_t p = { 0, current->config.talk_handshake_iter, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, current->config->talk_handshake_iter, 0, 0, { 0 } };
 	uint64_t dt = datetime_now_us();
 
 
@@ -174,7 +174,7 @@ static long _talk_sender_handshake(void) {
 		debug_info_talk_op(UBWT_TALK_OP_PONG, "MISS");
 	}
 
-	if (p.count != current->config.talk_handshake_iter) {
+	if (p.count != current->config->talk_handshake_iter) {
 		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_TALK_HANDSHAKE_NOMATCH, "_talk_sender_handshake(): Iteration count doesn't match between the two parties");
 		errno = EINVAL;
 
@@ -211,7 +211,7 @@ static int _talk_receiver_handshake(void) {
 		return -1;
 	}
 
-	if (p.count != current->config.talk_handshake_iter) {
+	if (p.count != current->config->talk_handshake_iter) {
 		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_TALK_HANDSHAKE_NOMATCH, "_talk_receiver_handshake(): Iteration count doesn't match between the two parties");
 		errno = EINVAL;
 
@@ -222,7 +222,7 @@ static int _talk_receiver_handshake(void) {
 
 	bit_set(&p.flags, UBWT_TALK_OP_PONG);
 
-	p.count = current->config.talk_handshake_iter;
+	p.count = current->config->talk_handshake_iter;
 
 
 	/* Send PONG op reply */
@@ -357,7 +357,7 @@ static int _talk_sender_stream(uint32_t count) {
 
 		bit_set(&p.flags, UBWT_TALK_OP_STREAM_RUN);
 
-		_talk_timeout(current->config.net_timeout_talk_stream_run);
+		_talk_timeout(current->config->net_timeout_talk_stream_run);
 
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "SEND");
 
@@ -378,7 +378,7 @@ static int _talk_sender_stream(uint32_t count) {
 		return -1;
 	}
 
-	_talk_timeout(current->config.net_timeout_talk_stream_end);
+	_talk_timeout(current->config->net_timeout_talk_stream_end);
 
 
 	/* Wait for the remote host to send STREAM END */
@@ -409,7 +409,7 @@ static int _talk_sender_stream(uint32_t count) {
 	if (bit_test(&p.flags, UBWT_TALK_OP_STREAM_WEAK))
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_WEAK, "RECV");
 
-	_talk_timeout(current->config.net_timeout_default);
+	_talk_timeout(current->config->net_timeout_default);
 
 
 	/* Return 1 is the stream is WEAK, otherwise 0 */
@@ -446,7 +446,7 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	/* Wait for STREAM RUN to start */
 
-	_talk_timeout(current->config.net_timeout_talk_stream_run);
+	_talk_timeout(current->config->net_timeout_talk_stream_run);
 
 	debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "WAIT");
 
@@ -459,7 +459,7 @@ static int _talk_receiver_stream(uint32_t count) {
 		len += ret;
 	}
 
-	t = datetime_now_us() - t - ((i != count) ? (current->config.net_timeout_talk_stream_run * 1000000) : 0);
+	t = datetime_now_us() - t - ((i != count) ? (current->config->net_timeout_talk_stream_run * 1000000) : 0);
 
 	debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "RECV");
 
@@ -473,7 +473,7 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	/* Send STREAM END */
 
-	_talk_timeout(current->config.net_timeout_talk_stream_end);
+	_talk_timeout(current->config->net_timeout_talk_stream_end);
 
 	debug_info_talk_op(UBWT_TALK_OP_STREAM_END, "SEND");
 
@@ -481,7 +481,7 @@ static int _talk_receiver_stream(uint32_t count) {
 	bit_set(&p.flags, UBWT_TALK_OP_STREAM_END);
 
 	/* Check if the STREAM was WEAK - if so, mark the STREAM END as WEAK */
-	if (t < (current->config.talk_stream_minimum_time * 1000000)) {
+	if (t < (current->config->talk_stream_minimum_time * 1000000)) {
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_WEAK, "SEND");
 
 		bit_set(&p.flags, UBWT_TALK_OP_STREAM_WEAK);
@@ -503,12 +503,12 @@ static int _talk_receiver_stream(uint32_t count) {
 	if (bit_test(&p.flags, UBWT_TALK_OP_STREAM_WEAK))
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_WEAK, "SENT");
 
-	_talk_timeout(current->config.net_timeout_default);
+	_talk_timeout(current->config->net_timeout_default);
 
 
 	/* Return 1 if STREAM is WEAK, otherwise return 0 */
 
-	return t < (current->config.talk_stream_minimum_time * 1000000);
+	return t < (current->config->talk_stream_minimum_time * 1000000);
 }
 
 static int _talk_sender_report_exchange(void) {
@@ -530,7 +530,7 @@ static int _talk_sender_report_exchange(void) {
 	if (bit_test(&p.flags, UBWT_TALK_OP_REPORT)) {
 		debug_info_talk_op(UBWT_TALK_OP_REPORT, "RECV");
 
-		report_unmarshal(p.buf, current->config.talk_payload_current_size);
+		report_unmarshal(p.buf, current->config->talk_payload_current_size);
 	} else {
 		debug_info_talk_op(UBWT_TALK_OP_REPORT, "MISS");
 
@@ -552,7 +552,7 @@ static int _talk_receiver_report_exchange(void) {
 
 	bit_set(&p.flags, UBWT_TALK_OP_REPORT);
 
-	report_marshal(p.buf, current->config.talk_payload_current_size);
+	report_marshal(p.buf, current->config->talk_payload_current_size);
 
 	if (_talk_send(&p) < 0) {
 		debug_info_talk_op(UBWT_TALK_OP_REPORT, "FAIL");
@@ -626,7 +626,7 @@ void talk_sender(void) {
 
 	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE, 0);
 
-	for (i = 0; i < current->config.talk_handshake_iter; i ++) {
+	for (i = 0; i < current->config->talk_handshake_iter; i ++) {
 		if ((ret = _talk_sender_handshake()) < 0) {
 			_talk_send_abort();
 
@@ -638,11 +638,11 @@ void talk_sender(void) {
 
 		dt += ret;
 
-		if (current->config.talk_handshake_interval)
-			usleep(current->config.talk_handshake_interval * 1000);
+		if (current->config->talk_handshake_interval)
+			usleep(current->config->talk_handshake_interval * 1000);
 	}
 
-	dt /= current->config.talk_handshake_iter;
+	dt /= current->config->talk_handshake_iter;
 
 	if (net_im_connector()) {
 		report_net_listener_connection_show();
@@ -660,19 +660,19 @@ void talk_sender(void) {
 	for (;;) {
 		stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_NEGOTIATION, bit_flag(UBWT_STAGE_CTRL_FL_NO_RESET));
 
-		if (_talk_sender_negotiate(current->config.talk_count_current, report_talk_latency_get()) < 0) {
+		if (_talk_sender_negotiate(current->config->talk_count_current, report_talk_latency_get()) < 0) {
 			_talk_send_abort();
 
 			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_NEGOTIATION_FAILED, "talk_sender(): _talk_sender_negotiate()");
 			error_no_return();
 		}
 
-		report_talk_count_set(current->config.talk_count_current);
+		report_talk_count_set(current->config->talk_count_current);
 		report_talk_count_show();
 
 		stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_STREAM, bit_flag(UBWT_STAGE_CTRL_FL_NO_RESET));
 
-		if ((ret = _talk_sender_stream(current->config.talk_count_current))) {
+		if ((ret = _talk_sender_stream(current->config->talk_count_current))) {
 			if (ret < 0) {
 				_talk_send_abort();
 
@@ -680,9 +680,9 @@ void talk_sender(void) {
 				error_no_return();
 			}
 
-			current->config.talk_count_current *= 10;
+			current->config->talk_count_current *= 10;
 
-			assert(current->config.talk_count_current <= current->config.talk_count_max);
+			assert(current->config->talk_count_current <= current->config->talk_count_max);
 
 			stage_inc(bit_flag(UBWT_STAGE_CTRL_FL_NO_SHOW));
 
@@ -714,7 +714,7 @@ void talk_receiver(void) {
 
 	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE, 0);
 
-	for (i = 0; i < current->config.talk_handshake_iter; i ++) {
+	for (i = 0; i < current->config->talk_handshake_iter; i ++) {
 		if (_talk_receiver_handshake() < 0) {
 			_talk_send_abort();
 

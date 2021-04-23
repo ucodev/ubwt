@@ -24,7 +24,7 @@
 #include "runtime.h"
 
 void runtime_do(void) {
-	process_run();
+	process_run(0 /* 0: straight first, 1: reverse first */);
 
 	process_report();
 }

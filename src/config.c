@@ -37,33 +37,35 @@
 #include "stage.h"
 #include "usage.h"
 
+struct ubwt_config __config;
+
 static void _config_sanity(void) {
-	assert(strlen(current->config.port) <= 5 && atoi(current->config.port) >= 1 && (atoi(current->config.port) <= 65535));
+	assert(strlen(current->config->port) <= 5 && atoi(current->config->port) >= 1 && (atoi(current->config->port) <= 65535));
 
-	assert(current->config.net_mtu >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
-	assert(current->config.net_timeout_default > 0);
-	assert(current->config.net_l4_proto_value != 0);
+	assert(current->config->net_mtu >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
+	assert(current->config->net_timeout_default > 0);
+	assert(current->config->net_l4_proto_value != 0);
 
-	assert(current->config.process_reverse_delay > 0);
+	assert(current->config->process_reverse_delay > 0);
 
-	//assert(current->config.talk_handshake_interval >= 0);
-	assert(current->config.talk_handshake_iter > 0);
+	//assert(current->config->talk_handshake_interval >= 0);
+	assert(current->config->talk_handshake_iter > 0);
 
-	assert(current->config.talk_count_current > 0);
-	assert(current->config.talk_count_default > 0);
-	assert(current->config.talk_count_max > 0);
+	assert(current->config->talk_count_current > 0);
+	assert(current->config->talk_count_default > 0);
+	assert(current->config->talk_count_max > 0);
 
-	assert(current->config.talk_payload_current_size >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
-	assert(current->config.talk_payload_default_size >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
-	assert(current->config.talk_payload_max_size >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
+	assert(current->config->talk_payload_current_size >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
+	assert(current->config->talk_payload_default_size >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
+	assert(current->config->talk_payload_max_size >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
 
-	assert(current->config.talk_payload_current_size > offsetof(ubwt_talk_payload_t, buf));
-	assert(current->config.talk_payload_default_size > offsetof(ubwt_talk_payload_t, buf));
-	assert(current->config.talk_payload_max_size > offsetof(ubwt_talk_payload_t, buf));
-	assert(current->config.talk_payload_max_size >= current->config.talk_payload_current_size);
-	assert(current->config.talk_payload_max_size >= current->config.talk_payload_default_size);
+	assert(current->config->talk_payload_current_size > offsetof(ubwt_talk_payload_t, buf));
+	assert(current->config->talk_payload_default_size > offsetof(ubwt_talk_payload_t, buf));
+	assert(current->config->talk_payload_max_size > offsetof(ubwt_talk_payload_t, buf));
+	assert(current->config->talk_payload_max_size >= current->config->talk_payload_current_size);
+	assert(current->config->talk_payload_max_size >= current->config->talk_payload_default_size);
 
-	assert(current->config.talk_stream_minimum_time > 0);
+	assert(current->config->talk_stream_minimum_time > 0);
 }
 
 static void _config_cmdopt_process(int argc, char *const *argv) {
@@ -73,7 +75,7 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 		"d"
 #endif
 		"bFhI:l:m:N:"
-#if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1 && !defined(COMPILE_WIN32)
+#if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && !defined(COMPILE_WIN32)
 		"p:"
 #endif
 		"P:s:t:vw:";
@@ -82,15 +84,15 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 		switch (opt) {
 #ifdef UBWT_CONFIG_DEBUG
 			case 'd': {
-				current->config.debug = 1;
+				current->config->debug = 1;
 			} break;
 #endif
 			case 'b': {
-				current->config.bidirectional = 1;
+				current->config->bidirectional = 1;
 			} break;
 
 			case 'F': {
-				current->config.report_full = 1;
+				current->config->report_full = 1;
 			} break;
 
 			case 'h': {
@@ -100,29 +102,29 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 
 			case 'I': {
 				assert(atoi(optarg) >= 0 && atoi(optarg) < 65536);
-				current->config.talk_handshake_interval = (uint16_t) atoi(optarg);
+				current->config->talk_handshake_interval = (uint16_t) atoi(optarg);
 			} break;
 
 			case 'N': {
 				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
-				current->config.talk_handshake_iter = (uint16_t) atoi(optarg);
+				current->config->talk_handshake_iter = (uint16_t) atoi(optarg);
 			} break;
 
 			case 'm': {
 				assert(atoi(optarg) >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE && atoi(optarg) < 65536);
-				current->config.net_mtu = (uint16_t) atoi(optarg);
+				current->config->net_mtu = (uint16_t) atoi(optarg);
 			} break;
 
 			case 'p': {
-				assert(strlen(optarg) < sizeof(current->config.net_l4_proto_name));
-				strncpy(current->config.net_l4_proto_name, optarg, sizeof(current->config.net_l4_proto_name) - 1);
-				current->config.net_l4_proto_name[sizeof(current->config.net_l4_proto_name) - 1] = 0;
+				assert(strlen(optarg) < sizeof(current->config->net_l4_proto_name));
+				strncpy(current->config->net_l4_proto_name, optarg, sizeof(current->config->net_l4_proto_name) - 1);
+				current->config->net_l4_proto_name[sizeof(current->config->net_l4_proto_name) - 1] = 0;
 
 				if (!strcmp(optarg, "tcp")) {
-					current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_TCP;
-#if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1 && !defined(COMPILE_WIN32)
+					current->config->net_l4_proto_value = UBWT_NET_PROTO_L4_TCP;
+#if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && !defined(COMPILE_WIN32)
 				} else if (!strcmp(optarg, "udp")) {
-					current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_UDP;
+					current->config->net_l4_proto_value = UBWT_NET_PROTO_L4_UDP;
 #endif
 				} else {
 					usage_show(argv, 0);
@@ -131,18 +133,18 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 			} break;
 
 			case 'P': {
-				strncpy(current->config.port, optarg, sizeof(current->config.port) - 1);
-				current->config.port[sizeof(current->config.port) - 1] = 0;
+				strncpy(current->config->port, optarg, sizeof(current->config->port) - 1);
+				current->config->port[sizeof(current->config->port) - 1] = 0;
 			} break;
 
 			case 's': {
 				assert(atoi(optarg) >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE && atoi(optarg) < 65536);
-				current->config.talk_payload_default_size = (uint16_t) atoi(optarg);
+				current->config->talk_payload_default_size = (uint16_t) atoi(optarg);
 			} break;
 
 			case 't': {
 				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
-				current->config.talk_stream_minimum_time = (uint16_t) atoi(optarg);
+				current->config->talk_stream_minimum_time = (uint16_t) atoi(optarg);
 			} break;
 
 			case 'v': {
@@ -152,7 +154,7 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 
 			case 'w': {
 				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
-				current->config.net_timeout_default = (uint16_t) atoi(optarg);
+				current->config->net_timeout_default = (uint16_t) atoi(optarg);
 			} break;
 
 
@@ -165,8 +167,8 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 	}
 
 #ifdef UBWT_CONFIG_DEBUG
-	if (current->config.debug)
-		current->config.error_log_min_level = UBWT_ERROR_LEVEL_INFO;
+	if (current->config->debug)
+		current->config->error_log_min_level = UBWT_ERROR_LEVEL_INFO;
 #endif
 
 	if ((argc - optind) != 2) {
@@ -175,9 +177,9 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 	}
 
 	if (!strcmp(argv[optind], "connector")) {
-		current->config.im_connector = 1;
+		current->config->im_connector = 1;
 	} else if (!strcmp(argv[optind], "listener")) {
-		current->config.im_listener = 1;
+		current->config->im_listener = 1;
 	} else {
 		errno = EINVAL;
 		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_1_INVALID, "config_init()");
@@ -186,11 +188,11 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 
 	optind ++;
 
-	assert(strlen(argv[optind]) < sizeof(current->config.addr));
+	assert(strlen(argv[optind]) < sizeof(current->config->addr));
 
-	memset(current->config.addr, 0, sizeof(current->config.addr));
-	strncpy(current->config.addr, argv[optind], sizeof(current->config.addr) - 1);
-	current->config.addr[sizeof(current->config.addr) - 1] = 0;
+	memset(current->config->addr, 0, sizeof(current->config->addr));
+	strncpy(current->config->addr, argv[optind], sizeof(current->config->addr) - 1);
+	current->config->addr[sizeof(current->config->addr) - 1] = 0;
 }
 
 void config_init(int argc, char *const *argv) {
@@ -198,54 +200,54 @@ void config_init(int argc, char *const *argv) {
 
 	memset(&current->config, 0, sizeof(current->config));
 
-	current->config.error_log_min_level = UBWT_ERROR_LEVEL_CRITICAL;
+	current->config->error_log_min_level = UBWT_ERROR_LEVEL_CRITICAL;
 
-	strncpy(current->config.port, UBWT_CONFIG_PORT_DEFAULT, sizeof(current->config.port) - 1);
-	current->config.port[sizeof(current->config.port) - 1] = 0;
+	strncpy(current->config->port, UBWT_CONFIG_PORT_DEFAULT, sizeof(current->config->port) - 1);
+	current->config->port[sizeof(current->config->port) - 1] = 0;
 
-	current->config.net_timeout_default = UBWT_CONFIG_NET_TIMEOUT_DEFAULT;
-	current->config.net_timeout_talk_stream_run = UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_RUN;
-	current->config.net_timeout_talk_stream_end = UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END;
+	current->config->net_timeout_default = UBWT_CONFIG_NET_TIMEOUT_DEFAULT;
+	current->config->net_timeout_talk_stream_run = UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_RUN;
+	current->config->net_timeout_talk_stream_end = UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END;
 
-	current->config.net_mtu = UBWT_CONFIG_NET_MTU;
-#if defined(UBWT_CONFIG_NET_REUSE_ADDRESS) && defined(SO_REUSEADDR) && UBWT_CONFIG_NET_REUSE_ADDRESS == 1
-	current->config.net_reuseaddr = 1;
+	current->config->net_mtu = UBWT_CONFIG_NET_MTU;
+#if defined(UBWT_CONFIG_NET_REUSE_ADDRESS) && defined(SO_REUSEADDR)
+	current->config->net_reuseaddr = 1;
 #else
-	current->config.net_reuseaddr = 0;
+	current->config->net_reuseaddr = 0;
 #endif
-#if defined(UBWT_CONFIG_NET_REUSE_PORT) && defined(SO_REUSEPORT) && UBWT_CONFIG_NET_REUSE_PORT == 1
-	current->config.net_reuseport = 1;
+#if defined(UBWT_CONFIG_NET_REUSE_PORT) && defined(SO_REUSEPORT)
+	current->config->net_reuseport = 1;
 #else
-	current->config.net_reuseport = 0;
+	current->config->net_reuseport = 0;
 #endif
-	current->config.net_l2_hdr_size = UBWT_CONFIG_NET_L2_HEADER_SIZE;
-	current->config.net_l3_ipv4_hdr_size = UBWT_CONFIG_NET_L3_IPV4_HEADER_SIZE;
-	current->config.net_l3_ipv6_hdr_size = UBWT_CONFIG_NET_L3_IPV6_HEADER_SIZE;
-	strncpy(current->config.net_l4_proto_name, UBWT_CONFIG_NET_L4_PROTO_DEFAULT, sizeof(current->config.net_l4_proto_name) - 1);
-	current->config.net_l4_proto_name[sizeof(current->config.net_l4_proto_name) - 1] = 0;
+	current->config->net_l2_hdr_size = UBWT_CONFIG_NET_L2_HEADER_SIZE;
+	current->config->net_l3_ipv4_hdr_size = UBWT_CONFIG_NET_L3_IPV4_HEADER_SIZE;
+	current->config->net_l3_ipv6_hdr_size = UBWT_CONFIG_NET_L3_IPV6_HEADER_SIZE;
+	strncpy(current->config->net_l4_proto_name, UBWT_CONFIG_NET_L4_PROTO_DEFAULT, sizeof(current->config->net_l4_proto_name) - 1);
+	current->config->net_l4_proto_name[sizeof(current->config->net_l4_proto_name) - 1] = 0;
 
 	if (!strcmp(UBWT_CONFIG_NET_L4_PROTO_DEFAULT, "tcp")) {
-		current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_TCP;
-		current->config.net_l4_hdr_size = UBWT_CONFIG_NET_L4_TCP_HEADER_SIZE;
+		current->config->net_l4_proto_value = UBWT_NET_PROTO_L4_TCP;
+		current->config->net_l4_hdr_size = UBWT_CONFIG_NET_L4_TCP_HEADER_SIZE;
 	} else if (!strcmp(UBWT_CONFIG_NET_L4_PROTO_DEFAULT, "udp")) {
-		current->config.net_l4_proto_value = UBWT_NET_PROTO_L4_UDP;
-		current->config.net_l4_hdr_size = UBWT_CONFIG_NET_L4_UDP_HEADER_SIZE;
+		current->config->net_l4_proto_value = UBWT_NET_PROTO_L4_UDP;
+		current->config->net_l4_hdr_size = UBWT_CONFIG_NET_L4_UDP_HEADER_SIZE;
 	}
 
-	current->config.process_reverse_delay = UBWT_CONFIG_PROCESS_REVERSE_DELAY_SEC;
+	current->config->process_reverse_delay = UBWT_CONFIG_PROCESS_REVERSE_DELAY_SEC;
 
-	current->config.talk_handshake_interval = UBWT_CONFIG_TALK_HANDSHAKE_INTERVAL_MSEC;
-	current->config.talk_handshake_iter = UBWT_CONFIG_TALK_HANDSHAKE_ITER;
+	current->config->talk_handshake_interval = UBWT_CONFIG_TALK_HANDSHAKE_INTERVAL_MSEC;
+	current->config->talk_handshake_iter = UBWT_CONFIG_TALK_HANDSHAKE_ITER;
 
-	current->config.talk_count_default = UBWT_CONFIG_TALK_COUNT_DEFAULT;
-	current->config.talk_count_current = UBWT_CONFIG_TALK_COUNT_DEFAULT;
-	current->config.talk_count_max = UBWT_CONFIG_TALK_COUNT_MAX;
+	current->config->talk_count_default = UBWT_CONFIG_TALK_COUNT_DEFAULT;
+	current->config->talk_count_current = UBWT_CONFIG_TALK_COUNT_DEFAULT;
+	current->config->talk_count_max = UBWT_CONFIG_TALK_COUNT_MAX;
 
-	current->config.talk_payload_default_size = UBWT_CONFIG_TALK_PAYLOAD_DEFAULT_SIZE;
-	current->config.talk_payload_current_size = UBWT_CONFIG_TALK_PAYLOAD_DEFAULT_SIZE;
-	current->config.talk_payload_max_size = UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE;
+	current->config->talk_payload_default_size = UBWT_CONFIG_TALK_PAYLOAD_DEFAULT_SIZE;
+	current->config->talk_payload_current_size = UBWT_CONFIG_TALK_PAYLOAD_DEFAULT_SIZE;
+	current->config->talk_payload_max_size = UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE;
 
-	current->config.talk_stream_minimum_time = UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME;
+	current->config->talk_stream_minimum_time = UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME;
 
 	_config_cmdopt_process(argc, argv);
 

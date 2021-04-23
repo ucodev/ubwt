@@ -38,6 +38,7 @@
 
 static const char *__errors[] = {
 	"[%s]: ERROR: %s: No error: %s: %s\n",
+	"[%s]: ERROR: %s: Unable to fork the current process data: %s: %s\n",
 	"[%s]: ERROR: %s: First parameter must be 'connector' or 'listener': %s: %s\n",
 	"[%s]: ERROR: %s: Second parameter must be a valid IP or hostname: %s: %s\n",
 	"[%s]: ERROR: %s: Invalid command line option: %s: %s\n",
@@ -63,7 +64,8 @@ static const char *__errors[] = {
 	"[%s]: ERROR: %s: Unable to complete stream stage: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to complete report exchange stage: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to complete finish stage: %s: %s\n",
-	"[%s]: ERROR: %s: Unable to retrieve connection address information: %s: %s\n"
+	"[%s]: ERROR: %s: Unable to retrieve connection address information: %s: %s\n",
+	"[%s]: ERROR: %s: Unable to create a new worker: %s: %s\n"
 };
 
 static
@@ -128,7 +130,7 @@ void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char 
 		default: break;
 	}
 
-	if (level >= current->config.error_log_min_level) {
+	if (level >= current->config->error_log_min_level) {
 #ifdef COMPILE_WIN32
 		if (current->error.l_wsaerr) {
 			memset(wsaerr_str, 0, sizeof(wsaerr_str));

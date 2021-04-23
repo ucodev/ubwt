@@ -27,11 +27,14 @@
 #include "net.h"
 #include "process.h"
 #include "runtime.h"
+#include "worker.h"
 
 static void _construct(int argc, char *const *argv) {
 	current_init();
 
 	config_init(argc, argv);
+
+	worker_init();
 
 	net_init();
 
@@ -46,6 +49,8 @@ static void _destruct(void) {
 	report_destroy();
 
 	net_destroy();
+
+	worker_destroy();
 
 	config_destroy();
 

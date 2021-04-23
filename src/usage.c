@@ -49,7 +49,7 @@ void usage_show(char *const *argv, int success) {
 		"       -I <msec>           Interval between latency measurements (default: %u msec).\n"
 		"       -m <octets>         Link MTU (default: %u octets).\n"
 		"       -N <iterations>     Number of handshake iterations (default: %u iterations).\n"
-#if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1
+#if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)
 		"       -p <protocol>       L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
 #endif
 		"       -P <port>           TCP or UDP port to listen/connect to (default: %s).\n"

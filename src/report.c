@@ -162,16 +162,16 @@ void report_unmarshal(const void *storage, size_t len) {
 void report_results_compute(void) {
 	/* Calculate results */
 
-	current->report.result->computed.hdr_size = current->config.net_l2_hdr_size
+	current->report.result->computed.hdr_size = current->config->net_l2_hdr_size
 		+ (current->net.listener.saddr.ss_family == AF_INET6
-			? current->config.net_l3_ipv6_hdr_size
-			: current->config.net_l3_ipv4_hdr_size)
-		+ current->config.net_l4_hdr_size;
+			? current->config->net_l3_ipv6_hdr_size
+			: current->config->net_l3_ipv4_hdr_size)
+		+ current->config->net_l4_hdr_size;
 
 	current->report.result->computed.total_pkts = report_talk_stream_recv_bytes_get()
-		/ (current->config.net_mtu < current->config.talk_payload_current_size
-			? current->config.net_mtu
-			: current->config.talk_payload_current_size);
+		/ (current->config->net_mtu < current->config->talk_payload_current_size
+			? current->config->net_mtu
+			: current->config->talk_payload_current_size);
 
 	current->report.result->computed.bandwidth_estimated_mbps =
 		((double) ((report_talk_stream_recv_bytes_get() + 
@@ -191,21 +191,21 @@ void report_results_compute(void) {
 		/ (double) report_talk_count_get();
 
 	current->report.result->computed.fragmentation_ratio =
-			(double) current->config.net_mtu >= current->config.talk_payload_current_size
+			(double) current->config->net_mtu >= current->config->talk_payload_current_size
 			? (double) 1
-			: (double) current->config.talk_payload_current_size / (double) current->config.net_mtu;
+			: (double) current->config->talk_payload_current_size / (double) current->config->net_mtu;
 }
 
 void report_results_show(void) {
 	/* Show results */
 
-	if (current->config.report_full) {
+	if (current->config->report_full) {
 		puts("");
 		fprintf(stdout, "Direction                           : %s\n", process_im_receiver() ? "Download" : "Upload");
-		fprintf(stdout, "MTU                                 : %" PRIu16 " octets\n", current->config.net_mtu);
+		fprintf(stdout, "MTU                                 : %" PRIu16 " octets\n", current->config->net_mtu);
 		fprintf(stdout, "L3 Protocol                         : %s\n", current->net.listener.saddr.ss_family == AF_INET6 ? "ipv6" : "ipv4");
-		fprintf(stdout, "L4 Protocol                         : %s\n", current->config.net_l4_proto_name);
-		fprintf(stdout, "Requested L4 payload size           : %" PRIu16 " octets\n", current->config.talk_payload_current_size);
+		fprintf(stdout, "L4 Protocol                         : %s\n", current->config->net_l4_proto_name);
+		fprintf(stdout, "Requested L4 payload size           : %" PRIu16 " octets\n", current->config->talk_payload_current_size);
 		fprintf(stdout, "Estimated headers size              : %zu octets\n", current->report.result->computed.hdr_size);
 		fprintf(stdout, "Transmission time                   : %.4f s\n", report_talk_stream_time_get() / (double) 1000000.0);
 		fprintf(stdout, "Total L4 packets expected           : %" PRIu32 "\n", report_talk_count_get());

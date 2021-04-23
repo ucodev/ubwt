@@ -45,57 +45,127 @@ void process_init(void) {
 	current_update();
 }
 
-void process_run(void) {
-	if (net_im_listener()) {
-		report_set_straight();
+static void _process_listener_straight(int init, int cleanup) {
+	report_set_straight();
 
-		process_set_im_receiver();
+	process_set_im_receiver();
 
+	if (init)
 		talk_init();
 
-		talk_receiver();
+	talk_receiver();
 
-		if (!current->config.bidirectional) {
-			talk_destroy();
+	if (cleanup)
+		talk_destroy();
+}
+
+static void _process_connector_straight(int init, int cleanup) {
+	report_set_straight();
+
+	process_set_im_sender();
+
+	if (init)
+		talk_init();
+
+	talk_sender();
+
+	if (cleanup)
+		talk_destroy();
+}
+
+static void _process_listener_reverse(int init, int cleanup) {
+	report_set_reverse();
+
+	process_set_im_sender();
+
+	if (init)
+		talk_init();
+
+	talk_sender();
+
+	if (cleanup)
+		talk_destroy();
+}
+
+static void _process_connector_reverse(int init, int cleanup) {
+	report_set_reverse();
+
+	process_set_im_receiver();
+
+	if (init)
+		talk_init();
+
+	talk_receiver();
+
+	if (cleanup)
+		talk_destroy();
+}
+
+static void _process_run_straight_first(void) {
+	if (net_im_listener()) {
+		if (current->config->bidirectional) {
+			_process_listener_straight(1 /* init */, 0);
+		} else {
+			_process_listener_straight(1 /* init */, 1 /* cleanup */);
 			return ;
 		}
 
 		/* Wait a bit before transmitting */
 
-		sleep(current->config.process_reverse_delay);
+		sleep(current->config->process_reverse_delay);
 
 		/* Reverse testing */
 
-		report_set_reverse();
-
-		process_set_im_sender();
-
-		talk_sender();
-
-		talk_destroy();
+		_process_listener_reverse(0, 1 /* cleanup */);
 	} else {
-		report_set_straight();
-
-		process_set_im_sender();
-
-		talk_init();
-
-		talk_sender();
-
-		if (!current->config.bidirectional) {
-			talk_destroy();
+		if (current->config->bidirectional) {
+			_process_connector_straight(1 /* init */, 0);
+		} else {
+			_process_connector_straight(1 /* init */, 1 /* cleanup */);
 			return ;
 		}
 
 		/* Reverse testing */
 
-		report_set_reverse();
+		_process_connector_reverse(0, 1 /* cleanup */);
+	}
+}
 
-		process_set_im_receiver();
+static void _process_run_reverse_first(void) {
+	if (net_im_listener()) {
+		if (current->config->bidirectional) {
+			_process_listener_reverse(1 /* init */, 0);
+		} else {
+			_process_listener_reverse(1 /* init */, 1 /* cleanup */);
+			return ;
+		}
 
-		talk_receiver();
+		/* Wait a bit before transmitting */
 
-		talk_destroy();
+		sleep(current->config->process_reverse_delay);
+
+		/* Straight testing */
+
+		_process_listener_straight(0, 1 /* cleanup */);
+	} else {
+		if (current->config->bidirectional) {
+			_process_connector_reverse(1 /* init */, 0);
+		} else {
+			_process_connector_reverse(1 /* init */, 1 /* cleanup */);
+			return ;
+		}
+
+		/* Straight testing */
+
+		_process_connector_straight(0, 1 /* cleanup */);
+	}
+}
+
+void process_run(int reverse_first) {
+	if (reverse_first) {
+		_process_run_reverse_first();
+	} else {
+		_process_run_straight_first();
 	}
 }
 
@@ -112,7 +182,7 @@ void process_report(void) {
 	report_results_compute();
 	report_results_show();
 
-	if (!current->config.bidirectional)
+	if (!current->config->bidirectional)
 		return;
 
 

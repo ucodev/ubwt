@@ -7,6 +7,8 @@ A portable, free and open source command-line network bandwidth tester tool.
 
 The uCodev Bandwidth Tester (ubwt for short) is a command-line tool designed to test network bandwidth with unidirectional and bidirectional testing, providing basic or, optionally, extended reports.
 
+It consists of a single tool, that can be executed as a listener one one end, and as connector on the another end - it is not designed to be used as a running service. It is a testing tool, designed to be used with both endpoints under full control of the tester.
+
 
 ## Licensing
 
@@ -19,9 +21,9 @@ See [LICENSE](https://github.com/ucodev/ubwt/blob/main/doc/text/LICENSE)
 
 ## Portability
 
-ubwt is designed to be compliant with any POSIX-based operating system. It was successfully tested under **Linux**, **FreeBSD**, **OpenBSD**, **SunOS**, **Minix** and **Darwin**. Microsoft Windows operating systems are not officially supported by ubwt - but they will, in a near future.
+ubwt is designed to be compliant with any POSIX-based operating system. It was successfully tested under **Linux**, **GNU Hurd**, **FreeBSD**, **OpenBSD**, **SunOS**, **Minix** and **Darwin**. Microsoft Windows operating systems are not officially supported by ubwt - but they will, in a near future.
 
-Also, ubwt is architecture independent - it was also successfully tested under **x86/64**, **ARM**, **MIPS** and **SPARC**.
+Also, ubwt is architecture independent - it was also successfully tested under **x86/64**, **ARM**, **MIPS (mips/mipsel)** and **SPARC**.
 
 
 ## Stability

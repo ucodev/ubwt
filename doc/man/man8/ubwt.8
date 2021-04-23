@@ -4,13 +4,17 @@
 ubwt \- uCodev Bandwidth Tester
 .SH SYNOPSIS
 .B ubwt
-[ \fIOPTIONS\fR ] { \fIconnector\fR | \fIlisterner\fR } { \fIHOSTNAME\fR | \fIIPv4\fR | \fIIPv6\fR }
+[ \fIOPTIONS\fR ] { \fIconnector\fR | \fIlistener\fR } { \fIHOSTNAME\fR | \fIIPv4\fR | \fIIPv6\fR }
 .SH DESCRIPTION
 .PP
 The \fBubwt\fR(8) (uCodev Bandwidth Tester) is a command line binary utility designed to perform network bandwidth testing. It allows unidirectional and bidirectional testing, providing a summary of the network bandwidth capabilities.
 .PP
+It consists of a single binary tool that can act as a \fBconnector\fR in one end, and as a \fBlistener\fR on another end.
 .PP
-The available command line OPTIONS are:
+The addresses of the listener and connector can be specified as \fBHOSTNAME\fR, an \fBIPv4\fR or as an \fBIPv6\fR.
+.PP
+.SH OPTIONS
+The available command line \fBOPTIONS\fR are:
 .PP
 .TP
 \fB\-d\fR
@@ -67,7 +71,4 @@ Copyright \(co 2021  Pedro A. Hortas (pah@ucodev.org)
 License: GNU GPL version 3 or later <http://gplv3.fsf.org/>
 .PP
 This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-.PP
-.SH "SEE ALSO"
-\fBiptraf\fR(8)
 .PP

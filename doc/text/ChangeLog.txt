@@ -1,3 +1,9 @@
+v0.05a-dev
+
+ - Included support for GNU/Hurd
+ - Included initial support for multi-threading
+
+
 v0.04d-dev
 
  - Updated command line usage wording

@@ -5,7 +5,7 @@ LDFLAGS=
 ELFLAGS=`cat ../.elflags`
 ARCHFLAGS=`cat ../.archflags`
 INCLUDEDIRS=-I../include
-OBJS=bitops.o config.o current.o datetime.o debug.o error.o main.o net.o process.o report.o runtime.o stage.o talk.o usage.o
+OBJS=bitops.o config.o current.o datetime.o debug.o error.o main.o net.o process.o report.o runtime.o stage.o talk.o usage.o worker.o
 TARGET=ubwt
 SYSSBINDIR=`cat ../.dirsbin`
 
@@ -24,6 +24,7 @@ all:
 	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c stage.c
 	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c talk.c
 	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c usage.c
+	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c worker.c
 	${CC} -o ${TARGET} ${OBJS} ${LDFLAGS} ${ELFLAGS}
 
 install:
@@ -34,3 +35,4 @@ uninstall:
 
 clean:
 	rm -f ${TARGET} ${OBJS}
+

@@ -36,7 +36,7 @@
 #include "stage.h"
 
 int net_connector_connect(void) {
-	if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+	if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 		if (connect(current->net.fd, (struct sockaddr *) &current->net.listener.saddr, current->net.listener.slen) < 0) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): connect()");
 
@@ -48,7 +48,7 @@ int net_connector_connect(void) {
 }
 
 int net_listener_accept(void) {
-	if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+	if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 		current->net.connector.slen = sizeof(current->net.connector.saddr);
 
 		if ((current->net.fd = accept(current->net.fd_listen, (struct sockaddr *) &current->net.connector.saddr, &current->net.connector.slen)) < 0) {
@@ -62,7 +62,7 @@ int net_listener_accept(void) {
 }
 
 int net_timeout_set(sock_t fd, time_t timeout) {
-#if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1
+#if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)
 	struct timeval tv = { 0, 0 };
 
 	tv.tv_sec = timeout;
@@ -71,6 +71,9 @@ int net_timeout_set(sock_t fd, time_t timeout) {
 		error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_TIMEO_SET, "net_timeout_set(): setsockopt()");
 		return -1;
 	}
+#else
+	(void) fd;
+	(void) timeout;
 #endif
 	return 0;
 }
@@ -89,7 +92,7 @@ ssize_t net_read_from_connector(void *buf, size_t len) {
 	ssize_t count = 0, ret = 0;
 
 	while (count < (ssize_t) len) {
-		if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+		if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
 			ret = recv(current->net.fd, ((char *) buf + count), len - count, MSG_WAITALL);
 #else
@@ -105,7 +108,7 @@ ssize_t net_read_from_connector(void *buf, size_t len) {
 			if (errno == EINTR)
 				continue;
 
-			if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+			if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
 				current->error.l_wsaerr = WSAGetLastError();
 
@@ -130,7 +133,7 @@ ssize_t net_read_from_listener(void *buf, size_t len) {
 	ssize_t count = 0, ret = 0;
 
 	while (count < (ssize_t) len) {
-		if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+		if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
 			ret = recv(current->net.fd, ((char *) buf + count), len - count, MSG_WAITALL);
 #else
@@ -146,7 +149,7 @@ ssize_t net_read_from_listener(void *buf, size_t len) {
 			if (errno == EINTR)
 				continue;
 
-			if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+			if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
 				current->error.l_wsaerr = WSAGetLastError();
 
@@ -171,7 +174,7 @@ ssize_t net_write_to_connector(const void *buf, size_t len) {
 	ssize_t count = 0, ret = 0;
 
 	while (count < (ssize_t) len) {
-		if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+		if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
 			ret = send(current->net.fd, ((const char *) buf) + count, len - count, 0);
 #else
@@ -185,7 +188,7 @@ ssize_t net_write_to_connector(const void *buf, size_t len) {
 			if (errno == EINTR)
 				continue;
 
-			if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+			if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
 				current->error.l_wsaerr = WSAGetLastError();
 
@@ -210,7 +213,7 @@ ssize_t net_write_to_listener(const void *buf, size_t len) {
 	ssize_t count = 0, ret = 0;
 
 	while (count < (ssize_t) len) {
-		if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+		if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
 			ret = send(current->net.fd, ((const char *) buf) + count, len - count, 0);
 #else
@@ -224,7 +227,7 @@ ssize_t net_write_to_listener(const void *buf, size_t len) {
 			if (errno == EINTR)
 				continue;
 
-			if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+			if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
 				current->error.l_wsaerr = WSAGetLastError();
 
@@ -251,7 +254,7 @@ static int _net_connector_start(void) {
 
 	memset(&hints, 0, sizeof(struct addrinfo));
 
-	switch (current->config.net_l4_proto_value) {
+	switch (current->config->net_l4_proto_value) {
 		case UBWT_NET_PROTO_L4_UDP: hints.ai_socktype = SOCK_DGRAM; break;
 		case UBWT_NET_PROTO_L4_TCP: hints.ai_socktype = SOCK_STREAM; break;
 		default: {
@@ -262,7 +265,7 @@ static int _net_connector_start(void) {
 		}
 	}
 
-	if ((current->error.l_eai = getaddrinfo(current->config.addr, current->config.port, &hints, &rlist))) {
+	if ((current->error.l_eai = getaddrinfo(current->config->addr, current->config->port, &hints, &rlist))) {
 		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ADDRINFO, "net_connector_start(): getaddrinfo()");
 		return -1;
 	}
@@ -285,7 +288,7 @@ static int _net_connector_start(void) {
 
 	freeaddrinfo(rlist);
 
-	if (net_timeout_set(current->net.fd, current->config.net_timeout_default) < 0) {
+	if (net_timeout_set(current->net.fd, current->config->net_timeout_default) < 0) {
 		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_RECV_TIMEO_SET, "net_connector_start(): net_timeout_set()");
 		return -1;
 	}
@@ -299,7 +302,7 @@ static int _net_listener_start(void) {
 
 	memset(&hints, 0, sizeof(struct addrinfo));
 
-	switch (current->config.net_l4_proto_value) {
+	switch (current->config->net_l4_proto_value) {
 		case UBWT_NET_PROTO_L4_UDP: hints.ai_socktype = SOCK_DGRAM; break;
 		case UBWT_NET_PROTO_L4_TCP: hints.ai_socktype = SOCK_STREAM; break;
 		default: {
@@ -310,7 +313,7 @@ static int _net_listener_start(void) {
 		}
 	}
 
-	if ((current->error.l_eai = getaddrinfo(current->config.addr, current->config.port, &hints, &rlist))) {
+	if ((current->error.l_eai = getaddrinfo(current->config->addr, current->config->port, &hints, &rlist))) {
 		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ADDRINFO, "net_listener_start(): getaddrinfo()");
 		return -1;
 	}
@@ -319,7 +322,7 @@ static int _net_listener_start(void) {
 		if ((fd = socket(rcur->ai_family, rcur->ai_socktype, rcur->ai_protocol)) < 0)
 			continue;
 
-		if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+		if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 			current->net.fd_listen = fd;
 		} else {
 			current->net.fd = fd;
@@ -328,16 +331,16 @@ static int _net_listener_start(void) {
 		current->net.listener.slen = rcur->ai_addrlen;
 		memcpy(&current->net.listener.saddr, rcur->ai_addr, rcur->ai_addrlen);
 
-#if defined(UBWT_CONFIG_NET_REUSE_ADDRESS) && UBWT_CONFIG_NET_REUSE_ADDRESS == 1 && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1
-		if (current->config.net_reuseaddr) {
-			if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &current->config.net_reuseaddr, sizeof(current->config.net_reuseaddr)) < 0)
+#if defined(UBWT_CONFIG_NET_REUSE_ADDRESS) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)
+		if (current->config->net_reuseaddr) {
+			if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &current->config->net_reuseaddr, sizeof(current->config->net_reuseaddr)) < 0)
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_REUSEADDR_FAILED, "net_listener_start(): setsockopt()");
 		}
 #endif
 
-#if defined(UBWT_CONFIG_NET_REUSE_PORT) && UBWT_CONFIG_NET_REUSE_PORT == 1 && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && UBWT_CONFIG_NET_USE_SETSOCKOPT == 1
-		if (current->config.net_reuseport) {
-			if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &current->config.net_reuseport, sizeof(current->config.net_reuseport)) < 0)
+#if defined(UBWT_CONFIG_NET_REUSE_PORT) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)
+		if (current->config->net_reuseport) {
+			if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &current->config->net_reuseport, sizeof(current->config->net_reuseport)) < 0)
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_REUSEPORT_FAILED, "net_listener_start(): setsockopt()");
 		}
 #endif
@@ -357,12 +360,12 @@ static int _net_listener_start(void) {
 
 	freeaddrinfo(rlist);
 
-	if (net_timeout_set(fd, current->config.net_timeout_default) < 0) {
+	if (net_timeout_set(fd, current->config->net_timeout_default) < 0) {
 		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_RECV_TIMEO_SET, "net_listener_start(): net_timeout_set()");
 		return -1;
 	}
 
-	if (current->config.net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+	if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 		if (listen(current->net.fd_listen, UBWT_CONFIG_NET_LISTEN_BACKLOG) < 0) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_LISTEN, "net_listener_listen(): listen()");
 

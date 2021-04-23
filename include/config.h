@@ -28,7 +28,7 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.04d-dev"
+#define UBWT_CONFIG_VERSION_STR				"0.05a-dev"
 #define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120
@@ -56,9 +56,12 @@
 /* uConf */
 //#define UBWT_CONFIG_DEBUG				1
 //#define UBWT_CONFIG_NO_PRAGMA_PACK			1
+//#define UBWT_CONFIG_NET_NO_UDP			0
 //#define UBWT_CONFIG_NET_REUSE_ADDRESS			1
 //#define UBWT_CONFIG_NET_REUSE_PORT			1
 //#define UBWT_CONFIG_NET_USE_SETSOCKOPT		1
+//#define UBWT_CONFIG_MULTI_THREADED			1
+//#define COMPILE_WIN32					0
 
 #if defined(UBWT_CONFIG_DEBUG) && (UBWT_CONFIG_DEBUG == 0)
  #undef UBWT_CONFIG_DEBUG
@@ -66,6 +69,10 @@
 
 #if defined(UBWT_CONFIG_NO_PRAGMA_PACK) && (UBWT_CONFIG_NO_PRAGMA_PACK == 0)
  #undef UBWT_CONFIG_NO_PRAGMA_PACK
+#endif
+
+#if defined(UBWT_CONFIG_NET_NO_UDP) && (UBWT_CONFIG_NET_NO_UDP == 0)
+ #undef UBWT_CONFIG_NET_NO_UDP
 #endif
 
 #if defined(UBWT_CONFIG_NET_REUSE_ADDRESS) && (UBWT_CONFIG_NET_REUSE_ADDRESS == 0)
@@ -78,6 +85,14 @@
 
 #if defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && (UBWT_CONFIG_NET_USE_SETSOCKOPT == 0)
  #undef UBWT_CONFIG_NET_USE_SETSOCKOPT
+#endif
+
+#if defined(UBWT_CONFIG_MULTI_THREADED) && (UBWT_CONFIG_MULTI_THREADED == 0)
+ #undef UBWT_CONFIG_MULTI_THREADED
+#endif
+
+#if defined(COMPILE_WIN32) && (COMPILE_WIN32 == 0)
+ #undef COMPILE_WIN32
 #endif
 /* !uConf */
 
@@ -119,8 +134,13 @@ struct ubwt_config {
 	uint16_t talk_payload_default_size;
 	uint16_t talk_payload_max_size;
 	uint16_t talk_stream_minimum_time;
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	int worker_straight_first_count, worker_reverse_first_count;
+#endif
 };
 
+extern struct ubwt_config __config;
 
 void config_init(int argc, char *const *argv);
 void config_destroy(void);
