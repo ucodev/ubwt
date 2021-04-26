@@ -29,23 +29,37 @@
 #include <pthread.h>
 
 typedef enum UBWT_WORKER_TASK_TYPES {
-	UBWT_WORKER_TASK_TYPE_INT = 1,
-	UBWT_WORKER_TASK_TYPE_VOID
+	UBWT_WORKER_TASK_TYPE_NVR_ANY = 1,	/* No Value Returned, (void *) type parameter */
+	UBWT_WORKER_TASK_TYPE_NVR_INT		/* No Value Returned, (int) type parameter */
 } ubwt_worker_task_type_t;
+
+typedef enum UBWT_WORKER_FLAGS {
+	UBWT_WORKER_FLAG_TYPE_CHILD = 1,
+	UBWT_WORKER_FLAG_CANCEL_REQUESTED,
+	UBWT_WORKER_FLAG_CANCEL_COMPLETED,
+	UBWT_WORKER_FLAG_TASK_READY,
+	UBWT_WORKER_FLAG_TASK_RUNNING,
+	UBWT_WORKER_FLAG_TASK_JOINABLE
+} ubwt_worker_flags_t;
 
 typedef pthread_t ubwt_worker_t;
 typedef pthread_barrier_t ubwt_worker_barrier_t;
 typedef pthread_mutex_t ubwt_worker_mutex_t;
+typedef pthread_cond_t ubwt_worker_cond_t;
 
 typedef struct ubwt_worker_task {
 	ubwt_worker_task_type_t type;
 
 	union {
+		void *(*f) (void *);
+
 		void (*fi) (int);
 		void (*fv) (void *);
 	};
 
 	union {
+		void *v;
+
 		int vi;
 		void *vv;
 	};
@@ -53,16 +67,28 @@ typedef struct ubwt_worker_task {
 
 extern ubwt_worker_barrier_t __worker_barrier_global[2];
 extern ubwt_worker_mutex_t   __worker_mutex_global;
+extern ubwt_worker_mutex_t   __worker_mutex_cond;
+extern ubwt_worker_cond_t   __worker_cond_global;
 
-void worker_create(ubwt_worker_task_t *t);
-void worker_exit(void);
-void worker_wait(ubwt_worker_barrier_t *barrier);
-void worker_lock(ubwt_worker_mutex_t *mutex);
-void worker_trylock(ubwt_worker_mutex_t *mutex);
-void worker_unlock(ubwt_worker_mutex_t *mutex);
+ubwt_worker_t worker_task_create(ubwt_worker_task_t *t);
+void worker_task_exit(void);
+void worker_barrier_init(ubwt_worker_barrier_t *barrier, unsigned count);
+void worker_barrier_wait(ubwt_worker_barrier_t *barrier);
+void worker_barrier_destroy(ubwt_worker_barrier_t *barrier);
+void worker_mutex_init(ubwt_worker_mutex_t *mutex);
+void worker_mutex_lock(ubwt_worker_mutex_t *mutex);
+void worker_mutex_trylock(ubwt_worker_mutex_t *mutex);
+void worker_mutex_unlock(ubwt_worker_mutex_t *mutex);
+void worker_mutex_destroy(ubwt_worker_mutex_t *mutex);
+void worker_cond_init(ubwt_worker_cond_t *cond);
+void worker_cond_wait(ubwt_worker_cond_t *cond, ubwt_worker_mutex_t *mutex);
+void worker_cond_timedwait(ubwt_worker_cond_t *cond, ubwt_worker_mutex_t *mutex, const struct timespec *abstime);
+void worker_cond_signal(ubwt_worker_cond_t *cond);
+void worker_cond_broadcast(ubwt_worker_cond_t *cond);
+void worker_cond_destroy(ubwt_worker_cond_t *cond);
 ubwt_worker_t worker_self(void);
 int worker_im_cancelled(void);
-int worker_is_joinable(ubwt_worker_t tid);
+int worker_is_cancelled(ubwt_worker_t tid);
 void worker_cancel(ubwt_worker_t worker_id);
 void worker_join(ubwt_worker_t worker_id);
 #endif

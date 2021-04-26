@@ -38,28 +38,28 @@ if [ -e ".done" ]; then
 fi
 
 ## Detect compiler ##
-. ./uconf/lib/sh/compiler.inc
+. ./uconf/lib/sh/compiler.in
 
 ## Detect linker ##
-. ./uconf/lib/sh/linker.inc
+. ./uconf/lib/sh/linker.in
 
 ## Detect architecture ##
-. ./uconf/lib/sh/arch.inc
+. ./uconf/lib/sh/arch.in
 
 ## OS-Specific options ##
-. ./uconf/lib/sh/os-spec.inc
+. ./uconf/lib/sh/os-spec.in
 
 ## Addon options ##
-. ./uconf/lib/sh/addons.inc
+. ./uconf/lib/sh/addons.in
 
 ## Test optional libraries ##
-. ./uconf/lib/sh/opt-libs.inc
+. ./uconf/lib/sh/opt-libs.in
 
 ## Configure system directories
-. ./uconf/lib/sh/dirconf.inc
+. ./uconf/lib/sh/dirconf.in
 
 ## Replace configuration variables
-. ./uconf/lib/sh/varsubst.inc
+. ./uconf/lib/sh/varsubst.in
 
 ## Build ##
 if [ -e "./uconf/params/default/do" ]; then

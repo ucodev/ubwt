@@ -38,7 +38,9 @@ if [ ! -e ".nopriv" ]; then
 	fi
 fi
 
-. ./uconf/lib/sh/varundo.inc
+if [ -e ".osname" ]; then
+	. ./uconf/lib/sh/varundo.in
+fi
 
 if [ -e "./uconf/params/default/undo" ]; then
 	while read cmd; do

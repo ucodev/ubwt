@@ -23,6 +23,13 @@
 #ifndef UBWT_RUNTIME_H
 #define UBWT_RUNTIME_H
 
+struct ubwt_runtime {
+	unsigned int progress_tick;
+	char *progress_rotary;
+};
+
+extern struct ubwt_runtime __runtime;
+
 void runtime_do(void);
 
 #endif

@@ -790,12 +790,18 @@ void talk_init(void) {
 			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_RECEIVER_INIT, "talk_init(): net_listener_accept()");
 			error_no_return();
 		}
+
 	} else {
 		if (net_connector_connect() < 0) {
 			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_SENDER_INIT, "talk_init(): net_connector_connect()");
 			error_no_return();
 		}
+
 	}
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	current_running_set();
+#endif
 }
 
 void talk_destroy(void) {

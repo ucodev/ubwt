@@ -167,10 +167,18 @@ void process_run(int reverse_first) {
 	} else {
 		_process_run_straight_first();
 	}
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	worker_task_exit();
+#endif
 }
 
 void process_report(void) {
 	stage_set(UBWT_STAGE_STATE_RUNTIME_REPORT_SHOW, 0);
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	report_worker_combine();
+#endif
 
 	if (net_im_listener()) {
 		process_set_im_receiver();

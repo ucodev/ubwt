@@ -45,6 +45,34 @@ static uint32_t _report_bandwidth_theoretical_mbps(uint32_t bandwidth_effective)
 	return bandwidth_effective;
 }
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
+void report_worker_combine(void) {
+	unsigned int i = 0;
+	struct ubwt_current *c = NULL;
+
+	for (c = current->next; c; c = c->next, i ++) {
+		current->report.results[0].collected.talk_latency_us += c->report.results[0].collected.talk_latency_us;
+		current->report.results[0].collected.talk_count += c->report.results[0].collected.talk_count;
+		current->report.results[0].collected.talk_stream_recv_pkts += c->report.results[0].collected.talk_stream_recv_pkts;
+		current->report.results[0].collected.talk_stream_time_duration += c->report.results[0].collected.talk_stream_time_duration;
+		current->report.results[0].collected.talk_stream_time_start = c->report.results[0].collected.talk_stream_time_start;
+		current->report.results[0].collected.talk_stream_recv_bytes += c->report.results[0].collected.talk_stream_recv_bytes;
+
+		current->report.results[1].collected.talk_latency_us += c->report.results[1].collected.talk_latency_us;
+		current->report.results[1].collected.talk_count += c->report.results[1].collected.talk_count;
+		current->report.results[1].collected.talk_stream_recv_pkts += c->report.results[1].collected.talk_stream_recv_pkts;
+		current->report.results[1].collected.talk_stream_time_duration += c->report.results[1].collected.talk_stream_time_duration;
+		current->report.results[1].collected.talk_stream_time_start = c->report.results[1].collected.talk_stream_time_start;
+		current->report.results[1].collected.talk_stream_recv_bytes += c->report.results[1].collected.talk_stream_recv_bytes;
+	}
+
+	if (i) {
+		current->report.results[0].collected.talk_latency_us /= i;
+		current->report.results[1].collected.talk_latency_us /= i;
+	}
+}
+#endif
+
 void report_set_straight(void) {
 	current->report.result = &current->report.results[0];
 }

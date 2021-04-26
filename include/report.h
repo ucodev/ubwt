@@ -73,6 +73,9 @@ struct ubwt_report {
 	struct ubwt_report_result  results[2];
 };
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
+void report_worker_combine(void);
+#endif
 void report_set_straight(void);
 void report_set_reverse(void);
 void report_talk_latency_set(uint32_t dt);

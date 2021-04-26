@@ -26,15 +26,16 @@
 
 #include "config.h"
 
+#include "bitops.h"
 #include "current.h"
 #include "datetime.h"
 #include "error.h"
+#include "runtime.h"
 #include "stage.h"
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
  #include <assert.h>
  #include <stdlib.h>
- #include <pthread.h>
 
  #include "worker.h"
 #endif
@@ -50,12 +51,12 @@ struct ubwt_current *current_get(ubwt_worker_t worker_id) {
 
 	do {
 		if (c->worker_id == worker_id)
-			return c;
+			break;
 	} while ((c = c->next));
 
-	error_abort(__FILE__, __LINE__, "current_get");
+	assert(c != NULL);
 
-	return NULL;
+	return c;
 }
 #endif
 
@@ -67,6 +68,10 @@ void current_init(void) {
 
 	__current.worker_barrier_global = __worker_barrier_global;
 	__current.worker_mutex_global = &__worker_mutex_global;
+	__current.worker_mutex_cond = &__worker_mutex_cond;
+	__current.worker_cond_global = &__worker_cond_global;
+
+	worker_mutex_init(&__current.worker_mutex_local);
 #endif
 
 	__current.config = &__config;
@@ -77,6 +82,8 @@ void current_init(void) {
 	__current.time_us = &__current_time_us;
 
 	*__current.time_us = datetime_now_us();
+
+	__current.runtime = &__runtime;
 }
 
 void current_update(void) {
@@ -84,7 +91,7 @@ void current_update(void) {
 }
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-void current_fork(void) {
+void current_fork(ubwt_worker_task_t *t) {
 	struct ubwt_current *c = NULL;
 
 	if (!(c = malloc(sizeof(struct ubwt_current)))) {
@@ -99,14 +106,72 @@ void current_fork(void) {
 	memcpy(&c->net, &__current.net, sizeof(struct ubwt_net));
 	c->config = __current.config;
 	c->time_us = __current.time_us;
+	c->runtime = __current.runtime;
 
 	c->worker_id = worker_self();
+	c->worker_task = t;
+	c->worker_barrier_global = __worker_barrier_global;
+	c->worker_mutex_global = &__worker_mutex_global;
+	c->worker_mutex_cond = &__worker_mutex_cond;
+	c->worker_cond_global = &__worker_cond_global;
 
-	if (pthread_mutex_init(&c->worker_mutex_local, NULL)) error_abort(__FILE__, __LINE__, "pthread_mutex_init");
+	worker_mutex_init(&c->worker_mutex_local);
+
+	worker_mutex_lock(&c->worker_mutex_local);
+
+	bit_set(&c->worker_flags, UBWT_WORKER_FLAG_TYPE_CHILD);
+	bit_set(&c->worker_flags, UBWT_WORKER_FLAG_TASK_READY);
+
+	worker_mutex_unlock(&c->worker_mutex_local);
+
+	worker_mutex_lock(c->worker_mutex_global);
 
 	c->prev = &__current;
 	c->next = __current.next;
 	__current.next = c;
+
+	worker_mutex_unlock(c->worker_mutex_global);
+
+	worker_cond_signal(c->worker_cond_global);
+
+	current_update();
+}
+
+void current_running_set(void) {
+	worker_mutex_lock(&current->worker_mutex_local);
+
+	bit_set(&current->worker_flags, UBWT_WORKER_FLAG_TASK_RUNNING);
+
+	worker_mutex_unlock(&current->worker_mutex_local);
+
+	worker_cond_signal(current->worker_cond_global);
+
+	current_update();
+}
+
+void current_running_unset(void) {
+	worker_mutex_lock(&current->worker_mutex_local);
+
+	bit_clear(&current->worker_flags, UBWT_WORKER_FLAG_TASK_RUNNING);
+
+	worker_mutex_unlock(&current->worker_mutex_local);
+
+	worker_cond_signal(current->worker_cond_global);
+
+	current_update();
+}
+
+void current_exit(void) {
+	worker_mutex_lock(&current->worker_mutex_local);
+
+	bit_clear(&current->worker_flags, UBWT_WORKER_FLAG_TASK_RUNNING);
+	bit_set(&current->worker_flags, UBWT_WORKER_FLAG_TASK_JOINABLE);
+
+	worker_mutex_unlock(&current->worker_mutex_local);
+
+	worker_cond_signal(current->worker_cond_global);
+
+	current_update();
 }
 
 void current_join(ubwt_worker_t worker_id) {
@@ -115,9 +180,20 @@ void current_join(ubwt_worker_t worker_id) {
 	do {
 		if (c->worker_id == worker_id)
 			break;
-	} while ((c = current->next));
+	} while ((c = c->next));
 
-	assert(c != NULL);
+	assert(c != NULL); /* Task must exist */
+
+	assert(c->worker_id != worker_self()); /* Cannot join to itself */
+
+	worker_mutex_lock(&c->worker_mutex_local);
+
+	assert(!bit_test(&c->worker_flags, UBWT_WORKER_FLAG_TASK_RUNNING)); /* Task should be in a stopped state */
+	assert(bit_test(&c->worker_flags, UBWT_WORKER_FLAG_TASK_JOINABLE)); /* Task must be in a joinable state */
+
+	worker_mutex_unlock(&c->worker_mutex_local);
+
+	worker_mutex_lock(c->worker_mutex_global);
 
 	if (c->prev && c->next) {
 		c->prev->next = c->next;
@@ -130,9 +206,32 @@ void current_join(ubwt_worker_t worker_id) {
 		c->next->prev = NULL;
 	}
 
-	memset(c, 0, sizeof(struct ubwt_current));
+	worker_mutex_unlock(c->worker_mutex_global);
 
+	worker_mutex_destroy(&c->worker_mutex_local);
+
+	memset(c->worker_task, 0, sizeof(ubwt_worker_task_t));
+	free(c->worker_task);
+
+	memset(c, 0, sizeof(struct ubwt_current));
 	free(c);
+
+	worker_join(worker_id);
+}
+
+int current_children_has_flag(unsigned int flag) {
+	struct ubwt_current *c = &__current;
+
+	do {
+		/* Ignore non-child threads */
+		if (!bit_test(&c->worker_flags, UBWT_WORKER_FLAG_TYPE_CHILD))
+			continue;
+
+		if (!bit_test(&c->worker_flags, flag))
+			return 0;
+	} while ((c = c->next));
+
+	return 1;
 }
 #endif
 

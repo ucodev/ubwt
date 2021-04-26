@@ -1,3 +1,10 @@
+v0.06a-dev
+
+ - Abstracted worker layer for future portability
+ - Full multi-threading support
+ - Real-time progress report when in multi-threaded mode
+
+
 v0.05b-dev
 
  - Minor refactoring

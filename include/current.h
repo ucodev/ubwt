@@ -55,16 +55,20 @@ struct ubwt_current {
 
 	struct ubwt_report report;
 	struct ubwt_process process;
+	struct ubwt_runtime *runtime;
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	ubwt_worker_t worker_id;
 
 	ubwt_worker_barrier_t *worker_barrier_global;
 	ubwt_worker_mutex_t *worker_mutex_global;
+	ubwt_worker_mutex_t *worker_mutex_cond;
+	ubwt_worker_cond_t *worker_cond_global;
 	ubwt_worker_mutex_t worker_mutex_local;
 
-	uint8_t worker_cancel_requested;
-	uint8_t worker_cancel_completed;
+	ubwt_worker_task_t *worker_task;
+
+	uint32_t worker_flags;
 
 	struct ubwt_current *next, *prev;
 #endif
@@ -73,8 +77,12 @@ struct ubwt_current {
 void current_init(void);
 void current_update(void);
 #ifdef UBWT_CONFIG_MULTI_THREADED
-void current_fork(void);
+void current_fork(ubwt_worker_task_t *t);
+void current_running_set(void);
+void current_running_unset(void);
+void current_exit(void);
 void current_join(pthread_t tid);
+int current_children_has_flag(unsigned int flag);
 #endif
 void current_destroy(void);
 

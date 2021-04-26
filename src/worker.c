@@ -24,27 +24,33 @@
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
 
+#include <stdlib.h>
 #include <pthread.h>
 
+#include "bitops.h"
 #include "current.h"
 #include "error.h"
 #include "worker.h"
 
 ubwt_worker_barrier_t __worker_barrier_global[2]; /* 0: straight, 1: reverse */
-ubwt_worker_mutex_t   __worker_mutex_global;
+ubwt_worker_mutex_t   __worker_mutex_global; /* used by 'current' handlers */
+ubwt_worker_mutex_t   __worker_mutex_cond;
+ubwt_worker_cond_t    __worker_cond_global;
 
 static void *_worker_task_init(void *arg) {
 	ubwt_worker_task_t *t = arg;
 
-	current_fork();
+	current_fork(t);
+
+	worker_mutex_unlock(current->worker_mutex_cond);
 
 	switch (t->type) {
-		case UBWT_WORKER_TASK_TYPE_INT: {
-			t->fi(t->vi);
+		case UBWT_WORKER_TASK_TYPE_NVR_ANY: {
+			t->fv(t->vv);
 		} break;
 
-		case UBWT_WORKER_TASK_TYPE_VOID: {
-			t->fv(t->vv);
+		case UBWT_WORKER_TASK_TYPE_NVR_INT: {
+			t->fi(t->vi);
 		} break;
 
 		default: error_abort(__FILE__, __LINE__, "_worker_task_init");
@@ -53,37 +59,84 @@ static void *_worker_task_init(void *arg) {
 	return NULL;
 }
 
-void worker_exit(void) {
+void worker_task_exit(void) {
 	int retval = 0;
 
-	current_join(pthread_self());
+	current_exit();
 
 	pthread_exit((void *) &retval);
 }
 
-void worker_create(ubwt_worker_task_t *t) {
-	pthread_t tid;
+ubwt_worker_t worker_task_create(ubwt_worker_task_t *t) {
+	ubwt_worker_t tid;
+
+	worker_mutex_lock(current->worker_mutex_cond); /* Will unlock on _worker_task_init thread after current_fork() */
 
 	if (pthread_create(&tid, NULL, _worker_task_init, t)) {
-		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_WORKER_CREATE_FAILED, "worker_create(): pthread_create()");
+		worker_mutex_unlock(current->worker_mutex_cond);
+
+		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_WORKER_CREATE_FAILED, "worker_task_create(): pthread_create()");
 		error_no_return();
 	}
+
+	return tid;
 }
 
-void worker_wait(ubwt_worker_barrier_t *barrier) {
+void worker_barrier_init(ubwt_worker_barrier_t *barrier, unsigned count) {
+	if (pthread_barrier_init(barrier, NULL, count)) error_abort(__FILE__, __LINE__, "pthread_barrier_init");
+}
+
+void worker_barrier_wait(ubwt_worker_barrier_t *barrier) {
 	if (pthread_barrier_wait(barrier)) error_abort(__FILE__, __LINE__, "pthread_barrier_wait");
 }
 
-void worker_lock(ubwt_worker_mutex_t *mutex) {
+void worker_barrier_destroy(ubwt_worker_barrier_t *barrier) {
+	pthread_barrier_destroy(barrier);
+}
+
+void worker_mutex_init(ubwt_worker_mutex_t *mutex) {
+	if (pthread_mutex_init(mutex, NULL)) error_abort(__FILE__, __LINE__, "pthread_mutex_init");
+}
+
+void worker_mutex_lock(ubwt_worker_mutex_t *mutex) {
 	if (pthread_mutex_lock(mutex)) error_abort(__FILE__, __LINE__, "pthread_mutex_lock");
 }
 
-void worker_trylock(ubwt_worker_mutex_t *mutex) {
+void worker_mutex_trylock(ubwt_worker_mutex_t *mutex) {
 	if (pthread_mutex_trylock(mutex)) error_abort(__FILE__, __LINE__, "pthread_mutex_trylock");
 }
 
-void worker_unlock(ubwt_worker_mutex_t *mutex) {
+void worker_mutex_unlock(ubwt_worker_mutex_t *mutex) {
 	if (pthread_mutex_unlock(mutex)) error_abort(__FILE__, __LINE__, "pthread_mutex_unlock");
+}
+
+void worker_mutex_destroy(ubwt_worker_mutex_t *mutex) {
+	pthread_mutex_destroy(mutex);
+}
+
+void worker_cond_init(ubwt_worker_cond_t *cond) {
+	if (pthread_cond_init(cond, NULL)) error_abort(__FILE__, __LINE__, "pthread_cond_init");
+}
+
+void worker_cond_wait(ubwt_worker_cond_t *cond, ubwt_worker_mutex_t *mutex) {
+	if (pthread_cond_wait(cond, mutex)) error_abort(__FILE__, __LINE__, "pthread_cond_wait");
+}
+
+void worker_cond_timedwait(ubwt_worker_cond_t *cond, ubwt_worker_mutex_t *mutex, const struct timespec *abstime) {
+	//if (pthread_cond_timedwait(cond, mutex, abstime)) error_abort(__FILE__, __LINE__, "pthread_cond_timedwait");
+	pthread_cond_timedwait(cond, mutex, abstime);
+}
+
+void worker_cond_signal(ubwt_worker_cond_t *cond) {
+	if (pthread_cond_signal(cond)) error_abort(__FILE__, __LINE__, "pthread_cond_signal");
+}
+
+void worker_cond_broadcast(ubwt_worker_cond_t *cond) {
+	if (pthread_cond_signal(cond)) error_abort(__FILE__, __LINE__, "pthread_cond_broadcast");
+}
+
+void worker_cond_destroy(ubwt_worker_cond_t *cond) {
+	pthread_cond_destroy(cond);
 }
 
 ubwt_worker_t worker_self(void) {
@@ -91,19 +144,38 @@ ubwt_worker_t worker_self(void) {
 }
 
 int worker_im_cancelled(void) {
-	return current->worker_cancel_requested;
+	int ret = 0;
+
+	worker_mutex_lock(&current->worker_mutex_local);
+
+	ret = bit_test(&current->worker_flags, UBWT_WORKER_FLAG_CANCEL_REQUESTED);
+
+	worker_mutex_unlock(&current->worker_mutex_local);
+
+	return ret;
 }
 
-int worker_is_joinable(ubwt_worker_t tid) {
+int worker_is_cancelled(ubwt_worker_t tid) {
+	int ret = 0;
 	struct ubwt_current *c = current_get(tid);
 
-	return c->worker_cancel_completed;
+	worker_mutex_lock(&c->worker_mutex_local);
+
+	ret = bit_test(&c->worker_flags, UBWT_WORKER_FLAG_CANCEL_COMPLETED);
+
+	worker_mutex_unlock(&c->worker_mutex_local);
+
+	return ret;
 }
 
 void worker_cancel(ubwt_worker_t tid) {
 	struct ubwt_current *c = current_get(tid);
 
-	c->worker_cancel_requested = 1;
+	worker_mutex_lock(&c->worker_mutex_local);
+
+	bit_set(&c->worker_flags, UBWT_WORKER_FLAG_CANCEL_REQUESTED);
+
+	worker_mutex_unlock(&c->worker_mutex_local);
 
 	if (pthread_cancel(tid)) error_abort(__FILE__, __LINE__, "pthread_cancel");
 }
@@ -113,20 +185,19 @@ void worker_join(ubwt_worker_t tid) {
 }
 
 void worker_init(void) {
-	if (pthread_barrier_init(&__worker_barrier_global[0], NULL, current->config->worker_straight_first_count))
-		error_abort(__FILE__, __LINE__, "pthread_barrier_init");
-
-	if (pthread_barrier_init(&__worker_barrier_global[1], NULL, current->config->worker_reverse_first_count))
-		error_abort(__FILE__, __LINE__, "pthread_barrier_init");
-
-	if (pthread_mutex_init(&__worker_mutex_global, NULL))
-		error_abort(__FILE__, __LINE__, "pthread_mutex_init");
+	worker_barrier_init(&__worker_barrier_global[0], current->config->worker_straight_first_count);
+	worker_barrier_init(&__worker_barrier_global[1], current->config->worker_reverse_first_count);
+	worker_mutex_init(&__worker_mutex_global);
+	worker_mutex_init(&__worker_mutex_cond);
+	worker_cond_init(&__worker_cond_global);
 }
 
 void worker_destroy(void) {
-	pthread_barrier_destroy(&__worker_barrier_global[0]);
-	pthread_barrier_destroy(&__worker_barrier_global[1]);
-	pthread_mutex_destroy(&__worker_mutex_global);
+	worker_barrier_destroy(&__worker_barrier_global[0]);
+	worker_barrier_destroy(&__worker_barrier_global[1]);
+	worker_mutex_destroy(&__worker_mutex_global);
+	worker_mutex_destroy(&__worker_mutex_cond);
+	worker_cond_destroy(&__worker_cond_global);
 }
 
 #else
