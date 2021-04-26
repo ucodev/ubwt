@@ -215,8 +215,6 @@ void current_join(ubwt_worker_t worker_id) {
 
 	memset(c, 0, sizeof(struct ubwt_current));
 	free(c);
-
-	worker_join(worker_id);
 }
 
 int current_children_has_flag(unsigned int flag) {

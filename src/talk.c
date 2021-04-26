@@ -800,11 +800,13 @@ void talk_init(void) {
 	}
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	current_running_set();
+	worker_task_running_set();
 #endif
 }
 
 void talk_destroy(void) {
-	return;
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	worker_task_running_unset();
+#endif
 }
 

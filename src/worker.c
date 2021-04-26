@@ -59,12 +59,30 @@ static void *_worker_task_init(void *arg) {
 	return NULL;
 }
 
+void worker_task_running_set(void) {
+	current_running_set();
+}
+
+void worker_task_running_unset(void) {
+	current_running_unset();
+}
+
 void worker_task_exit(void) {
 	int retval = 0;
 
 	current_exit();
 
 	pthread_exit((void *) &retval);
+}
+
+int worker_task_has_flag(unsigned int flag) {
+	return current_children_has_flag(flag);
+}
+
+void worker_task_join(ubwt_worker_t tid) {
+	current_join(tid);
+
+	if (pthread_join(tid, NULL)) error_abort(__FILE__, __LINE__, "pthread_join");
 }
 
 ubwt_worker_t worker_task_create(ubwt_worker_task_t *t) {
@@ -178,10 +196,6 @@ void worker_cancel(ubwt_worker_t tid) {
 	worker_mutex_unlock(&c->worker_mutex_local);
 
 	if (pthread_cancel(tid)) error_abort(__FILE__, __LINE__, "pthread_cancel");
-}
-
-void worker_join(ubwt_worker_t tid) {
-	if (pthread_join(tid, NULL)) error_abort(__FILE__, __LINE__, "pthread_join");
 }
 
 void worker_init(void) {

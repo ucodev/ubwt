@@ -36,6 +36,7 @@ struct ubwt_runtime __runtime = {
 	"-\\|/"	/* progress_rotary */
 };
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
 static void _runtime_display_progress(const char *section) {
 	fprintf(stdout, "\r [%c] %s...", __runtime.progress_rotary[__runtime.progress_tick ++ % sizeof(__runtime.progress_tick)], section);
 	fflush(stdout);
@@ -45,14 +46,14 @@ static void _runtime_display_done(const char *section) {
 	fprintf(stderr, "\r [*] %s...\n", section);
 }
 
-#ifdef UBWT_CONFIG_MULTI_THREADED
 static void _runtime_wait_worker_flag(const char *section, unsigned int flag) {
 	struct timespec abstime = { 0, 0 };
+
 	_runtime_display_progress(section);
 
 	worker_mutex_lock(current->worker_mutex_cond);
 
-	while (!current_children_has_flag(flag)) {
+	while (!worker_task_has_flag(flag)) { /* Check if all children workers have 'flag' set */
 		clock_gettime(CLOCK_REALTIME, &abstime);
 
 		abstime.tv_nsec += 125000000;
@@ -99,7 +100,7 @@ void runtime_do(void) {
 	process_report();
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	current_join(tid);
+	worker_task_join(tid);
 #endif
 }
 

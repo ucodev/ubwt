@@ -71,7 +71,11 @@ extern ubwt_worker_mutex_t   __worker_mutex_cond;
 extern ubwt_worker_cond_t   __worker_cond_global;
 
 ubwt_worker_t worker_task_create(ubwt_worker_task_t *t);
+void worker_task_running_set(void);
+void worker_task_running_unset(void);
 void worker_task_exit(void);
+int worker_task_has_flag(unsigned int flag);
+void worker_task_join(ubwt_worker_t worker_id);
 void worker_barrier_init(ubwt_worker_barrier_t *barrier, unsigned count);
 void worker_barrier_wait(ubwt_worker_barrier_t *barrier);
 void worker_barrier_destroy(ubwt_worker_barrier_t *barrier);
@@ -90,7 +94,6 @@ ubwt_worker_t worker_self(void);
 int worker_im_cancelled(void);
 int worker_is_cancelled(ubwt_worker_t tid);
 void worker_cancel(ubwt_worker_t worker_id);
-void worker_join(ubwt_worker_t worker_id);
 #endif
 
 void worker_init(void);
