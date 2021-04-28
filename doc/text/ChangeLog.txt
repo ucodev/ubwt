@@ -1,3 +1,8 @@
+v0.06c-dev
+
+ - Minor refactoring
+
+
 v0.06b-dev
 
  - Minor refactoring
