@@ -107,7 +107,7 @@ void runtime_do(void) {
 	}
 
 	/* Initialize reverse first workers */
-	for (; i < current->config->worker_reverse_first_count; i ++) {
+	for (; i < (current->config->worker_straight_first_count + current->config->worker_reverse_first_count); i ++) {
 		t[i]->type = UBWT_WORKER_TASK_TYPE_NVR_INT;
 		t[i]->fi = process_run;
 		t[i]->vi = 1;

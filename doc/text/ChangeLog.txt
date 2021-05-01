@@ -1,3 +1,8 @@
+v0.07a-dev
+
+ - Included asynchronous bi-directional full-duplex test mode support
+
+
 v0.06d-dev
 
  - Included full multi-threaded support

@@ -70,7 +70,7 @@ static void _talk_timeout(time_t timeout) {
 
 static ssize_t _talk_send(const ubwt_talk_payload_t *pkt) {
 	size_t len = 0, hdr_size = offsetof(ubwt_talk_payload_t, buf);
-	ubwt_talk_payload_t pktbuf;
+	ubwt_talk_payload_t pktbuf = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 	if (stage_get() == UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE) {
 		len = hdr_size;
@@ -124,7 +124,6 @@ static ssize_t _talk_recv(ubwt_talk_payload_t *pkt) {
 
 static void _talk_send_abort(void) {
 	int errsv = errno;
-
 	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 	debug_info_talk_op(UBWT_TALK_OP_FORCE_FAIL, "SEND");
@@ -599,6 +598,7 @@ static int _talk_receiver_report_exchange(void) {
 static int _talk_sender_finish(void) {
 	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
+
 	/* Send FINISH */
 
 	debug_info_talk_op(UBWT_TALK_OP_FINISH, "SEND");
@@ -621,6 +621,7 @@ static int _talk_sender_finish(void) {
 
 static int _talk_receiver_finish(void) {
 	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
+
 
 	/* Wait for FINISH */
 

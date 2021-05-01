@@ -119,7 +119,7 @@ static void _process_connector_reverse(int init, int cleanup) {
 
 static void _process_run_straight_first(void) {
 	if (net_im_listener()) {
-		if (current->config->bidirectional) {
+		if (current->config->bidirectional && !current->config->asynchronous) {
 			_process_listener_straight(1 /* init */, 0);
 		} else {
 			_process_listener_straight(1 /* init */, 1 /* cleanup */);
@@ -134,7 +134,7 @@ static void _process_run_straight_first(void) {
 
 		_process_listener_reverse(0, 1 /* cleanup */);
 	} else {
-		if (current->config->bidirectional) {
+		if (current->config->bidirectional && !current->config->asynchronous) {
 			_process_connector_straight(1 /* init */, 0);
 		} else {
 			_process_connector_straight(1 /* init */, 1 /* cleanup */);
@@ -149,7 +149,7 @@ static void _process_run_straight_first(void) {
 
 static void _process_run_reverse_first(void) {
 	if (net_im_listener()) {
-		if (current->config->bidirectional) {
+		if (current->config->bidirectional && !current->config->asynchronous) {
 			_process_listener_reverse(1 /* init */, 0);
 		} else {
 			_process_listener_reverse(1 /* init */, 1 /* cleanup */);
@@ -164,7 +164,7 @@ static void _process_run_reverse_first(void) {
 
 		_process_listener_straight(0, 1 /* cleanup */);
 	} else {
-		if (current->config->bidirectional) {
+		if (current->config->bidirectional && !current->config->asynchronous) {
 			_process_connector_reverse(1 /* init */, 0);
 		} else {
 			_process_connector_reverse(1 /* init */, 1 /* cleanup */);

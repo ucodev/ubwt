@@ -28,7 +28,7 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.06d-dev"
+#define UBWT_CONFIG_VERSION_STR				"0.07a-dev"
 #define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120
@@ -107,7 +107,7 @@ struct ubwt_config {
 	uint8_t debug;
 	uint8_t report_full;
 	uint8_t bidirectional;
-	uint8_t fullduplex;
+	uint8_t asynchronous;
 
 	ubwt_error_level_t error_log_min_level;
 

@@ -69,12 +69,18 @@ static void _config_sanity(void) {
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	assert(current->config->worker_count > 0 && current->config->worker_count <= 32);
+
+	if (current->config->asynchronous)
+		assert(!(current->config->worker_count & 1));
 #endif
 }
 
 static void _config_cmdopt_process(int argc, char *const *argv) {
 	int opt = 0;
 	const char *flags =
+#ifdef UBWT_CONFIG_MULTI_THREADED
+		"A"
+#endif
 #ifdef UBWT_CONFIG_DEBUG
 		"d"
 #endif
@@ -90,6 +96,12 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 
 	while ((opt = getopt(argc, argv, flags)) != -1) {
 		switch (opt) {
+#ifdef UBWT_CONFIG_MULTI_THREADED
+			case 'A': {
+				current->config->asynchronous = 1;
+				current->config->bidirectional = 1;
+			} break;
+#endif
 #ifdef UBWT_CONFIG_DEBUG
 			case 'd': {
 				current->config->debug = 1;
@@ -270,12 +282,21 @@ void config_init(int argc, char *const *argv) {
 
 	_config_cmdopt_process(argc, argv);
 
-	_config_sanity();
-
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	current->config->worker_straight_first_count = current->config->worker_count;
-	current->config->worker_reverse_first_count = 0; /* TODO: Full-duplex mode */
+	if (current->config->asynchronous) {
+		/* Number of workers need to be an even number for fair asynchronous testing */
+		if (current->config->worker_count & 1)
+			current->config->worker_count ++;
+
+		current->config->worker_straight_first_count = current->config->worker_count / 2;
+		current->config->worker_reverse_first_count = current->config->worker_count / 2;
+	} else {
+		current->config->worker_straight_first_count = current->config->worker_count;
+		current->config->worker_reverse_first_count = 0;
+	}
 #endif
+
+	_config_sanity();
 
 	debug_info_config_show();
 }

@@ -200,6 +200,8 @@ void worker_cancel(ubwt_worker_t tid) {
 void worker_init(void) {
 	if (current->config->worker_straight_first_count && current->config->bidirectional) {
 		worker_barrier_init(&__worker_barrier_global[0], current->config->worker_straight_first_count);
+	} else if (current->config->worker_straight_first_count) {
+		worker_barrier_init(&__worker_barrier_global[0], current->config->worker_straight_first_count);
 	} else if (current->config->bidirectional) {
 		worker_barrier_init(&__worker_barrier_global[0], current->config->worker_count);
 	} else {
@@ -208,10 +210,10 @@ void worker_init(void) {
 
 	if (current->config->worker_reverse_first_count && current->config->bidirectional) {
 		worker_barrier_init(&__worker_barrier_global[1], current->config->worker_reverse_first_count);
+	} else if (current->config->worker_reverse_first_count) {
+		worker_barrier_init(&__worker_barrier_global[1], current->config->worker_reverse_first_count);
 	} else if (current->config->bidirectional) {
 		worker_barrier_init(&__worker_barrier_global[1], current->config->worker_count);
-	} else {
-		error_abort(__FILE__, __LINE__, "worker_barrier_init()");
 	}
 
 	worker_mutex_init(&__worker_mutex_global);
