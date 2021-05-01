@@ -27,12 +27,19 @@
 
 #define process_im_sender()	current->process.im_sender
 #define process_im_receiver()	current->process.im_receiver
+#define process_get_reverse()	current->process.reverse
 
 struct ubwt_process {
 	uint8_t im_sender;
 	uint8_t im_receiver;
+	uint8_t reverse;
+	uint8_t __reserved;
 };
 
+void process_set_im_sender(void);
+void process_set_im_receiver(void);
+void process_set_reverse(void);
+void process_set_straight(void);
 void process_init(void);
 void process_run(int reverse_first);
 void process_report(void);

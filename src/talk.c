@@ -82,7 +82,9 @@ static ssize_t _talk_send(const ubwt_talk_payload_t *pkt) {
 	pktbuf.flags = htonl(pkt->flags);
 	pktbuf.count = htonl(pkt->count);
 	pktbuf.latency = htonl(pkt->latency);
-	pktbuf.__reserved = htonl(pkt->__reserved);
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	pktbuf.worker_id = net_htonll((uint64_t) worker_self());
+#endif
 
 	return net_im_connector() ?
 		net_write_to_listener(&pktbuf, len) :
@@ -102,7 +104,10 @@ static ssize_t _talk_recv(ubwt_talk_payload_t *pkt) {
 		pkt->flags = ntohl(pkt->flags);
 		pkt->count = ntohl(pkt->count);
 		pkt->latency = ntohl(pkt->latency);
-		pkt->__reserved = ntohl(pkt->__reserved);
+#ifdef UBWT_CONFIG_MULTI_THREADED
+		pkt->worker_id = net_ntohll(pkt->worker_id);
+		current->remote_worker_id = (ubwt_worker_t) pkt->worker_id;
+#endif
 	}
 
 	/* Force receive to fail if the remote host indicates it */
@@ -120,7 +125,7 @@ static ssize_t _talk_recv(ubwt_talk_payload_t *pkt) {
 static void _talk_send_abort(void) {
 	int errsv = errno;
 
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 	debug_info_talk_op(UBWT_TALK_OP_FORCE_FAIL, "SEND");
 
@@ -137,7 +142,7 @@ static void _talk_send_abort(void) {
 }
 
 static long _talk_sender_handshake(void) {
-	ubwt_talk_payload_t p = { 0, current->config->talk_handshake_iter, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, current->config->talk_handshake_iter, 0, 0, 0, 0, 0, { 0 } };
 	uint64_t dt = datetime_now_us();
 
 
@@ -187,7 +192,7 @@ static long _talk_sender_handshake(void) {
 }
 
 static int _talk_receiver_handshake(void) {
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 
 	/* Wait for PING op */
@@ -243,7 +248,7 @@ static int _talk_receiver_handshake(void) {
 }
 
 static int _talk_sender_negotiate(uint32_t count, uint32_t latency) {
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 	bit_set(&p.flags, UBWT_TALK_OP_COUNT_REQ);
 	bit_set(&p.flags, UBWT_TALK_OP_LATENCY_US);
@@ -272,7 +277,7 @@ static int _talk_sender_negotiate(uint32_t count, uint32_t latency) {
 }
 
 static int _talk_receiver_negotiate(uint32_t *count, uint32_t *latency) {
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 
 	/* Get COUNT and LATENCY data from sender */
@@ -332,7 +337,7 @@ static int _talk_receiver_negotiate(uint32_t *count, uint32_t *latency) {
 
 static int _talk_sender_stream(uint32_t count) {
 	uint32_t i = 0;
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 
 	/* Wait for STREAM START op */
@@ -357,6 +362,11 @@ static int _talk_sender_stream(uint32_t count) {
 
 		bit_set(&p.flags, UBWT_TALK_OP_STREAM_RUN);
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
+		/* Syncronize sending workers - STREAM START */
+		worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+#endif
+
 		_talk_timeout(current->config->net_timeout_talk_stream_run);
 
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "SEND");
@@ -371,15 +381,19 @@ static int _talk_sender_stream(uint32_t count) {
 			}
 		}
 
+		_talk_timeout(current->config->net_timeout_talk_stream_end);
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+		/* Syncronize sending workers - STREAM END */
+		worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+#endif
+
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "SENT");
 	} else {
 		errno = UBWT_ERROR_MSG_UNEXPECTED;
 
 		return -1;
 	}
-
-	_talk_timeout(current->config->net_timeout_talk_stream_end);
-
 
 	/* Wait for the remote host to send STREAM END */
 
@@ -421,7 +435,7 @@ static int _talk_receiver_stream(uint32_t count) {
 	ssize_t ret = 0;
 	uint32_t i = 0;
 	uint64_t t = 0, len = 0;
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 
 	/* Send STREAM START to remote host */
@@ -446,13 +460,20 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	/* Wait for STREAM RUN to start */
 
-	_talk_timeout(current->config->net_timeout_talk_stream_run);
 
 	debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "WAIT");
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	/* Syncronize receiving workers - STREAM START */
+	worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+#endif
+
+	/* Retrieve start time */
 	t = datetime_now_us();
 
 	report_talk_stream_time_start_set(t);
+
+	_talk_timeout(current->config->net_timeout_talk_stream_run);
 
 	for (i = 0; i < count; i ++) {
 		if ((ret = _talk_recv(&p)) < 0)
@@ -461,6 +482,14 @@ static int _talk_receiver_stream(uint32_t count) {
 		len += ret;
 	}
 
+	_talk_timeout(current->config->net_timeout_talk_stream_end);
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	/* Syncronize receiving workers - STREAM END */
+	worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+#endif
+
+	/* Compute transmission time */
 	t = datetime_now_us() - t - ((i != count) ? (current->config->net_timeout_talk_stream_run * 1000000) : 0);
 
 	debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "RECV");
@@ -474,8 +503,6 @@ static int _talk_receiver_stream(uint32_t count) {
 
 
 	/* Send STREAM END */
-
-	_talk_timeout(current->config->net_timeout_talk_stream_end);
 
 	debug_info_talk_op(UBWT_TALK_OP_STREAM_END, "SEND");
 
@@ -514,7 +541,7 @@ static int _talk_receiver_stream(uint32_t count) {
 }
 
 static int _talk_sender_report_exchange(void) {
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 
 	/* Wait for REPORT */
@@ -545,7 +572,7 @@ static int _talk_sender_report_exchange(void) {
 }
 
 static int _talk_receiver_report_exchange(void) {
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 
 	/* Send REPORT */
@@ -570,7 +597,7 @@ static int _talk_receiver_report_exchange(void) {
 }
 
 static int _talk_sender_finish(void) {
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 	/* Send FINISH */
 
@@ -593,7 +620,7 @@ static int _talk_sender_finish(void) {
 }
 
 static int _talk_receiver_finish(void) {
-	ubwt_talk_payload_t p = { 0, 0, 0, 0, { 0 } };
+	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, 0, { 0 } };
 
 	/* Wait for FINISH */
 
@@ -659,22 +686,25 @@ void talk_sender(void) {
 
 	stage_reset();
 
+	/* Set talk context */
+	current->talk.count = current->config->talk_count_current;
+
 	for (;;) {
 		stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_NEGOTIATION, bit_flag(UBWT_STAGE_CTRL_FL_NO_RESET));
 
-		if (_talk_sender_negotiate(current->config->talk_count_current, report_talk_latency_get()) < 0) {
+		if (_talk_sender_negotiate(current->talk.count, report_talk_latency_get()) < 0) {
 			_talk_send_abort();
 
 			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_NEGOTIATION_FAILED, "talk_sender(): _talk_sender_negotiate()");
 			error_no_return();
 		}
 
-		report_talk_count_set(current->config->talk_count_current);
+		report_talk_count_set(current->talk.count);
 		report_talk_count_show();
 
 		stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_STREAM, bit_flag(UBWT_STAGE_CTRL_FL_NO_RESET));
 
-		if ((ret = _talk_sender_stream(current->config->talk_count_current))) {
+		if ((ret = _talk_sender_stream(current->talk.count))) {
 			if (ret < 0) {
 				_talk_send_abort();
 
@@ -682,9 +712,9 @@ void talk_sender(void) {
 				error_no_return();
 			}
 
-			current->config->talk_count_current *= 10;
+			current->talk.count *= 10;
 
-			assert(current->config->talk_count_current <= current->config->talk_count_max);
+			assert(current->talk.count <= current->config->talk_count_max);
 
 			stage_inc(bit_flag(UBWT_STAGE_CTRL_FL_NO_SHOW));
 

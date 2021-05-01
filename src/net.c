@@ -278,6 +278,10 @@ static int _net_connector_start(void) {
 		current->net.listener.slen = rcur->ai_addrlen;
 		memcpy(&current->net.listener.saddr, rcur->ai_addr, rcur->ai_addrlen);
 
+		current->net.domain = rcur->ai_family;
+		current->net.type = rcur->ai_socktype;
+		current->net.protocol = rcur->ai_protocol;
+
 		break;
 	}
 

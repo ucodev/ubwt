@@ -82,8 +82,15 @@ struct ubwt_net_endpoint {
 struct ubwt_net {
 	sock_t fd;
 	sock_t fd_listen;
-	struct ubwt_net_endpoint listener;
-	struct ubwt_net_endpoint connector;
+
+	int domain;
+	int type;
+	int protocol;
+
+	union {
+		struct ubwt_net_endpoint listener;
+		struct ubwt_net_endpoint connector;
+	};
 };
 
 int net_connector_connect(void);

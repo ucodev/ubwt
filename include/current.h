@@ -36,11 +36,12 @@
 #include "report.h"
 #include "stage.h"
 #include "process.h"
+#include "talk.h"
 #include "worker.h"
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
  struct ubwt_current *current_get(ubwt_worker_t worker_id);
- #define current current_get(pthread_self())
+ #define current current_get(worker_self())
 #else
  extern struct ubwt_current *current;
 #endif
@@ -55,10 +56,12 @@ struct ubwt_current {
 
 	struct ubwt_report report;
 	struct ubwt_process process;
+	struct ubwt_talk_context talk;
 	struct ubwt_runtime *runtime;
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	ubwt_worker_t worker_id;
+	ubwt_worker_t remote_worker_id;
 
 	ubwt_worker_barrier_t *worker_barrier_global;
 	ubwt_worker_mutex_t *worker_mutex_global;

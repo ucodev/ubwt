@@ -76,19 +76,44 @@ static void _runtime_wait_worker_flag(const char *section, unsigned int flag) {
 
 void runtime_do(void) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	ubwt_worker_t tid;
-	ubwt_worker_task_t *t = NULL;
+	unsigned int i = 0;
+	ubwt_worker_t *tid = NULL;
+	ubwt_worker_task_t **t = NULL;
 
-	if (!(t = malloc(sizeof(ubwt_worker_task_t)))) {
-		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_WORKER_CREATE_FAILED, "runtime_do(): malloc()");
+	if (!(t = malloc(sizeof(ubwt_worker_task_t *) * (current->config->worker_straight_first_count + current->config->worker_reverse_first_count)))) {
+		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_WORKER_CREATE_FAILED, "runtime_do(): t = malloc()");
 		error_no_return();
 	}
 
-	t->type = UBWT_WORKER_TASK_TYPE_NVR_INT;
-	t->fi = process_run;
-	t->vi = 0;
+	for (i = 0; i < (current->config->worker_straight_first_count + current->config->worker_reverse_first_count); i ++) {
+		if (!(t[i] = malloc(sizeof(ubwt_worker_task_t)))) {
+			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_WORKER_CREATE_FAILED, "runtime_do(): t[i] = malloc()");
+			error_no_return();
+		}
+	}
 
-	tid = worker_task_create(t);
+	if (!(tid = malloc(sizeof(ubwt_worker_t) * (current->config->worker_straight_first_count + current->config->worker_reverse_first_count)))) {
+		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_WORKER_CREATE_FAILED, "runtime_do(): tid = malloc()");
+		error_no_return();
+	}
+
+	/* Initialize straight first workers */
+	for (i = 0; i < current->config->worker_straight_first_count; i ++) {
+		t[i]->type = UBWT_WORKER_TASK_TYPE_NVR_INT;
+		t[i]->fi = process_run;
+		t[i]->vi = 0;
+
+		tid[i] = worker_task_create(t[i]);
+	}
+
+	/* Initialize reverse first workers */
+	for (; i < current->config->worker_reverse_first_count; i ++) {
+		t[i]->type = UBWT_WORKER_TASK_TYPE_NVR_INT;
+		t[i]->fi = process_run;
+		t[i]->vi = 1;
+
+		tid[i] = worker_task_create(t[i]);
+	}
 
 	_runtime_wait_worker_flag("Initializing workers", UBWT_WORKER_FLAG_TASK_READY);
 	_runtime_wait_worker_flag("Waiting for communication", UBWT_WORKER_FLAG_TASK_RUNNING);
@@ -100,7 +125,12 @@ void runtime_do(void) {
 	process_report();
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	worker_task_join(tid);
+	for (i = 0; i < (current->config->worker_straight_first_count + current->config->worker_reverse_first_count); i ++) {
+		worker_task_join(tid[i]);
+	}
+
+	free(tid);
+	free(t);
 #endif
 }
 

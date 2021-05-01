@@ -57,6 +57,9 @@ void usage_show(char *const *argv, int success) {
 		"       -t <seconds>        Minimum stream time (default: %u seconds).\n"
 		"       -v                  Display version information.\n"
 		"       -w <seconds>        Connection timeout (default: %u seconds).\n"
+#ifdef UBWT_CONFIG_MULTI_THREADED
+		"       -W <count>          Maximum number of workers (default: %u).\n"
+#endif
 		"\n"
 		"EXAMPLES\n"
 		"\n"
@@ -74,6 +77,10 @@ void usage_show(char *const *argv, int success) {
 		UBWT_CONFIG_TALK_PAYLOAD_DEFAULT_SIZE,
 		UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME,
 		UBWT_CONFIG_NET_TIMEOUT_DEFAULT
+#ifdef UBWT_CONFIG_MULTI_THREADED
+		,
+		UBWT_CONFIG_PROCESS_WORKER_COUNT
+#endif
 	);
 
 	exit(success ? EXIT_SUCCESS : EXIT_FAILURE);

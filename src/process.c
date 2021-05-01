@@ -39,6 +39,14 @@ void process_set_im_receiver(void) {
 	current->process.im_receiver = 1;
 }
 
+void process_set_reverse(void) {
+	current->process.reverse = 1;
+}
+
+void process_set_straight(void) {
+	current->process.reverse = 0;
+}
+
 void process_init(void) {
 	stage_set(UBWT_STAGE_STATE_INIT_PROCESS, 0);
 
@@ -46,6 +54,8 @@ void process_init(void) {
 }
 
 static void _process_listener_straight(int init, int cleanup) {
+	process_set_straight();
+
 	report_set_straight();
 
 	process_set_im_receiver();
@@ -60,6 +70,8 @@ static void _process_listener_straight(int init, int cleanup) {
 }
 
 static void _process_connector_straight(int init, int cleanup) {
+	process_set_straight();
+
 	report_set_straight();
 
 	process_set_im_sender();
@@ -74,6 +86,8 @@ static void _process_connector_straight(int init, int cleanup) {
 }
 
 static void _process_listener_reverse(int init, int cleanup) {
+	process_set_reverse();
+
 	report_set_reverse();
 
 	process_set_im_sender();
@@ -88,6 +102,8 @@ static void _process_listener_reverse(int init, int cleanup) {
 }
 
 static void _process_connector_reverse(int init, int cleanup) {
+	process_set_reverse();
+
 	report_set_reverse();
 
 	process_set_im_receiver();

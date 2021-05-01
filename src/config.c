@@ -66,6 +66,10 @@ static void _config_sanity(void) {
 	assert(current->config->talk_payload_max_size >= current->config->talk_payload_default_size);
 
 	assert(current->config->talk_stream_minimum_time > 0);
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	assert(current->config->worker_count > 0 && current->config->worker_count <= 32);
+#endif
 }
 
 static void _config_cmdopt_process(int argc, char *const *argv) {
@@ -78,7 +82,11 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 #if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && !defined(COMPILE_WIN32)
 		"p:"
 #endif
-		"P:s:t:vw:";
+		"P:s:t:vw:"
+#ifdef UBWT_CONFIG_MULTI_THREADED
+		"W:"
+#endif
+		;
 
 	while ((opt = getopt(argc, argv, flags)) != -1) {
 		switch (opt) {
@@ -156,6 +164,13 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
 				current->config->net_timeout_default = (uint16_t) atoi(optarg);
 			} break;
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+			case 'W': {
+				assert(atoi(optarg) > 0 && atoi(optarg) <= 32);
+				current->config->worker_count = (uint16_t) atoi(optarg);
+			} break;
+#endif
 
 
 			default: {
@@ -250,13 +265,17 @@ void config_init(int argc, char *const *argv) {
 	current->config->talk_stream_minimum_time = UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME;
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	current->config->worker_straight_first_count = 1;
-	current->config->worker_reverse_first_count = 1;
+	current->config->worker_count = UBWT_CONFIG_PROCESS_WORKER_COUNT;
 #endif
 
 	_config_cmdopt_process(argc, argv);
 
 	_config_sanity();
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	current->config->worker_straight_first_count = current->config->worker_count;
+	current->config->worker_reverse_first_count = 0; /* TODO: Full-duplex mode */
+#endif
 
 	debug_info_config_show();
 }

@@ -105,7 +105,7 @@ void worker_barrier_init(ubwt_worker_barrier_t *barrier, unsigned count) {
 }
 
 void worker_barrier_wait(ubwt_worker_barrier_t *barrier) {
-	if (pthread_barrier_wait(barrier)) error_abort(__FILE__, __LINE__, "pthread_barrier_wait");
+	pthread_barrier_wait(barrier);
 }
 
 void worker_barrier_destroy(ubwt_worker_barrier_t *barrier) {
@@ -141,7 +141,6 @@ void worker_cond_wait(ubwt_worker_cond_t *cond, ubwt_worker_mutex_t *mutex) {
 }
 
 void worker_cond_timedwait(ubwt_worker_cond_t *cond, ubwt_worker_mutex_t *mutex, const struct timespec *abstime) {
-	//if (pthread_cond_timedwait(cond, mutex, abstime)) error_abort(__FILE__, __LINE__, "pthread_cond_timedwait");
 	pthread_cond_timedwait(cond, mutex, abstime);
 }
 
@@ -199,16 +198,34 @@ void worker_cancel(ubwt_worker_t tid) {
 }
 
 void worker_init(void) {
-	worker_barrier_init(&__worker_barrier_global[0], current->config->worker_straight_first_count);
-	worker_barrier_init(&__worker_barrier_global[1], current->config->worker_reverse_first_count);
+	if (current->config->worker_straight_first_count && current->config->bidirectional) {
+		worker_barrier_init(&__worker_barrier_global[0], current->config->worker_straight_first_count);
+	} else if (current->config->bidirectional) {
+		worker_barrier_init(&__worker_barrier_global[0], current->config->worker_count);
+	} else {
+		error_abort(__FILE__, __LINE__, "worker_barrier_init()");
+	}
+
+	if (current->config->worker_reverse_first_count && current->config->bidirectional) {
+		worker_barrier_init(&__worker_barrier_global[1], current->config->worker_reverse_first_count);
+	} else if (current->config->bidirectional) {
+		worker_barrier_init(&__worker_barrier_global[1], current->config->worker_count);
+	} else {
+		error_abort(__FILE__, __LINE__, "worker_barrier_init()");
+	}
+
 	worker_mutex_init(&__worker_mutex_global);
 	worker_mutex_init(&__worker_mutex_cond);
 	worker_cond_init(&__worker_cond_global);
 }
 
 void worker_destroy(void) {
-	worker_barrier_destroy(&__worker_barrier_global[0]);
-	worker_barrier_destroy(&__worker_barrier_global[1]);
+	if (current->config->worker_straight_first_count || current->config->bidirectional)
+		worker_barrier_destroy(&__worker_barrier_global[0]);
+
+	if (current->config->worker_reverse_first_count || current->config->bidirectional)
+		worker_barrier_destroy(&__worker_barrier_global[1]);
+
 	worker_mutex_destroy(&__worker_mutex_global);
 	worker_mutex_destroy(&__worker_mutex_cond);
 	worker_cond_destroy(&__worker_cond_global);

@@ -28,7 +28,7 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.06c-dev"
+#define UBWT_CONFIG_VERSION_STR				"0.06d-dev"
 #define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120
@@ -42,6 +42,7 @@
 #define UBWT_CONFIG_NET_L4_UDP_HEADER_SIZE		8		/* UDP (fixed) */
 #define UBWT_CONFIG_NET_L4_TCP_HEADER_SIZE		20		/* TCP (minimum) */
 #define UBWT_CONFIG_NET_L4_PROTO_DEFAULT		"tcp"
+#define UBWT_CONFIG_PROCESS_WORKER_COUNT		1
 #define UBWT_CONFIG_PROCESS_REVERSE_DELAY_SEC		2
 #define UBWT_CONFIG_TALK_PROTO_VER			1
 #define UBWT_CONFIG_TALK_HANDSHAKE_INTERVAL_MSEC	1
@@ -136,7 +137,8 @@ struct ubwt_config {
 	uint16_t talk_stream_minimum_time;
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	int worker_straight_first_count, worker_reverse_first_count;
+	unsigned int worker_count;
+	unsigned int worker_straight_first_count, worker_reverse_first_count;
 #endif
 };
 

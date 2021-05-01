@@ -40,6 +40,10 @@ typedef enum UBWT_TALK_OPS {
 	UBWT_TALK_OP_FORCE_FAIL
 } ubwt_talk_ops_t;
 
+struct ubwt_talk_context {
+	uint64_t count;
+};
+
 #ifndef UBWT_CONFIG_NO_PRAGMA_PACK
  #pragma pack(push)
  #pragma pack(4)
@@ -52,8 +56,11 @@ ubwt_talk_payload {
 	uint32_t flags;
 	uint32_t count;
 	uint32_t latency;
-	uint32_t __reserved;
-	uint8_t buf[UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE - 16];
+	uint32_t __reserved1;
+	uint32_t __reserved2;
+	uint32_t __reserved3;
+	uint64_t worker_id;
+	uint8_t buf[UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE - 32];
 } ubwt_talk_payload_t;
 #ifndef UBWT_CONFIG_NO_PRAGMA_PACK
  #pragma pack(pop)

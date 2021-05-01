@@ -36,6 +36,7 @@
 #ifdef UBWT_CONFIG_MULTI_THREADED
  #include <assert.h>
  #include <stdlib.h>
+ #include <unistd.h>
 
  #include "worker.h"
 #endif
@@ -103,10 +104,16 @@ void current_fork(ubwt_worker_task_t *t) {
 
 	/* Always fork from HEAD */
 
-	memcpy(&c->net, &__current.net, sizeof(struct ubwt_net));
 	c->config = __current.config;
 	c->time_us = __current.time_us;
 	c->runtime = __current.runtime;
+
+	memcpy(&c->stage, &__current.stage, sizeof(ubwt_stage_t));
+
+	memcpy(&c->net, &__current.net, sizeof(struct ubwt_net));
+
+	if (__current.config->im_connector)
+		c->net.fd = socket(c->net.domain, c->net.type, c->net.protocol);
 
 	c->worker_id = worker_self();
 	c->worker_task = t;
@@ -128,6 +135,10 @@ void current_fork(ubwt_worker_task_t *t) {
 
 	c->prev = &__current;
 	c->next = __current.next;
+
+	if (c->next)
+		c->next->prev = c;
+
 	__current.next = c;
 
 	worker_mutex_unlock(c->worker_mutex_global);
@@ -201,9 +212,9 @@ void current_join(ubwt_worker_t worker_id) {
 	} else if (c->prev) {
 		/* tail */
 		c->prev->next = NULL;
-	} else if (c->next) {
-		/* head */
-		c->next->prev = NULL;
+	} else {
+		/* head - head is static and not manageable - if we are here, there is a problem in the LL management */
+		error_abort(__FILE__, __LINE__, "current_join");
 	}
 
 	worker_mutex_unlock(c->worker_mutex_global);
@@ -212,6 +223,8 @@ void current_join(ubwt_worker_t worker_id) {
 
 	memset(c->worker_task, 0, sizeof(ubwt_worker_task_t));
 	free(c->worker_task);
+
+	close(c->net.fd);
 
 	memset(c, 0, sizeof(struct ubwt_current));
 	free(c);
