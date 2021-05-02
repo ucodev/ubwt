@@ -205,7 +205,7 @@ void worker_init(void) {
 	} else if (current->config->bidirectional) {
 		worker_barrier_init(&__worker_barrier_global[0], current->config->worker_count);
 	} else {
-		error_abort(__FILE__, __LINE__, "worker_barrier_init()");
+		error_abort(__FILE__, __LINE__, "worker_barrier_init");
 	}
 
 	if (current->config->worker_reverse_first_count && current->config->bidirectional) {

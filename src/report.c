@@ -239,8 +239,9 @@ void report_results_compute(void) {
 void report_results_show(void) {
 	/* Show results */
 
+	puts("");
+
 	if (current->config->report_full) {
-		puts("");
 		fprintf(stdout, "Direction                           : %s\n", process_im_receiver() ? "Download" : "Upload");
 		fprintf(stdout, "MTU                                 : %" PRIu16 " octets\n", current->config->net_mtu);
 		fprintf(stdout, "L3 Protocol                         : %s\n", current->net.listener.saddr.ss_family == AF_INET6 ? "ipv6" : "ipv4");
@@ -260,6 +261,7 @@ void report_results_show(void) {
 		fprintf(stdout, "Estimated L2 Bandwidth              : %.3f Mbps\n", current->report.result->computed.bandwidth_estimated_mbps);
 		fprintf(stdout, "Effective L4 Bandwidth              : %.3f Mbps\n", current->report.result->computed.bandwidth_effective_mbps);
 	} else {
+		fprintf(stdout, "%12s : %.3f ms\n", "Latency", report_talk_latency_get() / (double) 1000.0);
 		fprintf(stdout, "%12s : %.3f Mbps\n", process_im_receiver() ? "Download" : "Upload", current->report.result->computed.bandwidth_estimated_mbps);
 	}
 }
