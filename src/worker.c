@@ -36,13 +36,16 @@ ubwt_worker_barrier_t __worker_barrier_global[2]; /* 0: straight, 1: reverse */
 ubwt_worker_mutex_t   __worker_mutex_global; /* used by 'current' handlers */
 ubwt_worker_mutex_t   __worker_mutex_cond;
 ubwt_worker_cond_t    __worker_cond_global;
+unsigned int          __worker_forking = 0;
 
 static void *_worker_task_init(void *arg) {
 	ubwt_worker_task_t *t = arg;
 
 	current_fork(t);
 
-	worker_mutex_unlock(current->worker_mutex_cond);
+	current_forking_set(0);
+
+	worker_cond_signal(current->worker_cond_global);
 
 	switch (t->type) {
 		case UBWT_WORKER_TASK_TYPE_NVR_ANY: {
@@ -88,14 +91,19 @@ void worker_task_join(ubwt_worker_t tid) {
 ubwt_worker_t worker_task_create(ubwt_worker_task_t *t) {
 	ubwt_worker_t tid;
 
-	worker_mutex_lock(current->worker_mutex_cond); /* Will unlock on _worker_task_init thread after current_fork() */
+	current_forking_set(1);
 
 	if (pthread_create(&tid, NULL, _worker_task_init, t)) {
-		worker_mutex_unlock(current->worker_mutex_cond);
-
 		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_WORKER_CREATE_FAILED, "worker_task_create(): pthread_create()");
 		error_no_return();
 	}
+
+	worker_mutex_lock(current->worker_mutex_cond);
+
+	while (current_forking_get())
+		worker_cond_wait(current->worker_cond_global, current->worker_mutex_cond);
+
+	worker_mutex_unlock(current->worker_mutex_cond);
 
 	return tid;
 }

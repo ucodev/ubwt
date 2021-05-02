@@ -72,7 +72,7 @@ void report_worker_combine(void) {
 	}
 
 	for (j = 0; i && j < 2; j ++)
-		current->report.results[j].collected.talk_latency_us /= i;
+		current->report.results[j].collected.talk_latency_us /= current->config->asynchronous ? i / 2 : i;
 }
 #endif
 

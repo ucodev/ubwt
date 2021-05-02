@@ -796,6 +796,12 @@ void talk_receiver(void) {
 			continue;
 		}
 
+		/* TODO: Not all workers will compute the same transmission time, so another STREAM restart mechanism
+		 * should be implemented to avoid some workers having reported a WEAK STREAM and others don't.
+		 * This condition should be incredibly rare, given that the current time measurement is performed
+		 * right after a barrier - but still a synchronized approach should be implemented.
+		 */
+
 		break;
 	}
 

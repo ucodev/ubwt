@@ -68,7 +68,8 @@ typedef struct ubwt_worker_task {
 extern ubwt_worker_barrier_t __worker_barrier_global[2];
 extern ubwt_worker_mutex_t   __worker_mutex_global;
 extern ubwt_worker_mutex_t   __worker_mutex_cond;
-extern ubwt_worker_cond_t   __worker_cond_global;
+extern ubwt_worker_cond_t    __worker_cond_global;
+extern unsigned int          __worker_forking;
 
 ubwt_worker_t worker_task_create(ubwt_worker_task_t *t);
 void worker_task_running_set(void);

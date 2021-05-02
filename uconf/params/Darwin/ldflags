@@ -1,1 +1,1 @@
--lm -pthreads
+-lm -pthread

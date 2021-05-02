@@ -72,6 +72,7 @@ void current_init(void) {
 	__current.worker_mutex_global = &__worker_mutex_global;
 	__current.worker_mutex_cond = &__worker_mutex_cond;
 	__current.worker_cond_global = &__worker_cond_global;
+	__current.worker_forking = &__worker_forking;
 
 	worker_mutex_init(&__current.worker_mutex_local);
 #endif
@@ -93,6 +94,14 @@ void current_update(void) {
 }
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
+void current_forking_set(unsigned int status) {
+	*current->worker_forking = status;
+}
+
+unsigned int current_forking_get(void) {
+	return *current->worker_forking;
+}
+
 void current_fork(ubwt_worker_task_t *t) {
 	struct ubwt_current *c = NULL;
 
@@ -127,6 +136,7 @@ void current_fork(ubwt_worker_task_t *t) {
 	c->worker_mutex_global = &__worker_mutex_global;
 	c->worker_mutex_cond = &__worker_mutex_cond;
 	c->worker_cond_global = &__worker_cond_global;
+	c->worker_forking = &__worker_forking;
 
 	worker_mutex_init(&c->worker_mutex_local);
 
@@ -148,8 +158,6 @@ void current_fork(ubwt_worker_task_t *t) {
 	__current.next = c;
 
 	worker_mutex_unlock(c->worker_mutex_global);
-
-	worker_cond_signal(c->worker_cond_global);
 
 	current_update();
 }

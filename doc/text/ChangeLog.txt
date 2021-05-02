@@ -1,3 +1,8 @@
+v0.08b
+
+ - Fixed various bugs detected during testing
+
+
 v0.08a
 
  - Included support for JSON report output
@@ -20,7 +25,7 @@ v0.07a-dev
 
 v0.06d-dev
 
- - Included full multi-threaded support
+ - Included full multi-threaded support for multi-connection and asynchronous testing
 
 
 v0.06c-dev

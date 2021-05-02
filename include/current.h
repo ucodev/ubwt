@@ -68,6 +68,7 @@ struct ubwt_current {
 	ubwt_worker_mutex_t *worker_mutex_cond;
 	ubwt_worker_cond_t *worker_cond_global;
 	ubwt_worker_mutex_t worker_mutex_local;
+	unsigned int *worker_forking;
 
 	ubwt_worker_task_t *worker_task;
 
@@ -80,6 +81,8 @@ struct ubwt_current {
 void current_init(void);
 void current_update(void);
 #ifdef UBWT_CONFIG_MULTI_THREADED
+void current_forking_set(unsigned int status);
+unsigned int current_forking_get(void);
 void current_fork(ubwt_worker_task_t *t);
 void current_running_set(void);
 void current_running_unset(void);
