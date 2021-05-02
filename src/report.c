@@ -28,6 +28,7 @@
 #include "config.h"
 #include "current.h"
 #include "debug.h"
+#include "error.h"
 #include "net.h"
 #include "report.h"
 
@@ -127,11 +128,11 @@ uint64_t report_talk_stream_time_duration_get(void) {
 	return current->report.result->collected.talk_stream_time_duration;
 }
 
-void report_talk_stream_recv_pkts_set(uint64_t recv_pkts) {
+void report_talk_stream_recv_pkts_set(uint32_t recv_pkts) {
 	current->report.result->collected.talk_stream_recv_pkts = recv_pkts;
 }
 
-uint64_t report_talk_stream_recv_pkts_get(void) {
+uint32_t report_talk_stream_recv_pkts_get(void) {
 	return current->report.result->collected.talk_stream_recv_pkts;
 }
 
@@ -250,7 +251,7 @@ void report_results_show(void) {
 		fprintf(stdout, "Estimated headers size              : %zu octets\n", current->report.result->computed.hdr_size);
 		fprintf(stdout, "Transmission time                   : %.4f s\n", report_talk_stream_time_duration_get() / (double) 1000000.0);
 		fprintf(stdout, "Total L4 packets expected           : %" PRIu32 "\n", report_talk_count_get());
-		fprintf(stdout, "Total L4 packets transfered         : %" PRIu64 "\n", report_talk_stream_recv_pkts_get());
+		fprintf(stdout, "Total L4 packets transfered         : %" PRIu32 "\n", report_talk_stream_recv_pkts_get());
 		fprintf(stdout, "Total L4 octets transfered          : %" PRIu64 "\n", report_talk_stream_recv_bytes_get());
 		fprintf(stdout, "Estimated L3 packets transfered     : %" PRIu64 "\n", current->report.result->computed.total_pkts);
 		fprintf(stdout, "Estimated L3 fragmentation ratio    : %.0f:1\n", ceil(current->report.result->computed.fragmentation_ratio));
@@ -264,6 +265,95 @@ void report_results_show(void) {
 		fprintf(stdout, "%12s : %.3f ms\n", "Latency", report_talk_latency_get() / (double) 1000.0);
 		fprintf(stdout, "%12s : %.3f Mbps\n", process_im_receiver() ? "Download" : "Upload", current->report.result->computed.bandwidth_estimated_mbps);
 	}
+}
+
+void report_export_json_start(void) {
+	FILE *fp = NULL;
+
+	if (!current->config->report_json_file)
+		return;
+
+	if (!(fp = fopen(current->config->report_json_file, "w+"))) {
+		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_REPORT_JSON_FILE_FAILED, "report_export_json_start(): fopen()");
+
+		error_no_return();
+	}
+
+	current->report.fp_export_json = fp;
+
+	fprintf(fp, "{\n");
+	fprintf(fp, "\t\"mode\": \"%s\",\n", current->config->asynchronous ? "asynchronous" : (current->config->bidirectional ? "bidirectional" : "standard"));
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	fprintf(fp, "\t\"workers\": %u,\n", current->config->worker_count);
+#else
+	fprintf(fp, "\t\"workers\": 1,\n");
+#endif
+	fprintf(fp, "\t\"connection\": {\n");
+	fprintf(fp, "\t\t\"mtu\": %" PRIu16 ",\n", current->config->net_mtu);
+	fprintf(fp, "\t\t\"layer1_bandwidth_theoretical\": %" PRIu32 ",\n", current->report.result->computed.bandwidth_theoretical_mbps);
+	fprintf(fp, "\t\t\"sizes\": {\n");
+	fprintf(fp, "\t\t\t\"layer4_payload\": %" PRIu16 ",\n", current->config->talk_payload_current_size);
+	fprintf(fp, "\t\t\t\"headers_estimated\": %zu\n", current->report.result->computed.hdr_size);
+	fprintf(fp, "\t\t},\n");
+	fprintf(fp, "\t\t\"protocols\": {\n");
+	fprintf(fp, "\t\t\t\"layer3\": \"%s\",\n", current->net.listener.saddr.ss_family == AF_INET6 ? "ipv6" : "ipv4");
+	fprintf(fp, "\t\t\t\"layer4\": \"%s\"\n", current->config->net_l4_proto_name);
+	fprintf(fp, "\t\t}\n");
+	fprintf(fp, "\t},\n");
+}
+
+void report_export_json_dump(int resume) {
+	FILE *fp = current->report.fp_export_json;
+
+	if (!current->config->report_json_file)
+		return;
+
+	assert(fp);
+
+	if (resume)
+		fprintf(fp, ",\n");
+
+	fprintf(fp, "\t\"%s\": {\n", process_im_receiver() ? "download" : "upload");
+	fprintf(fp, "\t\t\"octects\": {\n");
+	fprintf(fp, "\t\t\t\"layer2_estimated\": %" PRIu64 ",\n", report_talk_stream_recv_bytes_get() + (current->report.result->computed.total_pkts * current->report.result->computed.hdr_size));
+	fprintf(fp, "\t\t\t\"layer4_transfered\": %" PRIu64 "\n", report_talk_stream_recv_bytes_get());
+	fprintf(fp, "\t\t},\n");
+	fprintf(fp, "\t\t\"packets\": {\n");
+	fprintf(fp, "\t\t\t\"layer3_estimated\": %" PRIu64 ",\n", current->report.result->computed.total_pkts);
+	fprintf(fp, "\t\t\t\"layer4_expected\": %" PRIu32 ",\n", report_talk_count_get());
+	fprintf(fp, "\t\t\t\"layer4_transfered\": %" PRIu32 "\n", report_talk_stream_recv_pkts_get());
+	fprintf(fp, "\t\t},\n");
+	fprintf(fp, "\t\t\"ratio\": {\n");
+	fprintf(fp, "\t\t\t\"fragmentation\": %.0f,\n", ceil(current->report.result->computed.fragmentation_ratio));
+	fprintf(fp, "\t\t\t\"packet_loss\": %.4f\n", current->report.result->computed.packet_loss);
+	fprintf(fp, "\t\t},\n");
+	fprintf(fp, "\t\t\"time\": {\n");
+	fprintf(fp, "\t\t\t\"start\": %.4f,\n", report_talk_stream_time_start_get() / (double) 1000000.0);
+	fprintf(fp, "\t\t\t\"duration\": %.4f,\n", report_talk_stream_time_duration_get() / (double) 1000000.0);
+	fprintf(fp, "\t\t\t\"latency\": %.3f\n", report_talk_latency_get() / (double) 1000.0);
+	fprintf(fp, "\t\t},\n");
+	fprintf(fp, "\t\t\"bandwidth\": {\n");
+	fprintf(fp, "\t\t\t\"layer2_estimated\": %.3f,\n", current->report.result->computed.bandwidth_estimated_mbps);
+	fprintf(fp, "\t\t\t\"layer4_effective\": %.3f\n", current->report.result->computed.bandwidth_effective_mbps);
+	fprintf(fp, "\t\t}\n");
+	fprintf(fp, "\t}");
+
+	fflush(fp);
+}
+
+void report_export_json_end(void) {
+	FILE *fp = current->report.fp_export_json;
+
+	if (!current->config->report_json_file)
+		return;
+
+	assert(fp);
+
+	fprintf(fp, "\n}\n");
+	
+	fflush(fp);
+
+	fclose(fp);
 }
 
 void report_init(void) {

@@ -50,6 +50,7 @@ void usage_show(char *const *argv, int success) {
 		"       -F                  Enable full/extended reporting.\n"
 		"       -h                  Display this help.\n"
 		"       -I <msec>           Interval between latency measurements (default: %u msec).\n"
+		"       -j <file>           Export report in JSON format to file.\n"
 		"       -m <octets>         Link MTU (default: %u octets).\n"
 		"       -N <iterations>     Number of handshake iterations (default: %u iterations).\n"
 #if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)

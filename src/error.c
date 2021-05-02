@@ -65,6 +65,7 @@ static const char *__errors[] = {
 	"[%s]: ERROR: %s: Unable to complete report exchange stage: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to complete finish stage: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to retrieve connection address information: %s: %s\n",
+	"[%s]: ERROR: %s: Unable to open file to export JSON report information: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to create a new worker: %s: %s\n"
 };
 

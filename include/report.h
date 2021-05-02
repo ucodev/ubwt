@@ -23,6 +23,7 @@
 #ifndef UBWT_REPORT_H
 #define UBWT_REPORT_H
 
+#include <stdio.h>
 #include <stdint.h>
 
 #ifndef UBWT_CONFIG_NO_PRAGMA_PACK
@@ -69,6 +70,7 @@ struct ubwt_report_result {
 };
 
 struct ubwt_report {
+	FILE *fp_export_json;
 	struct ubwt_report_result *result;
 	struct ubwt_report_result  results[2];
 };
@@ -88,8 +90,8 @@ void report_talk_stream_time_start_set(uint64_t t);
 uint64_t report_talk_stream_time_start_get(void);
 void report_talk_stream_time_duration_set(uint64_t t);
 uint64_t report_talk_stream_time_duration_get(void);
-void report_talk_stream_recv_pkts_set(uint64_t recv_pkts);
-uint64_t report_talk_stream_recv_pkts_get(void);
+void report_talk_stream_recv_pkts_set(uint32_t recv_pkts);
+uint32_t report_talk_stream_recv_pkts_get(void);
 void report_talk_stream_recv_bytes_set(uint64_t recv_bytes);
 uint64_t report_talk_stream_recv_bytes_get(void);
 void report_net_connector_connection_show(void);
@@ -98,6 +100,9 @@ void report_marshal(void *storage, size_t len);
 void report_unmarshal(const void *storage, size_t len);
 void report_results_compute(void);
 void report_results_show(void);
+void report_export_json_start(void);
+void report_export_json_dump(int resume);
+void report_export_json_end(void);
 void report_init(void);
 void report_destroy(void);
 

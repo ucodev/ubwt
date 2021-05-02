@@ -84,7 +84,7 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 #ifdef UBWT_CONFIG_DEBUG
 		"d"
 #endif
-		"bFhI:l:m:N:"
+		"bFhI:j:l:m:N:"
 #if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && !defined(COMPILE_WIN32)
 		"p:"
 #endif
@@ -123,6 +123,13 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 			case 'I': {
 				assert(atoi(optarg) >= 0 && atoi(optarg) < 65536);
 				current->config->talk_handshake_interval = (uint16_t) atoi(optarg);
+			} break;
+
+			case 'j': {
+				assert(strlen(optarg) > 0);
+				current->config->report_json_file = malloc(strlen(optarg) + 1);
+				assert(current->config->report_json_file);
+				strcpy(current->config->report_json_file, optarg);
 			} break;
 
 			case 'N': {
@@ -304,7 +311,12 @@ void config_init(int argc, char *const *argv) {
 void config_destroy(void) {
 	stage_set(UBWT_STAGE_STATE_DESTROY_CONFIG, 0);
 
-#if 0 /* Do not wipe configuration memory as it may still be required... let current_destroy() deal with it */
+	if (current->config->report_json_file) {
+		memset(current->config->report_json_file, 0, strlen(current->config->report_json_file) + 1);
+		free(current->config->report_json_file);
+	}
+
+#if 0 /* Do not wipe the entire configuration memory as it may still be required... let current_destroy() deal with it */
 	memset(&current->config, 0, sizeof(current->config));
 #endif
 }

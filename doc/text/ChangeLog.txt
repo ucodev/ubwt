@@ -1,3 +1,8 @@
+v0.08a
+
+ - Included support for JSON report output
+
+
 v0.07c
 
  - Minor report output changes

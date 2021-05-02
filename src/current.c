@@ -38,6 +38,7 @@
  #include <stdlib.h>
  #include <unistd.h>
 
+ #include "net.h"
  #include "worker.h"
 #endif
 
@@ -112,8 +113,13 @@ void current_fork(ubwt_worker_task_t *t) {
 
 	memcpy(&c->net, &__current.net, sizeof(struct ubwt_net));
 
-	if (__current.config->im_connector)
-		c->net.fd = socket(c->net.domain, c->net.type, c->net.protocol);
+	if (__current.config->im_connector) {
+		if ((c->net.fd = socket(c->net.domain, c->net.type, c->net.protocol)) < 0)
+			error_abort(__FILE__, __LINE__, "socket");
+
+		if (net_timeout_set(c->net.fd, c->config->net_timeout_default) < 0)
+			error_abort(__FILE__, __LINE__, "net_timeout_set");
+	}
 
 	c->worker_id = worker_self();
 	c->worker_task = t;
@@ -224,7 +230,11 @@ void current_join(ubwt_worker_t worker_id) {
 	memset(c->worker_task, 0, sizeof(ubwt_worker_task_t));
 	free(c->worker_task);
 
+#ifdef COMPILE_WIN32
+	closesocket(c->net.fd);
+#else
 	close(c->net.fd);
+#endif
 
 	memset(c, 0, sizeof(struct ubwt_current));
 	free(c);

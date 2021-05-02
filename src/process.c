@@ -205,9 +205,13 @@ void process_report(void) {
 	report_set_straight();
 	report_results_compute();
 	report_results_show();
+	report_export_json_start();
+	report_export_json_dump(0);
 
-	if (!current->config->bidirectional)
+	if (!current->config->bidirectional) {
+		report_export_json_end();
 		return;
+	}
 
 
 	/* Reverse testing results */
@@ -221,6 +225,8 @@ void process_report(void) {
 	report_set_reverse();
 	report_results_compute();
 	report_results_show();
+	report_export_json_dump(1);
+	report_export_json_end();
 }
 
 void process_destroy(void) {
