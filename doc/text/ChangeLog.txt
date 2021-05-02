@@ -1,3 +1,8 @@
+v0.08c
+
+ - Another bug fix
+
+
 v0.08b
 
  - Fixed various bugs detected during testing

@@ -192,11 +192,11 @@ void current_exit(void) {
 	bit_clear(&current->worker_flags, UBWT_WORKER_FLAG_TASK_RUNNING);
 	bit_set(&current->worker_flags, UBWT_WORKER_FLAG_TASK_JOINABLE);
 
-	worker_mutex_unlock(&current->worker_mutex_local);
-
 	worker_cond_signal(current->worker_cond_global);
 
 	current_update();
+
+	worker_mutex_unlock(&current->worker_mutex_local);
 }
 
 void current_join(ubwt_worker_t worker_id) {
