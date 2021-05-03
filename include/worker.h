@@ -75,7 +75,7 @@ ubwt_worker_t worker_task_create(ubwt_worker_task_t *t);
 void worker_task_running_set(void);
 void worker_task_running_unset(void);
 void worker_task_exit(void);
-int worker_task_has_flag(unsigned int flag);
+int worker_task_has_flag(unsigned int flag, unsigned int count);
 void worker_task_join(ubwt_worker_t worker_id);
 void worker_barrier_init(ubwt_worker_barrier_t *barrier, unsigned count);
 void worker_barrier_wait(ubwt_worker_barrier_t *barrier);

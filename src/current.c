@@ -248,7 +248,7 @@ void current_join(ubwt_worker_t worker_id) {
 	free(c);
 }
 
-int current_children_has_flag(unsigned int flag) {
+int current_children_has_flag(unsigned int flag, unsigned int count) {
 	struct ubwt_current *c = &__current;
 
 	do {
@@ -256,11 +256,11 @@ int current_children_has_flag(unsigned int flag) {
 		if (!bit_test(&c->worker_flags, UBWT_WORKER_FLAG_TYPE_CHILD))
 			continue;
 
-		if (!bit_test(&c->worker_flags, flag))
-			return 0;
-	} while ((c = c->next));
+		if (bit_test(&c->worker_flags, flag))
+			count --;
+	} while ((c = c->next) && count);
 
-	return 1;
+	return !count;
 }
 #endif
 

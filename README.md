@@ -7,7 +7,7 @@ A portable, free and open source command-line network bandwidth tester tool.
 
 The uCodev Bandwidth Tester (ubwt for short) is a command-line tool designed to test network bandwidth with unidirectional and bidirectional testing, providing basic or, optionally, extended reports.
 
-It consists of a single tool, that can be executed as a listener one one end, and as connector on the another end - it is not designed to be used as a running service. It is a testing tool, designed to be used with both endpoints under full control of the tester.
+It consists of a single tool, that can be executed as a listener on one end, and as connector on the another end - it is not designed to be used as a running service. It is a testing tool, designed to be used with both endpoints under full control of the tester.
 
 
 ## Licensing
@@ -47,13 +47,15 @@ or see [INSTALL](https://github.com/ucodev/ubwt/blob/main/doc/text/INSTALL)
 
 ## Command-Line Usage Examples
 
+IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the same command-line options - by failing to do so, the behaviour of the application is undefined.
+
 ### Unidirectional Test - Short Summary
 
-      |     im@listening ~ $ ubwt -b listener 10.10.10.1
+      |     im@listening ~ $ ubwt listener 10.10.10.1
       |         Download : 943.485 Mbps
       |     im@listening ~ $ 
 
-      |     im@connector ~ $ ubwt -b connector 10.10.10.1
+      |     im@connector ~ $ ubwt connector 10.10.10.1
       |           Upload : 943.485 Mbps
       |     im@connector ~ $ 
 

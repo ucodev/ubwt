@@ -1,3 +1,8 @@
+v0.08d
+
+ - Fixed asynchronous mode, where remote and local workers could get out of sync
+
+
 v0.08c
 
  - Another bug fix

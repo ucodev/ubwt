@@ -88,7 +88,7 @@ void current_running_set(void);
 void current_running_unset(void);
 void current_exit(void);
 void current_join(pthread_t tid);
-int current_children_has_flag(unsigned int flag);
+int current_children_has_flag(unsigned int flag, unsigned int count);
 #endif
 void current_destroy(void);
 

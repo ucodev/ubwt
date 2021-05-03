@@ -78,8 +78,8 @@ void worker_task_exit(void) {
 	pthread_exit((void *) &retval);
 }
 
-int worker_task_has_flag(unsigned int flag) {
-	return current_children_has_flag(flag);
+int worker_task_has_flag(unsigned int flag, unsigned int count) {
+	return current_children_has_flag(flag, count);
 }
 
 void worker_task_join(ubwt_worker_t tid) {
