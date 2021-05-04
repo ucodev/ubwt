@@ -429,21 +429,24 @@ static int _talk_sender_stream(uint32_t count) {
 
 	/* Check if the stream was considered WEAK by the remote host */
 
-	if (bit_test(&p.flags, UBWT_TALK_OP_STREAM_WEAK)) {
+	if (bit_test(&p.flags, UBWT_TALK_OP_STREAM_WEAK))
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_WEAK, "RECV");
-		*current->talk[process_get_reverse()].weak = 1;
-	}
 
 	_talk_timeout(current->config->net_timeout_default);
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	/* Wait for current->talk[process_get_reverse()].weak to synchronize */
+	/* Wait for all workers to sync before setting current->talk[process_get_reverse()].weak */
 
 	if (current->config->asynchronous)
 		worker_barrier_wait(&current->worker_barrier_global[2]);
 
 	worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
 #endif
+
+	/* Set the weak global value if at least one worker had a weak stream */
+
+	if (bit_test(&p.flags, UBWT_TALK_OP_STREAM_WEAK))
+		*current->talk[process_get_reverse()].weak = 1;
 
 	/* Return 1 is the stream is WEAK, otherwise 0 */
 
@@ -539,8 +542,6 @@ static int _talk_receiver_stream(uint32_t count) {
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_WEAK, "SEND");
 
 		bit_set(&p.flags, UBWT_TALK_OP_STREAM_WEAK);
-
-		*current->talk[process_get_reverse()].weak = 1;
 	}
 
 	if (_talk_send(&p) < 0) {
@@ -562,12 +563,16 @@ static int _talk_receiver_stream(uint32_t count) {
 	_talk_timeout(current->config->net_timeout_default);
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
+	/* Wait for all workers to sync before setting current->talk[process_get_reverse()].weak */
 	if (current->config->asynchronous)
 		worker_barrier_wait(&current->worker_barrier_global[2]);
 
-	/* Wait for current->talk[process_get_reverse()].weak to synchronize */
 	worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
 #endif
+
+	/* Set the weak global value if at least one worker had a weak stream */
+	if (bit_test(&p.flags, UBWT_TALK_OP_STREAM_WEAK))
+		*current->talk[process_get_reverse()].weak = 1;
 
 	/* Return 1 if STREAM is WEAK, otherwise return 0 */
 
@@ -766,9 +771,9 @@ void talk_sender(void) {
 
 				if (!t) t = 1;
 
-				mul = ((current->config->talk_stream_minimum_time * 1000000) / (double) t) * 1.25;
+				mul = ((current->config->talk_stream_minimum_time * 1000000) / (double) t) * 1.5;
 
-				if (mul < 1.25) mul = 1.25;
+				if (mul < 1.5) mul = 1.5;
 
 				current->talk[process_get_reverse()].count *= mul;
 #ifdef UBWT_CONFIG_MULTI_THREADED

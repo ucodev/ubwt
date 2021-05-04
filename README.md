@@ -42,7 +42,7 @@ Install ubwt with the following commands:
       ~# cd ubwt
       ~# ./deploy
 
-or see [INSTALL](https://github.com/ucodev/ubwt/blob/main/doc/text/INSTALL)
+or see [INSTALL.txt](https://github.com/ucodev/ubwt/blob/main/doc/text/INSTALL.txt)
 
 
 ## Command-Line Usage Examples
