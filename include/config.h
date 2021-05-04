@@ -28,7 +28,7 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.08d"
+#define UBWT_CONFIG_VERSION_STR				"0.09a"
 #define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120
@@ -62,6 +62,7 @@
 //#define UBWT_CONFIG_NET_REUSE_PORT			1
 //#define UBWT_CONFIG_NET_USE_SETSOCKOPT		1
 //#define UBWT_CONFIG_MULTI_THREADED			1
+//#define UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER		0
 //#define COMPILE_WIN32					0
 
 #if defined(UBWT_CONFIG_DEBUG) && (UBWT_CONFIG_DEBUG == 0)
@@ -92,6 +93,10 @@
  #undef UBWT_CONFIG_MULTI_THREADED
 #endif
 
+#if defined(UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER) && (UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER == 0)
+ #undef UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER
+#endif
+
 #if defined(COMPILE_WIN32) && (COMPILE_WIN32 == 0)
  #undef COMPILE_WIN32
 #endif
@@ -108,6 +113,7 @@ struct ubwt_config {
 	uint8_t report_full;
 	uint8_t bidirectional;
 	uint8_t asynchronous;
+	uint8_t reverse_first;
 
 	char *report_json_file;
 

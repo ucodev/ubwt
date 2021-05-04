@@ -24,6 +24,7 @@
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
 
+#include <assert.h>
 #include <stdlib.h>
 #include <pthread.h>
 
@@ -109,15 +110,70 @@ ubwt_worker_t worker_task_create(ubwt_worker_task_t *t) {
 }
 
 void worker_barrier_init(ubwt_worker_barrier_t *barrier, unsigned count) {
+#ifdef UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER
+	memset(barrier, 0, sizeof(ubwt_worker_barrier_t));
+
+	barrier->total = barrier->count = count;
+
+	worker_mutex_init(&barrier->mutex[0]);
+	worker_mutex_init(&barrier->mutex[1]);
+	worker_cond_init(&barrier->cond[0]);
+	worker_cond_init(&barrier->cond[1]);
+#else
 	if (pthread_barrier_init(barrier, NULL, count)) error_abort(__FILE__, __LINE__, "pthread_barrier_init");
+#endif
 }
 
 void worker_barrier_wait(ubwt_worker_barrier_t *barrier) {
+#ifdef UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER
+	worker_mutex_lock(&barrier->mutex[0]);
+
+	/* Wait if this barrier is still in use by a previous call */
+	while (barrier->count != barrier->total)
+		worker_cond_wait(&barrier->cond[0], &barrier->mutex[0]);
+
+	worker_mutex_lock(&barrier->mutex[1]);
+
+	worker_mutex_unlock(&barrier->mutex[0]);
+
+	barrier->waiting ++;
+
+	/* Wait for all threads */
+	while (barrier->waiting < barrier->count)
+		worker_cond_wait(&barrier->cond[1], &barrier->mutex[1]);
+
+	assert(barrier->count == barrier->waiting);
+
+	/* First thread released, broadcasts the condition */
+	if (barrier->count == barrier->total)
+		worker_cond_broadcast(&barrier->cond[1]);
+
+	barrier->count --;
+	barrier->waiting --;
+
+	/* Last thread released, resets the barrier */
+	if (!barrier->count) {
+		barrier->count = barrier->total;
+		worker_cond_broadcast(&barrier->cond[0]);
+	}
+
+	worker_mutex_unlock(&barrier->mutex[1]);
+#else
 	pthread_barrier_wait(barrier);
+#endif
 }
 
 void worker_barrier_destroy(ubwt_worker_barrier_t *barrier) {
+#ifdef UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER
+	worker_mutex_destroy(&barrier->mutex[0]);
+	worker_mutex_destroy(&barrier->mutex[1]);
+	worker_cond_destroy(&barrier->cond[0]);
+	worker_cond_destroy(&barrier->cond[1]);
+
+	memset(barrier, 0, sizeof(ubwt_worker_barrier_t));
+#else
 	pthread_barrier_destroy(barrier);
+#endif
 }
 
 void worker_mutex_init(ubwt_worker_mutex_t *mutex) {
@@ -157,7 +213,7 @@ void worker_cond_signal(ubwt_worker_cond_t *cond) {
 }
 
 void worker_cond_broadcast(ubwt_worker_cond_t *cond) {
-	if (pthread_cond_signal(cond)) error_abort(__FILE__, __LINE__, "pthread_cond_broadcast");
+	if (pthread_cond_broadcast(cond)) error_abort(__FILE__, __LINE__, "pthread_cond_broadcast");
 }
 
 void worker_cond_destroy(ubwt_worker_cond_t *cond) {
@@ -212,8 +268,6 @@ void worker_init(void) {
 		worker_barrier_init(&__worker_barrier_global[0], current->config->worker_straight_first_count);
 	} else if (current->config->bidirectional) {
 		worker_barrier_init(&__worker_barrier_global[0], current->config->worker_count);
-	} else {
-		error_abort(__FILE__, __LINE__, "worker_barrier_init");
 	}
 
 	if (current->config->worker_reverse_first_count && current->config->bidirectional) {

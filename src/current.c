@@ -251,6 +251,8 @@ void current_join(ubwt_worker_t worker_id) {
 int current_children_has_flag(unsigned int flag, unsigned int count) {
 	struct ubwt_current *c = &__current;
 
+	assert(count > 0);
+
 	do {
 		/* Ignore non-child threads */
 		if (!bit_test(&c->worker_flags, UBWT_WORKER_FLAG_TYPE_CHILD))

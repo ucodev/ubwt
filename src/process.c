@@ -196,19 +196,21 @@ void process_report(void) {
 	report_worker_combine();
 #endif
 
-	if (net_im_listener()) {
-		process_set_im_receiver();
-	} else {
-		process_set_im_sender();
+	if ((current->config->reverse_first && current->config->bidirectional) || (!current->config->reverse_first)) {
+		if (net_im_listener()) {
+			process_set_im_receiver();
+		} else {
+			process_set_im_sender();
+		}
+
+		report_set_straight();
+		report_results_compute();
+		report_results_show();
+		report_export_json_start();
+		report_export_json_dump(0);
 	}
 
-	report_set_straight();
-	report_results_compute();
-	report_results_show();
-	report_export_json_start();
-	report_export_json_dump(0);
-
-	if (!current->config->bidirectional) {
+	if (!current->config->bidirectional && !current->config->reverse_first) {
 		report_export_json_end();
 		return;
 	}

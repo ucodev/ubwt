@@ -88,7 +88,7 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 #if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && !defined(COMPILE_WIN32)
 		"p:"
 #endif
-		"P:s:t:vw:"
+		"P:Rs:t:vw:"
 #ifdef UBWT_CONFIG_MULTI_THREADED
 		"W:"
 #endif
@@ -162,6 +162,10 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 			case 'P': {
 				strncpy(current->config->port, optarg, sizeof(current->config->port) - 1);
 				current->config->port[sizeof(current->config->port) - 1] = 0;
+			} break;
+
+			case 'R': {
+				current->config->reverse_first = 1;
 			} break;
 
 			case 's': {
@@ -297,6 +301,9 @@ void config_init(int argc, char *const *argv) {
 
 		current->config->worker_straight_first_count = current->config->worker_count / 2;
 		current->config->worker_reverse_first_count = current->config->worker_count / 2;
+	} else if (current->config->reverse_first) {
+		current->config->worker_straight_first_count = 0;
+		current->config->worker_reverse_first_count = current->config->worker_count;
 	} else {
 		current->config->worker_straight_first_count = current->config->worker_count;
 		current->config->worker_reverse_first_count = 0;

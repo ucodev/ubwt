@@ -57,6 +57,7 @@ void usage_show(char *const *argv, int success) {
 		"       -p <protocol>       L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
 #endif
 		"       -P <port>           TCP or UDP port to listen/connect to (default: %s).\n"
+		"       -R                  Reverse stream testing first.\n"
 		"       -s <octets>         L4 payload size (default: %u).\n"
 		"       -t <seconds>        Minimum stream time (default: %u seconds).\n"
 		"       -v                  Display version information.\n"

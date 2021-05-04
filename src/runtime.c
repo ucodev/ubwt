@@ -76,7 +76,7 @@ static void _runtime_wait_worker_flag(const char *section, unsigned int flag, un
 
 void runtime_do(void) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	unsigned int i = 0;
+	unsigned int i = 0, j = 0;
 	ubwt_worker_t *tid = NULL;
 	ubwt_worker_task_t **t = NULL;
 
@@ -106,11 +106,13 @@ void runtime_do(void) {
 		tid[i] = worker_task_create(t[i]);
 	}
 
-	_runtime_wait_worker_flag("Initializing regular workers", UBWT_WORKER_FLAG_TASK_READY, current->config->asynchronous ? current->config->worker_count / 2 : current->config->worker_count);
-	_runtime_wait_worker_flag("Waiting for remote workers (regular)", UBWT_WORKER_FLAG_TASK_RUNNING, current->config->asynchronous ? current->config->worker_count / 2 : current->config->worker_count);
+	if (i > 0) {
+		_runtime_wait_worker_flag("Initializing local regular workers", UBWT_WORKER_FLAG_TASK_READY, current->config->asynchronous ? current->config->worker_count / 2 : current->config->worker_count);
+		_runtime_wait_worker_flag("Waiting for remote regular workers", UBWT_WORKER_FLAG_TASK_RUNNING, current->config->asynchronous ? current->config->worker_count / 2 : current->config->worker_count);
+	}
 
 	/* Initialize reverse first workers */
-	for (; i < (current->config->worker_straight_first_count + current->config->worker_reverse_first_count); i ++) {
+	for (j = i; i < (current->config->worker_straight_first_count + current->config->worker_reverse_first_count); i ++) {
 		t[i]->type = UBWT_WORKER_TASK_TYPE_NVR_INT;
 		t[i]->fi = process_run;
 		t[i]->vi = 1;
@@ -118,12 +120,15 @@ void runtime_do(void) {
 		tid[i] = worker_task_create(t[i]);
 	}
 
-	_runtime_wait_worker_flag("Initializing reverse workers", UBWT_WORKER_FLAG_TASK_READY, current->config->asynchronous ? current->config->worker_count / 2 : current->config->worker_count);
-	_runtime_wait_worker_flag("Waiting for remote workers (reverse)", UBWT_WORKER_FLAG_TASK_RUNNING, current->config->worker_count);
+	if (i > j) {
+		_runtime_wait_worker_flag("Initializing local reverse workers", UBWT_WORKER_FLAG_TASK_READY, current->config->worker_count);
+		_runtime_wait_worker_flag("Waiting for remote reverse workers", UBWT_WORKER_FLAG_TASK_RUNNING, current->config->worker_count);
+	}
 
-	_runtime_wait_worker_flag("Running bandwidth test", UBWT_WORKER_FLAG_TASK_JOINABLE, current->config->worker_count);
+	if (i > 0)
+		_runtime_wait_worker_flag("Running bandwidth test", UBWT_WORKER_FLAG_TASK_JOINABLE, current->config->worker_count);
 #else
-	process_run(0 /* 0: straight first, 1: reverse first */);
+	process_run(current->config->reverse_first /* 0: straight first, 1: reverse first */);
 #endif
 
 	process_report();

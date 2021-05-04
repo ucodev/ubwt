@@ -17,6 +17,9 @@ The addresses of the listener and connector can be specified as \fBHOSTNAME\fR, 
 The available command line \fBOPTIONS\fR are:
 .PP
 .TP
+\fB\-A\fR
+Perform an asynchronous bi-directional full-duplex test.
+.TP
 \fB\-d\fR
 Enable debugging.
 .TP
@@ -32,6 +35,9 @@ Prints the help.
 \fB\-I\fR \fImsec\fR
 Interval between latency measurements (default: 1 msec).
 .TP
+\fB\-j\fR \fIfile\fR
+Export report in JSON format to file.
+.TP
 \fB\-m\fR \fIoctets\fR
 Link MTU (default: 1500 octets).
 .TP
@@ -44,6 +50,9 @@ L4 protocol: 'tcp' or 'udp' (default: tcp).
 \fB\-P\fR \fIport\fR
 TCP or UDP port to listen/connect to (default: 19991).
 .TP
+\fB\-R\fR
+Reverse stream testing first.
+.TP
 \fB\-s\fR \fIoctets\fR
 L4 payload size (default: 1432).
 .TP
@@ -55,6 +64,9 @@ Display version information.
 .TP
 \fB\-w\fR \fIseconds\fR
 Connection timeout (default: 120 seconds).
+.TP
+\fB\-W\fR \fIcount\fR
+Maximum number of workers (default: 1).
 .SH EXAMPLE
 .TP
 alice@serv.my.lan ~ $ ubwt listener 0.0.0.0
