@@ -125,13 +125,18 @@ void runtime_do(void) {
 		_runtime_wait_worker_flag("Waiting for remote reverse workers", UBWT_WORKER_FLAG_TASK_RUNNING, current->config->worker_count);
 	}
 
-	if (i > 0)
+	if (i > 0) {
 		_runtime_wait_worker_flag("Running bandwidth test", UBWT_WORKER_FLAG_TASK_JOINABLE, current->config->worker_count);
+
+		process_report();
+	} else {
+		puts("Nothing to do...");
+	}
 #else
 	process_run(current->config->reverse_first /* 0: straight first, 1: reverse first */);
+	process_report();
 #endif
 
-	process_report();
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	for (i = 0; i < (current->config->worker_straight_first_count + current->config->worker_reverse_first_count); i ++) {

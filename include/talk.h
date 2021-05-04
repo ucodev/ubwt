@@ -41,8 +41,11 @@ typedef enum UBWT_TALK_OPS {
 } ubwt_talk_ops_t;
 
 struct ubwt_talk_context {
+	unsigned *weak;
 	uint64_t count;
 };
+
+extern struct ubwt_talk_context __talk[2];
 
 #ifndef UBWT_CONFIG_NO_PRAGMA_PACK
  #pragma pack(push)

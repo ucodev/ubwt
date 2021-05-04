@@ -52,28 +52,56 @@ IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the 
 ### Unidirectional Test - Short Summary
 
       |     im@listening ~ $ ubwt listener 10.10.10.1
+      |      [*] Initializing local regular workers...
+      |      [*] Waiting for remote regular workers...
+      |      [*] Running bandwidth test...
+      |
+      |          Latency : 1.128 ms
       |         Download : 943.485 Mbps
       |     im@listening ~ $ 
 
       |     im@connector ~ $ ubwt connector 10.10.10.1
+      |      [*] Initializing local regular workers...
+      |      [*] Waiting for remote regular workers...
+      |      [*] Running bandwidth test...
+      |
+      |          Latency : 1.128 ms
       |           Upload : 943.485 Mbps
       |     im@connector ~ $ 
 
 ### Bidirectional Test - Short Summary
 
       |     im@listening ~ $ ubwt -b listener 10.10.10.1
+      |      [*] Initializing local regular workers...
+      |      [*] Waiting for remote regular workers...
+      |      [*] Running bandwidth test...
+      |
+      |          Latency : 1.351 ms
       |         Download : 968.273 Mbps
+      |
+      |          Latency : 1.287 ms
       |           Upload : 940.265 Mbps
       |     im@listening ~ $ 
 
       |     im@connector ~ $ ubwt -b connector 10.10.10.1
+      |      [*] Initializing local regular workers...
+      |      [*] Waiting for remote regular workers...
+      |      [*] Running bandwidth test...
+      |
+      |          Latency : 1.351 ms
       |           Upload : 968.273 Mbps
+      |
+      |          Latency : 1.287 ms
       |         Download : 940.265 Mbps
       |     im@connector ~ $ 
  
 ### Bidirectional Test - Full Report
 
       |     im@listening ~ $ ubwt -F -b listener 10.10.10.1
+      |      [*] Initializing local regular workers...
+      |      [*] Waiting for remote regular workers...
+      |      [*] Running bandwidth test...
+      |
       |     Direction                           : Download
       |     MTU                                 : 1500 octets
       |     L3 Protocol                         : ipv4

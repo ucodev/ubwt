@@ -73,7 +73,7 @@ typedef struct ubwt_worker_task {
 	};
 } ubwt_worker_task_t;
 
-extern ubwt_worker_barrier_t __worker_barrier_global[2];
+extern ubwt_worker_barrier_t __worker_barrier_global[3];
 extern ubwt_worker_mutex_t   __worker_mutex_global;
 extern ubwt_worker_mutex_t   __worker_mutex_cond;
 extern ubwt_worker_cond_t    __worker_cond_global;
@@ -86,7 +86,7 @@ void worker_task_exit(void);
 int worker_task_has_flag(unsigned int flag, unsigned int count);
 void worker_task_join(ubwt_worker_t worker_id);
 void worker_barrier_init(ubwt_worker_barrier_t *barrier, unsigned count);
-void worker_barrier_wait(ubwt_worker_barrier_t *barrier);
+int worker_barrier_wait(ubwt_worker_barrier_t *barrier);
 void worker_barrier_destroy(ubwt_worker_barrier_t *barrier);
 void worker_mutex_init(ubwt_worker_mutex_t *mutex);
 void worker_mutex_lock(ubwt_worker_mutex_t *mutex);

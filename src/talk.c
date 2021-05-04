@@ -57,6 +57,9 @@ static const char *__talk_ops_str[] = {
 	"UBWT_TALK_OP_FORCE_FAIL"
 };
 
+unsigned __talk_weak = 0;
+struct ubwt_talk_context __talk[2] = { { &__talk_weak, 0 }, { &__talk_weak, 0 } };
+
 const char *talk_op_to_str(ubwt_talk_ops_t op) {
 	return __talk_ops_str[op];
 }
@@ -361,9 +364,16 @@ static int _talk_sender_stream(uint32_t count) {
 
 		bit_set(&p.flags, UBWT_TALK_OP_STREAM_RUN);
 
+
 #ifdef UBWT_CONFIG_MULTI_THREADED
+		/* In asynchronous mode, wait for both straight and reverse workers ta start transmitting at the same time */
+		if (current->config->asynchronous)
+			worker_barrier_wait(&current->worker_barrier_global[2]);
+
 		/* Syncronize sending workers - STREAM START */
 		worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+
+		*current->talk[process_get_reverse()].weak = 0;
 #endif
 
 		_talk_timeout(current->config->net_timeout_talk_stream_run);
@@ -419,15 +429,25 @@ static int _talk_sender_stream(uint32_t count) {
 
 	/* Check if the stream was considered WEAK by the remote host */
 
-	if (bit_test(&p.flags, UBWT_TALK_OP_STREAM_WEAK))
+	if (bit_test(&p.flags, UBWT_TALK_OP_STREAM_WEAK)) {
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_WEAK, "RECV");
+		*current->talk[process_get_reverse()].weak = 1;
+	}
 
 	_talk_timeout(current->config->net_timeout_default);
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	/* Wait for current->talk[process_get_reverse()].weak to synchronize */
+
+	if (current->config->asynchronous)
+		worker_barrier_wait(&current->worker_barrier_global[2]);
+
+	worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+#endif
 
 	/* Return 1 is the stream is WEAK, otherwise 0 */
 
-	return bit_test(&p.flags, UBWT_TALK_OP_STREAM_WEAK);
+	return *current->talk[process_get_reverse()].weak;
 }
 
 static int _talk_receiver_stream(uint32_t count) {
@@ -463,8 +483,14 @@ static int _talk_receiver_stream(uint32_t count) {
 	debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "WAIT");
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
+	/* In asynchronous mode, wait for both straight and reverse workers ta start transmitting at the same time */
+	if (current->config->asynchronous)
+		worker_barrier_wait(&current->worker_barrier_global[2]);
+
 	/* Syncronize receiving workers - STREAM START */
 	worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+
+	*current->talk[process_get_reverse()].weak = 0;
 #endif
 
 	/* Retrieve start time */
@@ -483,6 +509,8 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	_talk_timeout(current->config->net_timeout_talk_stream_end);
 
+	debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "RECV");
+
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	/* Syncronize receiving workers - STREAM END */
 	worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
@@ -490,8 +518,6 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	/* Compute transmission time */
 	t = datetime_now_us() - t - ((i != count) ? (current->config->net_timeout_talk_stream_run * 1000000) : 0);
-
-	debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "RECV");
 
 
 	/* Store report data */
@@ -513,6 +539,8 @@ static int _talk_receiver_stream(uint32_t count) {
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_WEAK, "SEND");
 
 		bit_set(&p.flags, UBWT_TALK_OP_STREAM_WEAK);
+
+		*current->talk[process_get_reverse()].weak = 1;
 	}
 
 	if (_talk_send(&p) < 0) {
@@ -533,10 +561,17 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	_talk_timeout(current->config->net_timeout_default);
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	if (current->config->asynchronous)
+		worker_barrier_wait(&current->worker_barrier_global[2]);
+
+	/* Wait for current->talk[process_get_reverse()].weak to synchronize */
+	worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+#endif
 
 	/* Return 1 if STREAM is WEAK, otherwise return 0 */
 
-	return t < (current->config->talk_stream_minimum_time * 1000000);
+	return *current->talk[process_get_reverse()].weak;
 }
 
 static int _talk_sender_report_exchange(void) {
@@ -653,6 +688,8 @@ static int _talk_receiver_finish(void) {
 void talk_sender(void) {
 	int i = 0, ret = 0;
 	uint32_t dt = 0;
+	uint64_t t = 0;
+	double mul = 0;
 
 	stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE, 0);
 
@@ -685,27 +722,36 @@ void talk_sender(void) {
 	report_talk_latency_set(dt);
 	report_talk_latency_show();
 
-	stage_reset();
-
 	/* Set talk context */
-	current->talk.count = current->config->talk_count_current;
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	if (worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]))
+#endif
+		current->talk[process_get_reverse()].count = current->config->talk_count_current;
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+#endif
+
+	stage_reset();
 
 	for (;;) {
 		stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_NEGOTIATION, bit_flag(UBWT_STAGE_CTRL_FL_NO_RESET));
 
-		if (_talk_sender_negotiate(current->talk.count, report_talk_latency_get()) < 0) {
+		if (_talk_sender_negotiate(current->talk[process_get_reverse()].count, report_talk_latency_get()) < 0) {
 			_talk_send_abort();
 
 			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_NEGOTIATION_FAILED, "talk_sender(): _talk_sender_negotiate()");
 			error_no_return();
 		}
 
-		report_talk_count_set(current->talk.count);
+		report_talk_count_set(current->talk[process_get_reverse()].count);
 		report_talk_count_show();
 
 		stage_set(UBWT_STAGE_STATE_RUNTIME_TALK_STREAM, bit_flag(UBWT_STAGE_CTRL_FL_NO_RESET));
 
-		if ((ret = _talk_sender_stream(current->talk.count))) {
+		t = datetime_now_us();
+
+		if ((ret = _talk_sender_stream(current->talk[process_get_reverse()].count))) {
 			if (ret < 0) {
 				_talk_send_abort();
 
@@ -713,9 +759,25 @@ void talk_sender(void) {
 				error_no_return();
 			}
 
-			current->talk.count *= 10;
+#ifdef UBWT_CONFIG_MULTI_THREADED
+			if (worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()])) {
+#endif
+				t = datetime_now_us() - t;
 
-			assert(current->talk.count <= current->config->talk_count_max);
+				if (!t) t = 1;
+
+				mul = ((current->config->talk_stream_minimum_time * 1000000) / (double) t) * 1.25;
+
+				if (mul < 1.25) mul = 1.25;
+
+				current->talk[process_get_reverse()].count *= mul;
+#ifdef UBWT_CONFIG_MULTI_THREADED
+			}
+
+			worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+#endif
+
+			assert(current->talk[process_get_reverse()].count <= current->config->talk_count_max);
 
 			stage_inc(bit_flag(UBWT_STAGE_CTRL_FL_NO_SHOW));
 
@@ -796,12 +858,6 @@ void talk_receiver(void) {
 			continue;
 		}
 
-		/* TODO: Not all workers will compute the same transmission time, so another STREAM restart mechanism
-		 * should be implemented to avoid some workers having reported a WEAK STREAM and others don't.
-		 * This condition should be incredibly rare, given that the current time measurement is performed
-		 * right after a barrier - but still a synchronized approach should be implemented.
-		 */
-
 		break;
 	}
 
@@ -822,6 +878,10 @@ void talk_receiver(void) {
 }
 
 void talk_init(void) {
+	memset(__talk, 0, sizeof(__talk));
+
+	__talk[0].weak = __talk[1].weak = &__talk_weak;
+
 	if (net_im_listener()) {
 		if (net_listener_accept() < 0) {
 			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_RECEIVER_INIT, "talk_init(): net_listener_accept()");

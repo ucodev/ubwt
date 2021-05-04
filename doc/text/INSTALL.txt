@@ -17,12 +17,12 @@
    $ ./target rpi
 
 
- You can enable stack protection (when available in the compiler) by run the following command before build or deploying:
+ You can enable stack protection (when available in the compiler) by running the following command before build or deploying:
 
    $ ./addon stackprot
 
 
- If you're building the ubwt on a Cygwin environment, the following command shall be executed before deployment in order to avoid privilege checks during the installation:
+ If you're building the ubwt on a Cygwin environment, the following commands shall be executed before deployment in order to avoid privilege checks during the installation:
 
    $ touch .nopriv
    $ touch .nopriv_install

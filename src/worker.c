@@ -33,7 +33,7 @@
 #include "error.h"
 #include "worker.h"
 
-ubwt_worker_barrier_t __worker_barrier_global[2]; /* 0: straight, 1: reverse */
+ubwt_worker_barrier_t __worker_barrier_global[3]; /* 0: straight, 1: reverse */
 ubwt_worker_mutex_t   __worker_mutex_global; /* used by 'current' handlers */
 ubwt_worker_mutex_t   __worker_mutex_cond;
 ubwt_worker_cond_t    __worker_cond_global;
@@ -124,8 +124,10 @@ void worker_barrier_init(ubwt_worker_barrier_t *barrier, unsigned count) {
 #endif
 }
 
-void worker_barrier_wait(ubwt_worker_barrier_t *barrier) {
+int worker_barrier_wait(ubwt_worker_barrier_t *barrier) {
 #ifdef UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER
+	int serial = 0;
+
 	worker_mutex_lock(&barrier->mutex[0]);
 
 	/* Wait if this barrier is still in use by a previous call */
@@ -155,11 +157,14 @@ void worker_barrier_wait(ubwt_worker_barrier_t *barrier) {
 	if (!barrier->count) {
 		barrier->count = barrier->total;
 		worker_cond_broadcast(&barrier->cond[0]);
+		serial = 1;
 	}
 
 	worker_mutex_unlock(&barrier->mutex[1]);
+
+	return serial;
 #else
-	pthread_barrier_wait(barrier);
+	return pthread_barrier_wait(barrier) == PTHREAD_BARRIER_SERIAL_THREAD;
 #endif
 }
 
@@ -278,6 +283,9 @@ void worker_init(void) {
 		worker_barrier_init(&__worker_barrier_global[1], current->config->worker_count);
 	}
 
+	if (current->config->asynchronous)
+		worker_barrier_init(&__worker_barrier_global[2], current->config->worker_count);
+
 	worker_mutex_init(&__worker_mutex_global);
 	worker_mutex_init(&__worker_mutex_cond);
 	worker_cond_init(&__worker_cond_global);
@@ -289,6 +297,9 @@ void worker_destroy(void) {
 
 	if (current->config->worker_reverse_first_count || current->config->bidirectional)
 		worker_barrier_destroy(&__worker_barrier_global[1]);
+
+	if (current->config->asynchronous)
+		worker_barrier_destroy(&__worker_barrier_global[2]);
 
 	worker_mutex_destroy(&__worker_mutex_global);
 	worker_mutex_destroy(&__worker_mutex_cond);

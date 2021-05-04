@@ -196,6 +196,8 @@ void process_report(void) {
 	report_worker_combine();
 #endif
 
+	report_export_json_start();
+
 	if ((current->config->reverse_first && current->config->bidirectional) || (!current->config->reverse_first)) {
 		if (net_im_listener()) {
 			process_set_im_receiver();
@@ -206,7 +208,6 @@ void process_report(void) {
 		report_set_straight();
 		report_results_compute();
 		report_results_show();
-		report_export_json_start();
 		report_export_json_dump(0);
 	}
 

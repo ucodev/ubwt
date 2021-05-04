@@ -41,7 +41,7 @@ void usage_show(char *const *argv, int success) {
 		"OPTIONS\n"
 		"\n"
 #ifdef UBWT_CONFIG_MULTI_THREADED
-		"       -A                  Perform an asynchronous bi-directional full-duplex test.\n"
+		"       -A                  Perform an asynchronous bi-directional full-duplex test (experimental).\n"
 #endif
 #ifdef UBWT_CONFIG_DEBUG
 		"       -d                  Enable debugging.\n"

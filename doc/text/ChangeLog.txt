@@ -1,3 +1,11 @@
+v0.09b
+
+ - Fixed JSON output issue that was introduced with -R implementation
+ - Improved weak stream detection and stream packet count calculation
+ - Improved asynchronous mode testing and measurements
+ - Changed minimum stream time default value from 2 to 5 seconds.
+
+
 v0.09a
 
  - Included support for multi-threading under Darwin (custom pthread barrier implementation)

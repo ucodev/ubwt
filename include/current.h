@@ -56,7 +56,7 @@ struct ubwt_current {
 
 	struct ubwt_report report;
 	struct ubwt_process process;
-	struct ubwt_talk_context talk;
+	struct ubwt_talk_context *talk;
 	struct ubwt_runtime *runtime;
 
 #ifdef UBWT_CONFIG_MULTI_THREADED

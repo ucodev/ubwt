@@ -87,6 +87,7 @@ void current_init(void) {
 	*__current.time_us = datetime_now_us();
 
 	__current.runtime = &__runtime;
+	__current.talk = __talk;
 }
 
 void current_update(void) {
@@ -117,6 +118,7 @@ void current_fork(ubwt_worker_task_t *t) {
 	c->config = __current.config;
 	c->time_us = __current.time_us;
 	c->runtime = __current.runtime;
+	c->talk = __current.talk;
 
 	memcpy(&c->stage, &__current.stage, sizeof(ubwt_stage_t));
 
