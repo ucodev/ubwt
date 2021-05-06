@@ -1,3 +1,9 @@
+v0.09d
+
+ - Improved asynchronous mode
+ - Re-adjusted stream packet count calculation after weak stream detection
+
+
 v0.09c
 
  - Adjusted stream packet count calculation after weak stream detection

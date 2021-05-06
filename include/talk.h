@@ -42,7 +42,9 @@ typedef enum UBWT_TALK_OPS {
 
 struct ubwt_talk_context {
 	unsigned *weak;
+	unsigned im_weak;
 	uint64_t count;
+	uint64_t weak_time;
 };
 
 extern struct ubwt_talk_context __talk[2];
@@ -60,8 +62,7 @@ ubwt_talk_payload {
 	uint32_t count;
 	uint32_t latency;
 	uint32_t __reserved1;
-	uint32_t __reserved2;
-	uint32_t __reserved3;
+	uint64_t weak_time;
 	uint64_t worker_id;
 	uint8_t buf[UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE - 32];
 } ubwt_talk_payload_t;
