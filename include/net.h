@@ -45,6 +45,10 @@
  typedef int sock_t;
 #endif
 
+#define UBWT_NET_PROTO_BUF_SIZE	8
+#define UBWT_NET_PROTO_CMD_CONN	"+CONN"
+#define UBWT_NET_PROTO_CMD_OK	"+OK"
+
 #define net_im_connector() current->config->im_connector
 #define net_im_listener() current->config->im_listener
 
