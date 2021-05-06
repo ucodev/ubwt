@@ -72,6 +72,7 @@ static void _talk_timeout(time_t timeout) {
 }
 
 static int _talk_weak_stream_needs_restart(void) {
+#ifdef UBWT_CONFIG_MULTI_THREADED
 	if (current->config->asynchronous) {
 		if (current->talk[0].im_weak == (current->config->worker_count / 2) || current->talk[1].im_weak == (current->config->worker_count / 2))
 			return 1;
@@ -80,11 +81,16 @@ static int _talk_weak_stream_needs_restart(void) {
 	}
 
 	return 0;
+#else
+	return current->talk[process_get_reverse()].im_weak;
+#endif
 }
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
 static int _talk_weak_stream_needs_recount(void) {
 	return current->talk[process_get_reverse()].im_weak == (current->config->worker_count / (1 + current->config->asynchronous));
 }
+#endif
 
 static ssize_t _talk_send(const ubwt_talk_payload_t *pkt) {
 	size_t len = 0, hdr_size = offsetof(ubwt_talk_payload_t, buf);
@@ -382,12 +388,15 @@ static int _talk_sender_stream(uint32_t count) {
 		bit_set(&p.flags, UBWT_TALK_OP_STREAM_RUN);
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-		/* In asynchronous mode, wait for both straight and reverse workers ta start transmitting at the same time */
-		if (current->config->asynchronous)
-			worker_barrier_wait(&current->worker_barrier_global[2]);
+		/* Syncronize workers - context reset */
 
-		/* Syncronize sending workers - STREAM START */
-		worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+		if (current->config->asynchronous) {
+			/* Sync sending/receiving workers */
+			worker_barrier_wait(&current->worker_barrier_global[2]);
+		} else {
+			/* Sync sending workers */
+			worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+		}
 
 		worker_mutex_lock(current->worker_mutex_global);
 #endif
@@ -398,6 +407,17 @@ static int _talk_sender_stream(uint32_t count) {
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
 		worker_mutex_unlock(current->worker_mutex_global);
+
+		/* Syncronize workers - STREAM START */
+
+		if (current->config->asynchronous) {
+			/* In asynchronous mode, wait for both straight and reverse
+			 * workers ta start transmitting at the same time
+			 */
+			worker_barrier_wait(&current->worker_barrier_global[2]);
+		} else {
+			worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+		}
 #endif
 
 		_talk_timeout(current->config->net_timeout_talk_stream_run);
@@ -496,7 +516,7 @@ static int _talk_sender_stream(uint32_t count) {
 
 	/* Return 1 if at least one of the worker streams in this context is WEAK, otherwise 0 */
 
-	return *current->talk[process_get_reverse()].weak;
+	return *current->talk[process_get_reverse()].weak > 0;
 }
 
 static int _talk_receiver_stream(uint32_t count) {
@@ -528,16 +548,18 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	/* Wait for STREAM RUN to start */
 
-
 	debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "WAIT");
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	/* In asynchronous mode, wait for both straight and reverse workers ta start transmitting at the same time */
-	if (current->config->asynchronous)
-		worker_barrier_wait(&current->worker_barrier_global[2]);
+	/* Syncronize workers - context reset */
 
-	/* Syncronize receiving workers - STREAM START */
-	worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+	if (current->config->asynchronous) {
+		/* Sync sending/receiving workers */
+		worker_barrier_wait(&current->worker_barrier_global[2]);
+	} else {
+		/* Sync receiving workers */
+		worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+	}
 
 	worker_mutex_lock(current->worker_mutex_global);
 #endif
@@ -548,6 +570,17 @@ static int _talk_receiver_stream(uint32_t count) {
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	worker_mutex_unlock(current->worker_mutex_global);
+
+	/* Syncronize workers - STREAM START */
+
+	if (current->config->asynchronous) {
+		/* In asynchronous mode, wait for both straight and reverse
+		 * workers ta start transmitting at the same time
+		 */
+		worker_barrier_wait(&current->worker_barrier_global[2]);
+	} else {
+		worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]);
+	}
 #endif
 
 	/* Retrieve start time */
@@ -574,7 +607,6 @@ static int _talk_receiver_stream(uint32_t count) {
 #endif
 
 	/* Compute transmission time - if the expected count packets are not received due a timeout, subtract the stream run timeout value */
-	assert(i == count);
 	t = datetime_now_us() - t - ((i != count) ? (current->config->net_timeout_talk_stream_run * 1000000) : 0);
 
 
@@ -653,7 +685,7 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	/* Return 1 if at least one of the worker streams in this context is WEAK, otherwise 0 */
 
-	return *current->talk[process_get_reverse()].weak;
+	return *current->talk[process_get_reverse()].weak > 0;
 }
 
 static int _talk_sender_report_exchange(void) {
@@ -864,13 +896,18 @@ void talk_sender(void) {
 				 * accuratelly predict if all the workers' streams will be considered
 				 * weak at any given point in time due to link conditions, and we may end
 				 * up in a very long retry loop in order to get a consistent non-weak stream.
-				 * To mitigate this effect, we double the computed multiplier value for the
-				 * asynchronous mode, and give a 25% tolerance for all the other modes.
+				 * On the other hand, a very high tolerance, such as doubling the count value,
+				 * may create a higher disparity between the upload and download streams, so
+				 * the tolerance of the multiplier needs to sit somewhere between 1.25 and 1.75.
+				 * After several tests under different link conditions on both simmetric and
+				 * assimetric links, a tolerance of 1.35 for the assincronous mode and 1.20 for
+				 * all the other modes seems to be a good compromise between accuracy and
+				 * performance.
 				 */
-				mul = ((current->config->talk_stream_minimum_time * 1000000) / (double) t) * (current->config->asynchronous ? 2 : 1.25);
+				mul = ((current->config->talk_stream_minimum_time * 1000000) / (double) t) * (current->config->asynchronous ? 1.35 : 1.20);
 
-				if (mul < (current->config->asynchronous ? 2 : 1.25))
-					mul = (current->config->asynchronous ? 2 : 1.25);
+				if (mul < (current->config->asynchronous ? 1.35 : 1.20))
+					mul = (current->config->asynchronous ? 1.35 : 1.20);
 
 				current->talk[process_get_reverse()].count *= mul;
 

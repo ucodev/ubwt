@@ -41,7 +41,7 @@ typedef enum UBWT_TALK_OPS {
 } ubwt_talk_ops_t;
 
 struct ubwt_talk_context {
-	unsigned *weak;
+	unsigned *weak; /* points to __talk_weak */
 	unsigned im_weak;
 	uint64_t count;
 	uint64_t weak_time;

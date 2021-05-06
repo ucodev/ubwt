@@ -40,10 +40,13 @@
 #include "worker.h"
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
+ extern struct ubwt_current __current;
  struct ubwt_current *current_get(ubwt_worker_t worker_id);
  #define current current_get(worker_self())
+ #define current_im_main() (__current.worker_id == worker_self())
 #else
  extern struct ubwt_current *current;
+ #define current_im_main() 1
 #endif
 
 struct ubwt_current {

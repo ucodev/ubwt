@@ -36,27 +36,104 @@
 #include "stage.h"
 
 int net_connector_connect(void) {
+	char buf[8] = { 0 };
+
 	if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 		if (connect(current->net.fd, (struct sockaddr *) &current->net.listener.saddr, current->net.listener.slen) < 0) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): connect()");
 
 			return -1;
 		}
+	} else if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_UDP) {
+		memset(buf, 0, sizeof(buf));
+
+		strcpy(buf, "+CONN");
+
+		if (sendto(current->net.fd, ((const char *) buf), sizeof(buf), 0, (struct sockaddr *) &current->net.listener.saddr, current->net.listener.slen) < 0) {
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): sendto()");
+
+			return -1;
+		}
+
+		memset(buf, 0, sizeof(buf));
+
+		current->net.listener.slen = sizeof(current->net.listener.saddr);
+
+		if (recvfrom(current->net.fd, (char *) buf, sizeof(buf), 0, (struct sockaddr *) &current->net.listener.saddr, &current->net.listener.slen) < 0) {
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): recvfrom()");
+
+			return -1;
+		}
+
+		buf[3] = 0;
+
+		if (strcmp(buf, "+OK")) {
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): Unexpected response from the remote host");
+
+			errno = UBWT_ERROR_MSG_UNEXPECTED;
+
+			return -1;
+		}
+	} else {
+		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): Unsupported L4 protocol");
+
+		errno = EINVAL;
+
+		return -1;
 	}
 
 	return 0;
 }
 
 int net_listener_accept(void) {
+	char buf[8] = { 0 };
+
 	if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 		current->net.connector.slen = sizeof(current->net.connector.saddr);
 
 		if ((current->net.fd = accept(current->net.fd_listen, (struct sockaddr *) &current->net.connector.saddr, &current->net.connector.slen)) < 0) {
-			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_listen(): accept()");
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): accept()");
 
 			return -1;
 		}
+	} else if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_UDP) {
+		memset(buf, 0, sizeof(buf));
+
+		current->net.connector.slen = sizeof(current->net.connector.saddr);
+
+		if (recvfrom(current->net.fd, (char *) buf, sizeof(buf), 0, (struct sockaddr *) &current->net.connector.saddr, &current->net.connector.slen) < 0) {
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_listener_accept(): recvfrom()");
+
+			return -1;
+		}
+
+		buf[5] = 0;
+
+		if (strcmp(buf, "+CONN")) {
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_listener_accept(): Unexpected response from the remote host");
+
+			errno = UBWT_ERROR_MSG_UNEXPECTED;
+
+			return -1;
+		}
+
+		memset(buf, 0, sizeof(buf));
+
+		strcpy(buf, "+OK");
+
+		if (sendto(current->net.fd, ((const char *) buf), sizeof(buf), 0, (struct sockaddr *) &current->net.connector.saddr, current->net.connector.slen) < 0) {
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): sendto()");
+
+			return -1;
+		}
+	} else {
+		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): Unsupported L4 protocol");
+
+		errno = EINVAL;
+
+		return -1;
 	}
+
 
 	return 0;
 }
