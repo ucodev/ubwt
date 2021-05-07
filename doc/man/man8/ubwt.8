@@ -7,13 +7,15 @@ ubwt \- uCodev Bandwidth Tester
 [ \fIOPTIONS\fR ] { \fIconnector\fR | \fIlistener\fR } { \fIHOSTNAME\fR | \fIIPv4\fR | \fIIPv6\fR }
 .SH DESCRIPTION
 .PP
-The \fBubwt\fR(8) (uCodev Bandwidth Tester) is a command line binary utility designed to perform network bandwidth testing. It allows unidirectional and bidirectional testing, providing a summary of the network bandwidth capabilities.
+The \fBubwt\fR(8) (uCodev Bandwidth Tester) is a command line binary utility designed to perform network bandwidth testing. It allows unidirectional (\fBdefault\fR), bidirectional (\fB\-b\fR), reverse (\fB\-R\fR) and asynchronous full-duplex (\fB\-A\fR) testing modes, providing a summary of the network bandwidth capabilities, or an extended report (\fB\-F\fR).
 .PP
-It consists of a single binary tool that can act as a \fBconnector\fR in one end, and as a \fBlistener\fR on another end.
+It consists of a single binary tool that can act as a \fBconnector\fR in one end, and as a \fBlistener\fR on another end, allowing multiple concurrent connections by using multiple workers (\fB\-W\fR), each worker representing one connection.
 .PP
-The addresses of the listener and connector can be specified as \fBHOSTNAME\fR, an \fBIPv4\fR or as an \fBIPv6\fR.
+The addresses of the listener and connector can be specified as a \fBHOSTNAME\fR, an \fBIPv4\fR or as an \fBIPv6\fR.
 .PP
 .SH OPTIONS
+When using command line \fBOPTIONS\fR with \fBubwt\fR(8), make sure they are exactly the same on both listener and connector. Failing to do so, one of the ends will either reject the other end transmission, or the behaviour of one or both ends will be undefined.
+.PP
 The available command line \fBOPTIONS\fR are:
 .PP
 .TP

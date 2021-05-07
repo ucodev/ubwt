@@ -21,7 +21,7 @@ See [LICENSE](https://github.com/ucodev/ubwt/blob/main/doc/text/LICENSE)
 
 ## Portability
 
-ubwt is designed to be compliant with any POSIX-based operating system. It was successfully tested under **GNU Linux**, **GNU Hurd**, **FreeBSD**, **OpenBSD**, **SunOS**, **Minix** and **Darwin**. Microsoft Windows operating systems are not officially supported by ubwt - but they will, in a near future.
+ubwt is designed to be compliant with any POSIX-based operating system. It was successfully tested under **GNU Linux**, **GNU Hurd**, **FreeBSD**, **NetBSD**, **OpenBSD**, **SunOS**, **Minix** and **Darwin**. Microsoft Windows operating systems are not officially supported by ubwt - but they will, in a near future.
 
 Also, ubwt is architecture independent - it was also successfully tested under **x86/64**, **ARM**, **MIPS (mips/mipsel)** and **SPARC**.
 

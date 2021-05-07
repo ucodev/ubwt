@@ -23,11 +23,11 @@
 #
 
 
-echo -ne "Running test '${TEST_NAME} v${TEST_VER}'... "
+echo -n "Running test '${TEST_NAME} v${TEST_VER}'... "
 
-../src/ubwt ${TEST_OPTS} listener 0.0.0.0 >& /dev/null &
+../src/ubwt ${TEST_OPTS} listener 0.0.0.0 2> /dev/null 1> /dev/null &
 sleep 1
-../src/ubwt ${TEST_OPTS} connector 127.0.0.1 >& /dev/null
+../src/ubwt ${TEST_OPTS} connector 127.0.0.1 2> /dev/null 1> /dev/null
 
 if [ $? -ne 0 ]; then
 	echo "Failed"

@@ -27,40 +27,40 @@ if [ -e uconf/params/default/varsubst ]; then
 			cp ${varsubst} ${varsubst}.orig
 		fi
 
-		sed 's/@_SYSBINDIR_@/'$(cat .dirbin | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSBINDIR_@/'$(cat .dirbin | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSCACHEDIR_@/'$(cat .dircache | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSCACHEDIR_@/'$(cat .dircache | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSCONFDIR_@/'$(cat .dirconf | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSCONFDIR_@/'$(cat .dirconf | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSDOCDIR_@/'$(cat .dirdoc | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSDOCDIR_@/'$(cat .dirdoc | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSINCLUDEDIR_@/'$(cat .dirinclude | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSINCLUDEDIR_@/'$(cat .dirinclude | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSLIBDIR_@/'$(cat .dirlib | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSLIBDIR_@/'$(cat .dirlib | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSMANDIR_@/'$(cat .dirman | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSMANDIR_@/'$(cat .dirman | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSRUNDIR_@/'$(cat .dirrun | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSRUNDIR_@/'$(cat .dirrun | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSSBINDIR_@/'$(cat .dirsbin | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSSBINDIR_@/'$(cat .dirsbin | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSSHAREDIR_@/'$(cat .dirshare | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSSHAREDIR_@/'$(cat .dirshare | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSTMPDIR_@/'$(cat .dirtmp | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSTMPDIR_@/'$(cat .dirtmp | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSSHELL_@/'$(cat .shell | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSSHELL_@/'$(cat .shell | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
 		rm -f ${varsubst}.bak
@@ -74,40 +74,40 @@ if [ -e uconf/params/`cat .osname`/varsubst ]; then
 			cp ${varsubst} ${varsubst}.orig
 		fi
 
-		sed 's/@_SYSBINDIR_@/'$(cat .dirbin | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSBINDIR_@/'$(cat .dirbin | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSCACHEDIR_@/'$(cat .dircache | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSCACHEDIR_@/'$(cat .dircache | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSCONFDIR_@/'$(cat .dirconf | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSCONFDIR_@/'$(cat .dirconf | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSDOCDIR_@/'$(cat .dirdoc | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSDOCDIR_@/'$(cat .dirdoc | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSINCLUDEDIR_@/'$(cat .dirinclude | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSINCLUDEDIR_@/'$(cat .dirinclude | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSLIBDIR_@/'$(cat .dirlib | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSLIBDIR_@/'$(cat .dirlib | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSMANDIR_@/'$(cat .dirman | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSMANDIR_@/'$(cat .dirman | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSRUNDIR_@/'$(cat .dirrun | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSRUNDIR_@/'$(cat .dirrun | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSSBINDIR_@/'$(cat .dirsbin | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSSBINDIR_@/'$(cat .dirsbin | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSSHAREDIR_@/'$(cat .dirshare | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSSHAREDIR_@/'$(cat .dirshare | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSTMPDIR_@/'$(cat .dirtmp | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSTMPDIR_@/'$(cat .dirtmp | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSSHELL_@/'$(cat .shell | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSSHELL_@/'$(cat .shell | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
 		rm -f ${varsubst}.bak
@@ -120,40 +120,40 @@ if [ -e uconf/params/user/varsubst ]; then
 			cp ${varsubst} ${varsubst}.orig
 		fi
 
-		sed 's/@_SYSBINDIR_@/'$(cat .dirbin | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSBINDIR_@/'$(cat .dirbin | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSCACHEDIR_@/'$(cat .dircache | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSCACHEDIR_@/'$(cat .dircache | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSCONFDIR_@/'$(cat .dirconf | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSCONFDIR_@/'$(cat .dirconf | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSDOCDIR_@/'$(cat .dirdoc | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSDOCDIR_@/'$(cat .dirdoc | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSINCLUDEDIR_@/'$(cat .dirinclude | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSINCLUDEDIR_@/'$(cat .dirinclude | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSLIBDIR_@/'$(cat .dirlib | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSLIBDIR_@/'$(cat .dirlib | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSMANDIR_@/'$(cat .dirman | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSMANDIR_@/'$(cat .dirman | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSRUNDIR_@/'$(cat .dirrun | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSRUNDIR_@/'$(cat .dirrun | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSSBINDIR_@/'$(cat .dirsbin | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSSBINDIR_@/'$(cat .dirsbin | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSSHAREDIR_@/'$(cat .dirshare | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSSHAREDIR_@/'$(cat .dirshare | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSTMPDIR_@/'$(cat .dirtmp | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSTMPDIR_@/'$(cat .dirtmp | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
-		sed 's/@_SYSSHELL_@/'$(cat .shell | tr -d '\n' | sed 's/\//\\\//g')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
+		sed 's/@_SYSSHELL_@/'$(cat .shell | sed 's/\//\\\//g' | tr -d '\n')'/g' ${varsubst} > ${varsubst}.bak 2> /dev/null
 		mv -f ${varsubst}.bak ${varsubst}
 
 		rm -f ${varsubst}.bak

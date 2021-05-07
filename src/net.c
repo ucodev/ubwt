@@ -53,8 +53,6 @@ int net_connector_connect(void) {
 
 		strcpy(buf, UBWT_NET_PROTO_CMD_CONN);
 
-		current->net.listener.slen = sizeof(current->net.listener.saddr);
-
 		if (sendto(current->net.fd, ((const char *) buf), sizeof(buf), 0, (struct sockaddr *) &current->net.listener.saddr, current->net.listener.slen) < 0) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): sendto()");
 
@@ -183,9 +181,7 @@ ssize_t net_read_from_connector(void *buf, size_t len) {
 			ret = read(current->net.fd, ((char *) buf + count), len - count);
 #endif
 		} else {
-			current->net.connector.slen = sizeof(current->net.connector.saddr);
-
-			ret = recvfrom(current->net.fd, ((char *) buf + count), len - count, 0, (struct sockaddr *) &current->net.connector.saddr, &current->net.connector.slen);
+			ret = recv(current->net.fd, ((char *) buf + count), len - count, 0);
 		}
 
 		if (ret < 0) {
@@ -201,7 +197,7 @@ ssize_t net_read_from_connector(void *buf, size_t len) {
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_connector(): read()");
 #endif
 			} else {
-				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_connector(): recvfrom()");
+				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_connector(): recv()");
 			}
 
 			return ret;
@@ -224,9 +220,7 @@ ssize_t net_read_from_listener(void *buf, size_t len) {
 			ret = read(current->net.fd, ((char *) buf + count), len - count);
 #endif
 		} else {
-			current->net.listener.slen = sizeof(current->net.listener.saddr);
-
-			ret = recvfrom(current->net.fd, ((char *) buf + count), len - count, 0, (struct sockaddr *) &current->net.listener.saddr, &current->net.listener.slen);
+			ret = recv(current->net.fd, ((char *) buf + count), len - count, 0);
 		}
 
 		if (ret < 0) {
@@ -242,7 +236,7 @@ ssize_t net_read_from_listener(void *buf, size_t len) {
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_listener(): read()");
 #endif
 			} else {
-				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_listener(): recvfrom()");
+				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_listener(): recv()");
 			}
 
 			return ret;

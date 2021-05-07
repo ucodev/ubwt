@@ -1,3 +1,13 @@
+v0.09g
+
+ - Updated man page
+ - Updated README.md
+ - Fixed automated tests issues on NetBSD
+ - Improved UDP testing (still very experimental)
+ - Fixed SunOS linking flags
+ - Updated uconf
+
+
 v0.09f
 
  - Minor refactor
