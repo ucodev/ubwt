@@ -41,7 +41,7 @@ void usage_show(char *const *argv, int success) {
 		"OPTIONS\n"
 		"\n"
 #ifdef UBWT_CONFIG_MULTI_THREADED
-		"       -A                  Perform an asynchronous bi-directional full-duplex test (experimental).\n"
+		"       -A                  Asynchronous bi-directional full-duplex test. TCP only.\n"
 #endif
 #ifdef UBWT_CONFIG_DEBUG
 		"       -d                  Enable debugging.\n"
@@ -63,7 +63,7 @@ void usage_show(char *const *argv, int success) {
 		"       -v                  Display version information.\n"
 		"       -w <seconds>        Connection timeout (default: %u seconds).\n"
 #ifdef UBWT_CONFIG_MULTI_THREADED
-		"       -W <count>          Maximum number of workers (default: %u).\n"
+		"       -W <count>          Maximum number of workers (default: %u). TCP only.\n"
 #endif
 		"\n"
 		"EXAMPLES\n"

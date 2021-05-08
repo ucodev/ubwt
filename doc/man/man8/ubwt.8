@@ -20,7 +20,7 @@ The available command line \fBOPTIONS\fR are:
 .PP
 .TP
 \fB\-A\fR
-Perform an asynchronous bi-directional full-duplex test (experimental).
+Asynchronous bi-directional full-duplex test. TCP only.
 .TP
 \fB\-d\fR
 Enable debugging.
@@ -68,7 +68,7 @@ Display version information.
 Connection timeout (default: 120 seconds).
 .TP
 \fB\-W\fR \fIcount\fR
-Maximum number of workers (default: 1).
+Maximum number of workers (default: 1). TCP only.
 .SH EXAMPLE
 .TP
 alice@serv.my.lan ~ $ ubwt listener 0.0.0.0

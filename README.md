@@ -5,9 +5,28 @@ A portable, free and open source command-line network bandwidth tester tool.
 
 ## Description
 
-The uCodev Bandwidth Tester (ubwt for short) is a command-line tool designed to test network bandwidth with unidirectional and bidirectional testing, providing basic or, optionally, extended reports.
+The uCodev Bandwidth Tester (ubwt for short) is a command-line tool designed to test network bandwidth with unidirectional, bidirectional, reverse and asynchronous full-duplex testing modes, providing basic or, optionally, extended reports.
 
 It consists of a single tool, that can be executed as a listener on one end, and as connector on the another end - it is not designed to be used as a running service. It is a testing tool, designed to be used with both endpoints under full control of the tester.
+
+
+## Features
+
+ * Basic one-way testing (TCP and UDP)
+ * Bidirectional testing (TCP and UDP)
+ * Reverse testing (TCP and UDP)
+ * Asynchronous full-duplex testing (TCP only)
+ * Multi-connection testing (TCP only)
+ * Latency testing
+ * Both IPv4 and IPv6 are supported
+ * Configurable number of connections
+ * Configurable testing time
+ * Configurable payload size
+ * Configurable timeouts
+ * Configurable handshake iterations and intervals
+ * Brief summary report or full extended report
+ * Extended reports can be exported as JSON files
+ * Built-in debugging output can be enabled/disabled
 
 
 ## Licensing
