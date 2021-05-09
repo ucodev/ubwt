@@ -505,7 +505,7 @@ static int _talk_sender_stream(uint32_t count) {
 	}
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	/* Wait for all workers to sync before setting current->talk[process_get_reverse()].weak */
+	/* Wait for all workers to sync before returning current->talk[process_get_reverse()].weak */
 
 	if (current->config->asynchronous) {
 		worker_barrier_wait(&current->worker_barrier_global[2]);
@@ -591,8 +591,16 @@ static int _talk_receiver_stream(uint32_t count) {
 	_talk_timeout(current->config->net_timeout_talk_stream_run);
 
 	for (i = 0; i < count; i ++) {
-		if ((ret = _talk_recv(&p)) < 0)
-			break; /* NOTE: Timeout (likely...) */
+		if ((ret = _talk_recv(&p)) < 0) {
+#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
+			if (errno == EAGAIN)
+				break; /* NOTE: Timeout (likely...) */
+#endif
+			/* This is a fatal error and should abort program execution to avoid deadlocks */
+			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_TALK_RECV_FAILED, "_talk_receiver_stream(): _talk_recv()");
+
+			error_no_return();
+		}
 
 		len += ret;
 	}
@@ -608,6 +616,8 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	/* Compute transmission time - if the expected count packets are not received due a timeout, subtract the stream run timeout value */
 	t = datetime_now_us() - t - ((i != count) ? (current->config->net_timeout_talk_stream_run * 1000000) : 0);
+
+	assert(t < current_time_elapsed());
 
 
 	/* Store report data */
@@ -675,7 +685,7 @@ static int _talk_receiver_stream(uint32_t count) {
 	}
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	/* Wait for all workers to sync before setting current->talk[process_get_reverse()].weak */
+	/* Wait for all workers to sync before returning current->talk[process_get_reverse()].weak */
 	if (current->config->asynchronous) {
 		worker_barrier_wait(&current->worker_barrier_global[2]);
 	} else {

@@ -145,7 +145,7 @@ void debug_info_config_show(void) {
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
 		net_im_connector() ? "connector" : "listener",
-		*current->time_us
+		current_time_start()
 	);
 #else
 	fprintf(stderr, "[%s]: DEBUG => INFO => %s/main => CONFIG: Mode      : %s\n",
@@ -171,7 +171,7 @@ void debug_info_config_show(void) {
 	fprintf(stderr, "[%s]: DEBUG => INFO => %s/main => CONFIG: Time (us) : %" PRIu64 "\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
-		*current->time_us
+		current_time_start();
 	);
 #endif
 }

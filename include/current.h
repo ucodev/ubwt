@@ -52,7 +52,7 @@
 struct ubwt_current {
 	struct ubwt_config *config;
 	struct ubwt_net net;
-	uint64_t *time_us;
+	uint64_t *time_us_start, *time_us_now;
 
 	ubwt_stage_t stage;
 	ubwt_error_t error;
@@ -83,6 +83,9 @@ struct ubwt_current {
 
 void current_init(void);
 void current_update(void);
+uint64_t current_time_now(void);
+uint64_t current_time_start(void);
+uint64_t current_time_elapsed(void);
 #ifdef UBWT_CONFIG_MULTI_THREADED
 void current_forking_set(unsigned int status);
 unsigned int current_forking_get(void);

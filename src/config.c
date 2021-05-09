@@ -70,9 +70,10 @@ static void _config_sanity(void) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	assert(current->config->worker_count > 0 && current->config->worker_count <= 32);
 
-	/* Asynchronous mode requires worker_count to be an even value */
-	if (current->config->asynchronous)
-		assert(!(current->config->worker_count & 1));
+	if (current->config->asynchronous) {
+		assert(!(current->config->worker_count & 1)); /* Asynchronous mode requires worker_count to be an even value */
+		assert(!current->config->reverse_first); /* No reverse first in asynchronous mode - pointless */
+	}
 
 	if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_UDP) {
 		/* Asynchronous testing is not available with UDP */

@@ -42,7 +42,8 @@
  #include "worker.h"
 #endif
 
-uint64_t __current_time_us;
+uint64_t __current_time_us_start;
+uint64_t __current_time_us_now;
 struct ubwt_current __current;
 
 #ifndef UBWT_CONFIG_MULTI_THREADED
@@ -82,16 +83,31 @@ void current_init(void) {
 
 	stage_set(UBWT_STAGE_STATE_INIT_CURRENT, 0);
 
-	__current.time_us = &__current_time_us;
+	__current.time_us_start = &__current_time_us_start;
+	__current.time_us_now = &__current_time_us_now;
 
-	*__current.time_us = datetime_now_us();
+	*__current.time_us_start = *__current.time_us_now = datetime_now_us();
 
 	__current.runtime = &__runtime;
 	__current.talk = __talk;
 }
 
 void current_update(void) {
-	*current->time_us = datetime_now_us();
+	*current->time_us_now = datetime_now_us();
+}
+
+uint64_t current_time_now(void) {
+	current_update();
+
+	return *current->time_us_now;
+}
+
+uint64_t current_time_start(void) {
+	return *current->time_us_start;
+}
+
+uint64_t current_time_elapsed(void) {
+	return current_time_now() - current_time_start();
 }
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
@@ -116,7 +132,8 @@ void current_fork(ubwt_worker_task_t *t) {
 	/* Always fork from HEAD */
 
 	c->config = __current.config;
-	c->time_us = __current.time_us;
+	c->time_us_now = __current.time_us_now;
+	c->time_us_start = __current.time_us_start;
 	c->runtime = __current.runtime;
 	c->talk = __current.talk;
 

@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <assert.h>
 
 #include "config.h"
 #include "current.h"
@@ -79,6 +80,8 @@ void runtime_do(void) {
 	unsigned int i = 0, j = 0;
 	ubwt_worker_t *tid = NULL;
 	ubwt_worker_task_t **t = NULL;
+
+	assert((current->config->worker_straight_first_count + current->config->worker_reverse_first_count) == current->config->worker_count);
 
 	if (!(t = malloc(sizeof(ubwt_worker_task_t *) * (current->config->worker_straight_first_count + current->config->worker_reverse_first_count)))) {
 		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_WORKER_CREATE_FAILED, "runtime_do(): t = malloc()");
