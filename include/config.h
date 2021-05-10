@@ -28,7 +28,7 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.09i"
+#define UBWT_CONFIG_VERSION_STR				"0.09j"
 #define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120
@@ -76,7 +76,6 @@
 
 #if defined(UBWT_CONFIG_NET_NO_UDP) && (UBWT_CONFIG_NET_NO_UDP == 0)
  #undef UBWT_CONFIG_NET_NO_UDP
- #undef UBWT_CONFIG_NET_UDP_CONNECT
 #endif
 
 #if defined(UBWT_CONFIG_NET_REUSE_ADDRESS) && (UBWT_CONFIG_NET_REUSE_ADDRESS == 0)
@@ -106,6 +105,11 @@
 #if defined(COMPILE_WIN32) && (COMPILE_WIN32 == 0)
  #undef COMPILE_WIN32
 #endif
+
+#if defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_UDP_CONNECT)
+ #undef UBWT_CONFIG_NET_UDP_CONNECT
+#endif
+
 /* !uConf */
 
 struct ubwt_config {

@@ -128,13 +128,13 @@ int net_listener_accept(void) {
 		}
 
 		if (read(current->net.fd, &p2, sizeof(ubwt_conn_payload_t)) != sizeof(ubwt_conn_payload_t)) {
-			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_listener_accept(): read()");
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): read()");
 
 			return -1;
 		}
 
 		if (write(current->net.fd, &p1, sizeof(ubwt_conn_payload_t)) != sizeof(ubwt_conn_payload_t)) {
-			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_listener_accept(): write()");
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): write()");
 
 			return -1;
 		}
@@ -142,13 +142,13 @@ int net_listener_accept(void) {
 		current->net.connector.slen = sizeof(current->net.connector.saddr);
 
 		if (recvfrom(current->net.fd, &p2, sizeof(ubwt_conn_payload_t), 0, (struct sockaddr *) &current->net.connector.saddr, &current->net.connector.slen) < 0) {
-			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_listener_accept(): recvfrom()");
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): recvfrom()");
 
 			return -1;
 		}
 
 		if (sendto(current->net.fd, &p1, sizeof(ubwt_conn_payload_t), 0, (struct sockaddr *) &current->net.connector.saddr, current->net.connector.slen) < 0) {
-			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_listener_accept(): sendto()");
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): sendto()");
 
 			return -1;
 		}
@@ -164,7 +164,7 @@ int net_listener_accept(void) {
 	conn_payload_ntoh(&p2);
 
 	if (!conn_has_connect(&p2)) {
-		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_listener_accept(): Unexpected response from the remote host");
+		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): Unexpected response from the remote host");
 
 		errno = UBWT_ERROR_MSG_UNEXPECTED;
 
@@ -175,7 +175,7 @@ int net_listener_accept(void) {
 	if (!conn_config_match(&p1, &p2)) {
 		errno = UBWT_ERROR_MSG_UNEXPECTED;
 
-		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_listener_accept(): Configurations from listener and connector do not match.");
+		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): Configurations from listener and connector do not match.");
 
 		error_no_return();
 	}

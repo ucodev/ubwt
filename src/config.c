@@ -68,7 +68,7 @@ static void _config_sanity(void) {
 	assert(current->config->talk_stream_minimum_time > 0);
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
-	assert(current->config->worker_count > 0 && current->config->worker_count <= 32);
+	assert(current->config->worker_count > 0 && current->config->worker_count <= 1024);
 
 	if (current->config->asynchronous) {
 		assert(!(current->config->worker_count & 1)); /* Asynchronous mode requires worker_count to be an even value */
@@ -105,6 +105,8 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 		;
 
 	while ((opt = getopt(argc, argv, flags)) != -1) {
+		usage_check_optarg(opt, optarg);
+
 		switch (opt) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 			case 'A': {
@@ -200,11 +202,10 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
 			case 'W': {
-				assert(atoi(optarg) > 0 && atoi(optarg) <= 32);
+				assert(atoi(optarg) > 0 && atoi(optarg) <= 1024);
 				current->config->worker_count = (uint16_t) atoi(optarg);
 			} break;
 #endif
-
 
 			default: {
 				errno = EINVAL;

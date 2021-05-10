@@ -42,6 +42,7 @@ static const char *__errors[] = {
 	"[%s]: ERROR: %s: First parameter must be 'connector' or 'listener': %s: %s\n",
 	"[%s]: ERROR: %s: Second parameter must be a valid IP or hostname: %s: %s\n",
 	"[%s]: ERROR: %s: Invalid command line option: %s: %s\n",
+	"[%s]: ERROR: %s: Invalid command line value for option: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to get current time in microseconds: %s: %s\n",
 	"[%s]: ERROR: %s: Unable to initialize the network handlers: %s: %s\n",
 	"[%s]: ERROR: %s: Invalid protocol. Must be TCP or UDP: %s: %s\n",

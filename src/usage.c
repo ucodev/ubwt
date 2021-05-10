@@ -28,6 +28,7 @@
 #endif
 
 #include "config.h"
+#include "current.h"
 #include "error.h"
 #include "usage.h"
 
@@ -105,5 +106,177 @@ void usage_version(void) {
 	exit(EXIT_SUCCESS);
 
 	error_no_return();
+}
+
+void usage_check_optarg(int opt, char *optarg) {
+	FILE *fp = NULL;
+
+	switch (opt) {
+		case 'd':
+		case 'b':
+		case 'F':
+		case 'h':
+		case 'v': break;
+
+		case 'A': {
+			if (current->config->reverse_first) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Option -A cannot be used in combination with option -R");
+
+				error_no_return();
+			}
+
+			if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_UDP) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Option -A is not supported when using UDP protocol");
+
+				error_no_return();
+			}
+		} break;
+
+		case 'R': {
+			if (current->config->asynchronous) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Option -R cannot be used in combination with option -A");
+
+				error_no_return();
+			}
+		} break;
+
+		case 'I': {
+			if (atoi(optarg) < 0 || atoi(optarg) >= 65536) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -I must be between 0 and 65535");
+
+				error_no_return();
+			}
+		} break;
+
+		case 'j': {
+			/* TODO: Validate file path and access permissions */
+			if (!strlen(optarg)) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -j cannot be empty");
+
+				error_no_return();
+			}
+
+			if (!(fp = fopen(optarg, "w+"))) {
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -j valid file path with write permissions");
+
+				error_no_return();
+			} else {
+				fclose(fp);
+				/* NOTE: do not call unlink(), as the file may already exists before this check
+				 * and we don't want to remove it's contents before the report routines are
+				 * executed.
+				 */
+			}
+
+		} break;
+
+		case 'N': {
+			if (atoi(optarg) <= 0 || atoi(optarg) >= 65536) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -N must be between 1 and 65535");
+
+				error_no_return();
+			}
+		} break;
+
+		case 'm': {
+			if (atoi(optarg) < UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE || atoi(optarg) >= 65536) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -m must be between 508 and 65535"); /* TODO: Implement string fmt on error_handler() */
+
+				error_no_return();
+			}
+		} break;
+
+		case 'p': {
+			if (strlen(optarg) >= sizeof(current->config->net_l4_proto_name)) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -p is too long. Must be \'tcp\' or \'udp\'");
+
+				error_no_return();
+			}
+
+			if (strcmp(optarg, "tcp") && strcmp(optarg, "udp")) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -p is invalid. Must be \'tcp\' or \'udp\'");
+
+				error_no_return();
+			}
+		} break;
+
+		case 'P': {
+			if (atoi(optarg) <= 0 || atoi(optarg) >= 65536) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -P must be between 1 and 65535");
+
+				error_no_return();
+			}
+		} break;
+
+		case 's': {
+			if (atoi(optarg) < UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE || atoi(optarg) >= 65536) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -s must be between 508 and 65535"); /* TODO: Implement string fmt on error_handler() */
+
+				error_no_return();
+			}
+		} break;
+
+		case 't': {
+			if (atoi(optarg) <= 0 || atoi(optarg) >= 65536) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -t must be between 1 and 65535");
+
+				error_no_return();
+			}
+		} break;
+
+		case 'w': {
+			if (atoi(optarg) <= 0 || atoi(optarg) >= 65536) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -w must be between 1 and 65535");
+
+				error_no_return();
+			}
+		} break;
+
+		case 'W': {
+			if (atoi(optarg) <= 0 || atoi(optarg) > 1024) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -W must be between 1 and 1024");
+
+				error_no_return();
+			}
+
+			if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_UDP && atoi(optarg) > 1) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -W must be 1 when using UDP protocol");
+
+				error_no_return();
+			}
+		} break;
+
+		default: error_abort(__FILE__, __LINE__, "usage_check_optarg");
+	}
 }
 

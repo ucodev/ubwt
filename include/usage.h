@@ -47,5 +47,7 @@ void usage_version(void)
 	;
 #endif
 
+void usage_check_optarg(int opt, char *optarg);
+
 #endif
 
