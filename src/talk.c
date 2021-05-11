@@ -448,6 +448,14 @@ static int _talk_sender_stream(uint32_t count) {
 		return -1;
 	}
 
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	/* If in asynchronous mode, only syncronize all workers (senders and receivers)
+	 * after the sending workers report stream success ("SENT") - STREAM END
+	 */
+	if (current->config->asynchronous)
+		worker_barrier_wait(&current->worker_barrier_global[2]);
+#endif
+
 	/* Wait for the remote host to send STREAM END */
 
 	debug_info_talk_op(UBWT_TALK_OP_STREAM_END, "WAIT");
@@ -619,6 +627,14 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	assert(t < current_time_elapsed());
 
+
+#ifdef UBWT_CONFIG_MULTI_THREADED
+	/* If in asynchronous mode, only syncronize all workers (senders and receivers)
+	 * after calculating the stream time for the receiving workers - STREAM END
+	 */
+	if (current->config->asynchronous)
+		worker_barrier_wait(&current->worker_barrier_global[2]);
+#endif
 
 	/* Store report data */
 

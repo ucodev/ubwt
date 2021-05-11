@@ -1,3 +1,11 @@
+v0.1-alpha
+
+ - Fixed UDP connector on BSD systems when using CONFIG_UBWT_NET_UDP_CONNECT=1
+ - Fixed race condition on custom barriers implementation used on Darwin
+ - Included multithreaded_async test into testing directory
+ - Included additional barriers on asynchronous test mode for better accuracy
+
+
 v0.09j
 
  - Minor fixes
