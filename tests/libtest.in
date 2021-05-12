@@ -25,7 +25,7 @@
 EXIT_SUCCESS=0
 EXIT_FAILURE=1
 
-echo -n "Running test '${TEST_NAME} v${TEST_VER}'... "
+printf -- "Running test '${TEST_NAME} v${TEST_VER}'... "
 
 ../src/ubwt ${TEST_OPTS} -r /tmp/ubwt_test_listener.pid listener 0.0.0.0 2> /dev/null > /dev/null &
 sleep 1

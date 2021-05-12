@@ -22,7 +22,10 @@ The available command line \fBOPTIONS\fR are:
 \fB\-A\fR
 Asynchronous bi-directional full-duplex test. TCP only.
 .TP
-\fB\-d\fR
+\fB\-d\fR \fIFILE\fR
+Append debugging output to a file (default: stderr).
+.TP
+\fB\-D\fR
 Enable debugging.
 .TP
 \fB\-b\fR
@@ -34,40 +37,43 @@ Enable full/extended reporting.
 \fB\-h\fR
 Prints the help.
 .TP
-\fB\-I\fR \fImsec\fR
+\fB\-I\fR \fIMSEC\fR
 Interval between latency measurements (default: 1 msec).
 .TP
-\fB\-j\fR \fIfile\fR
+\fB\-j\fR \fIFILE\fR
 Export report in JSON format to file.
 .TP
-\fB\-m\fR \fIoctets\fR
+\fB\-m\fR \fIOCTETS\fR
 Link MTU (default: 1500 octets).
 .TP
-\fB\-N\fR \fIiterations\fR
+\fB\-N\fR \fIITERATIONS\fR
 Number of handshake iterations (default: 20 iterations).
 .TP
-\fB\-p\fR \fIprotocol\fR
+\fB\-p\fR \fIPROTOCOL\fR
 L4 protocol: 'tcp' or 'udp' (default: tcp).
 .TP
-\fB\-P\fR \fIport\fR
+\fB\-P\fR \fIPORT\fR
 TCP or UDP port to listen/connect to (default: 19991).
+.TP
+\fB\-r\fR \fIFILE\fR
+Store the running PID into the specified file.
 .TP
 \fB\-R\fR
 Reverse stream testing first.
 .TP
-\fB\-s\fR \fIoctets\fR
+\fB\-s\fR \fIOCTETS\fR
 L4 payload size (default: 1432).
 .TP
-\fB\-t\fR \fIseconds\fR
+\fB\-t\fR \fISECONDS\fR
 Minimum stream time (default: 3 seconds).
 .TP
 \fB\-v\fR
 Display version information.
 .TP
-\fB\-w\fR \fIseconds\fR
+\fB\-w\fR \fISECONDS\fR
 Connection timeout (default: 120 seconds).
 .TP
-\fB\-W\fR \fIcount\fR
+\fB\-W\fR \fICOUNT\fR
 Maximum number of workers (default: 1). TCP only.
 .SH EXAMPLE
 .TP

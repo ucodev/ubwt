@@ -49,7 +49,7 @@ Also, ubwt is architecture independent - it was also successfully tested under *
 
 DISCLAIMER: This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-ubwt is currently in its early stages of development - there isn't a version that can be considered "stable".
+ubwt is currently in its alpha stage of development - it is usable, but not extensively tested, so there isn't a version that can be considered "stable", yet.
 
 
 ## Installation
@@ -67,6 +67,32 @@ or see [INSTALL.txt](https://github.com/ucodev/ubwt/blob/main/doc/text/INSTALL.t
 ## Command-Line Usage Examples
 
 IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the same command-line options - by failing to do so, the behaviour of the application is undefined.
+
+### Usage ###
+
+      Usage: ubwt [OPTIONS] {connector|listener} {HOSTNAME|IPv4|IPv6}
+
+      OPTIONS
+
+             -A                  Asynchronous bi-directional full-duplex test. TCP only.
+             -d FILE             Append debugging output to a file (default: stderr).
+             -D                  Enable debugging.
+             -b                  Perform a bi-directional test.
+             -F                  Enable full/extended reporting.
+             -h                  Display this help.
+             -I MSEC             Interval between latency measurements (default: 1 msec).
+             -j FILE             Export report in JSON format to file.
+             -m OCTETS           Link MTU (default: 1500 octets).
+             -N ITERATIONS       Number of handshake iterations (default: 20 iterations).
+             -P PORT             TCP or UDP port to listen/connect to (default: 19991).
+             -r FILE             Store the running PID into the specified file.
+             -R                  Reverse stream testing first.
+             -s OCTETS           L4 payload size (default: 1432).
+             -t SECONDS          Minimum stream time (default: 3 seconds).
+             -v                  Display version information.
+             -w SECONDS          Connection timeout (default: 120 seconds).
+             -W COUNT            Maximum number of workers (default: 1). TCP only.
+
 
 ### Unidirectional Test - Short Summary
 
@@ -159,4 +185,5 @@ IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the 
       |     Estimated L2 Bandwidth              : 942.164 Mbps
       |     Effective L4 Bandwidth              : 900.654 Mbps
       |     im@listening ~ $ 
+
 

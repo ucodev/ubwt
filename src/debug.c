@@ -178,7 +178,7 @@ void debug_info_config_show(void) {
 	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/main => CONFIG: Time (us) : %" PRIu64 "\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
-		current_time_start();
+		current_time_start()
 	);
 #endif
 
@@ -213,7 +213,7 @@ void debug_info_stage_show(void) {
 	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/%s => STAGE: %s, ITER: %zu\n",
 		time_str,
 		stage_get() > UBWT_STAGE_STATE_INIT_CONFIG && stage_get() < UBWT_STAGE_STATE_DESTROY_CONFIG
-			? net_im_connector() ? "connector" : "listener",
+			? net_im_connector() ? "connector" : "listener"
 			: "unknown",
 		stage_get() > UBWT_STAGE_STATE_INIT_PROCESS && stage_get() < UBWT_STAGE_STATE_RUNTIME_REPORT_SHOW
 			? (process_get_reverse() ? "reverse" : "straight")

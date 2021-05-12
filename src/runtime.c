@@ -151,6 +151,8 @@ void runtime_do(void) {
 		puts("Nothing to do...");
 	}
 #else
+	_runtime_write_pid_file();
+
 	process_run(current->config->reverse_first /* 0: straight first, 1: reverse first */);
 	process_report();
 #endif
