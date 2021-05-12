@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <assert.h>
 
 #include "config.h"
 
@@ -37,7 +38,6 @@
 #include "talk.h"
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
- #include <assert.h>
  #include "worker.h"
 #endif
 

@@ -64,7 +64,9 @@ void usage_show(char *const *argv, int success) {
 		"       -s OCTETS           L4 payload size (default: %u).\n"
 		"       -t SECONDS          Minimum stream time (default: %u seconds).\n"
 		"       -v                  Display version information.\n"
+#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
 		"       -w SECONDS          Connection timeout (default: %u seconds).\n"
+#endif
 #ifdef UBWT_CONFIG_MULTI_THREADED
 		"       -W COUNT            Maximum number of workers (default: %u). TCP only.\n"
 #endif
@@ -293,6 +295,7 @@ void usage_check_optarg(int opt, char *optarg) {
 			}
 		} break;
 
+#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
 		case 'w': {
 			if (atoi(optarg) <= 0 || atoi(optarg) >= 65536) {
 				errno = EINVAL;
@@ -302,6 +305,7 @@ void usage_check_optarg(int opt, char *optarg) {
 				error_no_return();
 			}
 		} break;
+#endif
 
 		case 'W': {
 			if (atoi(optarg) <= 0 || atoi(optarg) > 1024) {

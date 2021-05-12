@@ -50,19 +50,29 @@ int net_connector_connect(void) {
 			return -1;
 		}
 
+#ifdef COMPILE_WIN32
+		if (send(current->net.fd, (const char *) &p1, sizeof(ubwt_conn_payload_t), 0) != sizeof(ubwt_conn_payload_t)) {
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): send()");
+#else
 		if (write(current->net.fd, &p1, sizeof(ubwt_conn_payload_t)) != sizeof(ubwt_conn_payload_t)) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): write()");
+#endif
 
 			return -1;
 		}
 
+#ifdef COMPILE_WIN32
+		if (recv(current->net.fd, (char *) &p2, sizeof(ubwt_conn_payload_t), MSG_WAITALL) != sizeof(ubwt_conn_payload_t)) {
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): recv()");
+#else
 		if (read(current->net.fd, &p2, sizeof(ubwt_conn_payload_t)) != sizeof(ubwt_conn_payload_t)) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): read()");
-
+#endif
 			return -1;
 		}
+#ifndef UBWT_CONFIG_NET_NO_UDP
 	} else if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_UDP) {
-#ifdef UBWT_CONFIG_NET_UDP_CONNECT
+ #ifdef UBWT_CONFIG_NET_UDP_CONNECT
 		if (connect(current->net.fd, (struct sockaddr *) &current->net.listener.saddr, current->net.listener.slen) < 0) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): connect()");
 
@@ -73,20 +83,21 @@ int net_connector_connect(void) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): send()");
 			return -1;
 		}
-#else
+ #else
 
 		if (sendto(current->net.fd, &p1, sizeof(ubwt_conn_payload_t), 0, (struct sockaddr *) &current->net.listener.saddr, current->net.listener.slen) < 0) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): sendto()");
 
 			return -1;
 		}
-#endif
+ #endif
 
 		if (recvfrom(current->net.fd, &p2, sizeof(ubwt_conn_payload_t), 0, (struct sockaddr *) &current->net.listener.saddr, &current->net.listener.slen) < 0) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): recvfrom()");
 
 			return -1;
 		}
+#endif
 	} else {
 		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_CONNECT, "net_connector_connect(): Unsupported L4 protocol");
 
@@ -133,17 +144,27 @@ int net_listener_accept(void) {
 			return -1;
 		}
 
+#ifdef COMPILE_WIN32
+		if (recv(current->net.fd, (char *) &p2, sizeof(ubwt_conn_payload_t), MSG_WAITALL) != sizeof(ubwt_conn_payload_t)) {
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): recv()");
+#else
 		if (read(current->net.fd, &p2, sizeof(ubwt_conn_payload_t)) != sizeof(ubwt_conn_payload_t)) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): read()");
-
+#endif
 			return -1;
 		}
 
+#ifdef COMPILE_WIN32
+		if (send(current->net.fd, (const char *) &p1, sizeof(ubwt_conn_payload_t), 0) != sizeof(ubwt_conn_payload_t)) {
+			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): send()");
+#else
 		if (write(current->net.fd, &p1, sizeof(ubwt_conn_payload_t)) != sizeof(ubwt_conn_payload_t)) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): write()");
+#endif
 
 			return -1;
 		}
+#ifndef UBWT_CONFIG_NET_NO_UDP
 	} else if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_UDP) {
 		current->net.connector.slen = sizeof(current->net.connector.saddr);
 
@@ -158,6 +179,7 @@ int net_listener_accept(void) {
 
 			return -1;
 		}
+#endif
 	} else {
 		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): Unsupported L4 protocol");
 

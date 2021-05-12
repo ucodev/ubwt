@@ -5,35 +5,41 @@ LDFLAGS=
 ELFLAGS=`cat ../.elflags`
 ARCHFLAGS=`cat ../.archflags`
 INCLUDEDIRS=-I../include
-OBJS=bitops.o config.o conn.o current.o datetime.o debug.o error.o main.o net.o process.o report.o runtime.o stage.o talk.o usage.o worker.o
+OBJS=bitops config conn current datetime debug error main net process report runtime stage talk usage worker
 TARGET=ubwt
 SYSSBINDIR=`cat ../.dirsbin`
 
 all:
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c bitops.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c config.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c conn.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c current.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c datetime.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c debug.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c error.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c main.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c net.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c process.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c report.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c runtime.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c stage.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c talk.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c usage.c
-	${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c worker.c
-	${CC} -o ${TARGET} ${OBJS} ${LDFLAGS} ${ELFLAGS}
+	@echo
+	@for obj in ${OBJS}; do \
+		echo " * [CC] $${obj}"; \
+		${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c $${obj}.c; \
+	done
+	@echo
+	@echo " * [LD] ${TARGET}"
+	@${CC} -o ${TARGET} `for obj in ${OBJS}; do printf -- " $${obj}.o"; done` ${LDFLAGS} ${ELFLAGS}
+	@echo
 
 install:
-	cp ${TARGET} ${SYSSBINDIR}/
+	@echo
+	@echo " * [CP] ${TARGET}"
+	@cp ${TARGET} ${SYSSBINDIR}/
+	@echo
 
 uninstall:
-	rm ${SYSSBINDIR}/${TARGET}
+	@echo
+	@echo " * [UL] ${TARGET}"
+	@rm -f ${SYSSBINDIR}/${TARGET}
+	@echo
 
 clean:
-	rm -f ${TARGET} ${OBJS}
+	@echo
+	@for obj in ${OBJS}; do \
+		echo " * [UL] $${obj}"; \
+		rm -f $${obj}.o; \
+	done
+	@echo
+	@echo " * [UL] ${TARGET}"
+	@rm -f ${TARGET}
+	@echo
 

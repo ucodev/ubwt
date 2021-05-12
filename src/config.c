@@ -95,10 +95,13 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 		"d:D"
 #endif
 		"bFhI:j:l:m:N:"
-#if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && !defined(COMPILE_WIN32)
+#ifndef UBWT_CONFIG_NET_NO_UDP
 		"p:"
 #endif
-		"P:r:Rs:t:vw:"
+		"P:r:Rs:t:v"
+#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
+		"w:"
+#endif
 #ifdef UBWT_CONFIG_MULTI_THREADED
 		"W:"
 #endif
@@ -212,10 +215,12 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 				error_no_return();
 			} break;
 
+#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
 			case 'w': {
 				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
 				current->config->net_timeout_default = (uint16_t) atoi(optarg);
 			} break;
+#endif
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
 			case 'W': {

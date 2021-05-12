@@ -34,6 +34,10 @@
  #include <ws2tcpip.h>
 
  typedef SOCKET sock_t;
+
+ #ifdef UBWT_CONFIG_MISSING_INET_NTOP_DECL
+  const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
+ #endif
 #else
  #include <sys/socket.h>
 
