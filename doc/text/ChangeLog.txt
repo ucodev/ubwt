@@ -1,3 +1,11 @@
+v0.1-alpha-02
+
+ - Fixed listener send issues when using CONFIG_UBWT_NET_UDP_CONNECT=1
+ - Included support for running PID file (-r)
+ - Updated tests from tests/ directory
+ - Included support for custom debugging output file
+
+
 v0.1-alpha
 
  - Fixed UDP connector on BSD systems when using CONFIG_UBWT_NET_UDP_CONNECT=1

@@ -45,26 +45,28 @@ void usage_show(char *const *argv, int success) {
 		"       -A                  Asynchronous bi-directional full-duplex test. TCP only.\n"
 #endif
 #ifdef UBWT_CONFIG_DEBUG
-		"       -d                  Enable debugging.\n"
+		"       -d FILE             Append debugging output to a file (default: stderr).\n"
+		"       -D                  Enable debugging.\n"
 #endif
 		"       -b                  Perform a bi-directional test.\n"
 		"       -F                  Enable full/extended reporting.\n"
 		"       -h                  Display this help.\n"
-		"       -I <msec>           Interval between latency measurements (default: %u msec).\n"
-		"       -j <file>           Export report in JSON format to file.\n"
-		"       -m <octets>         Link MTU (default: %u octets).\n"
-		"       -N <iterations>     Number of handshake iterations (default: %u iterations).\n"
+		"       -I MSEC             Interval between latency measurements (default: %u msec).\n"
+		"       -j FILE             Export report in JSON format to file.\n"
+		"       -m OCTETS           Link MTU (default: %u octets).\n"
+		"       -N ITERATIONS       Number of handshake iterations (default: %u iterations).\n"
 #if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)
-		"       -p <protocol>       L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
+		"       -p PROTOCOL         L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
 #endif
-		"       -P <port>           TCP or UDP port to listen/connect to (default: %s).\n"
+		"       -P PORT             TCP or UDP port to listen/connect to (default: %s).\n"
+		"       -r FILE             Store the running PID into the specified file.\n"
 		"       -R                  Reverse stream testing first.\n"
-		"       -s <octets>         L4 payload size (default: %u).\n"
-		"       -t <seconds>        Minimum stream time (default: %u seconds).\n"
+		"       -s OCTETS           L4 payload size (default: %u).\n"
+		"       -t SECONDS          Minimum stream time (default: %u seconds).\n"
 		"       -v                  Display version information.\n"
-		"       -w <seconds>        Connection timeout (default: %u seconds).\n"
+		"       -w SECONDS          Connection timeout (default: %u seconds).\n"
 #ifdef UBWT_CONFIG_MULTI_THREADED
-		"       -W <count>          Maximum number of workers (default: %u). TCP only.\n"
+		"       -W COUNT            Maximum number of workers (default: %u). TCP only.\n"
 #endif
 		"\n"
 		"EXAMPLES\n"
@@ -112,7 +114,7 @@ void usage_check_optarg(int opt, char *optarg) {
 	FILE *fp = NULL;
 
 	switch (opt) {
-		case 'd':
+		case 'D':
 		case 'b':
 		case 'F':
 		case 'h':
@@ -136,6 +138,29 @@ void usage_check_optarg(int opt, char *optarg) {
 			}
 		} break;
 
+		case 'd': {
+			if (!strlen(optarg)) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -d cannot be empty");
+
+				error_no_return();
+			}
+
+			if (!(fp = fopen(optarg, "a+"))) {
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -d valid file path with write permissions");
+
+				error_no_return();
+			} else {
+				fclose(fp);
+				/* NOTE: do not call unlink(), as the file may already exists before this check
+				 * and we don't want to remove it's contents before the report routines are
+				 * executed.
+				 */
+			}
+		} break;
+
+
 		case 'R': {
 			if (current->config->asynchronous) {
 				errno = EINVAL;
@@ -157,7 +182,6 @@ void usage_check_optarg(int opt, char *optarg) {
 		} break;
 
 		case 'j': {
-			/* TODO: Validate file path and access permissions */
 			if (!strlen(optarg)) {
 				errno = EINVAL;
 
@@ -177,7 +201,6 @@ void usage_check_optarg(int opt, char *optarg) {
 				 * executed.
 				 */
 			}
-
 		} break;
 
 		case 'N': {
@@ -225,6 +248,28 @@ void usage_check_optarg(int opt, char *optarg) {
 				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -P must be between 1 and 65535");
 
 				error_no_return();
+			}
+		} break;
+
+		case 'r': {
+			if (!strlen(optarg)) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -r cannot be empty");
+
+				error_no_return();
+			}
+
+			if (!(fp = fopen(optarg, "w+"))) {
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -r valid file path with write permissions");
+
+				error_no_return();
+			} else {
+				fclose(fp);
+				/* NOTE: do not call unlink(), as the file may already exists before this check
+				 * and we don't want to remove it's contents before the runtime routines actually
+				 * modify its contents.
+				 */
 			}
 		} break;
 

@@ -24,6 +24,7 @@
 
 #include "config.h"
 #include "current.h"
+#include "debug.h"
 #include "net.h"
 #include "process.h"
 #include "runtime.h"
@@ -31,6 +32,8 @@
 
 static void _construct(int argc, char *const *argv) {
 	current_init();
+
+	debug_init();
 
 	config_init(argc, argv);
 
@@ -53,6 +56,8 @@ static void _destruct(void) {
 	worker_destroy();
 
 	config_destroy();
+
+	debug_destroy();
 
 	current_destroy();
 }

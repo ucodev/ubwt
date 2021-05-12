@@ -153,19 +153,11 @@ int net_listener_accept(void) {
 			return -1;
 		}
 
-#ifdef UBWT_CONFIG_NET_UDP_CONNECT
-		if (send(current->net.fd, &p1, sizeof(ubwt_conn_payload_t), 0) < 0) {
-			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): send()");
-
-			return -1;
-		}
-#else
 		if (sendto(current->net.fd, &p1, sizeof(ubwt_conn_payload_t), 0, (struct sockaddr *) &current->net.connector.saddr, current->net.connector.slen) < 0) {
 			error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): sendto()");
 
 			return -1;
 		}
-#endif
 	} else {
 		error_handler(UBWT_ERROR_LEVEL_CRITICAL, UBWT_ERROR_TYPE_NET_ACCEPT, "net_listener_accept(): Unsupported L4 protocol");
 
@@ -313,11 +305,7 @@ ssize_t net_write_to_connector(const void *buf, size_t len) {
 			ret = write(current->net.fd, ((const char *) buf) + count, len - count);
 #endif
 		} else {
-#ifdef UBWT_CONFIG_NET_UDP_CONNECT
-			ret = send(current->net.fd, ((const char *) buf) + count, len - count, 0);
-#else
 			ret = sendto(current->net.fd, ((const char *) buf) + count, len - count, 0, (struct sockaddr *) &current->net.connector.saddr, current->net.connector.slen);
-#endif
 		}
 
 		if (ret < 0) {
@@ -340,14 +328,7 @@ ssize_t net_write_to_connector(const void *buf, size_t len) {
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED, "net_write_to_connector(): write()");
 #endif
 			} else {
-				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED,
-					"net_write_to_connector(): "
-#ifdef UBWT_CONFIG_NET_UDP_CONNECT
-					"send"
-#else
-					"sendto"
-#endif
-					"()");
+				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED, "net_write_to_connector(): sendto()");
 			}
 
 			return ret;

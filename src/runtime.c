@@ -37,6 +37,19 @@ struct ubwt_runtime __runtime = {
 	"-\\|/"	/* progress_rotary */
 };
 
+static void _runtime_write_pid_file(void) {
+	FILE *fp = NULL;
+
+	if (current->config->pid_file) {
+		if (!(fp = fopen(current->config->pid_file, "w+")))
+			error_abort(__FILE__, __LINE__, "_runtime_write_pid_file");
+
+		fprintf(fp, "%u", getpid());
+
+		fclose(fp);
+	}
+}
+
 #ifdef UBWT_CONFIG_MULTI_THREADED
 static void _runtime_display_progress(const char *section) {
 	fprintf(stdout, "\r [%c] %s...", __runtime.progress_rotary[__runtime.progress_tick ++ % sizeof(__runtime.progress_tick)], section);
@@ -82,6 +95,8 @@ void runtime_do(void) {
 	ubwt_worker_task_t **t = NULL;
 
 	assert((current->config->worker_straight_first_count + current->config->worker_reverse_first_count) == current->config->worker_count);
+
+	_runtime_write_pid_file();
 
 	if (!(t = malloc(sizeof(ubwt_worker_task_t *) * (current->config->worker_straight_first_count + current->config->worker_reverse_first_count)))) {
 		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_WORKER_CREATE_FAILED, "runtime_do(): t = malloc()");

@@ -47,4 +47,8 @@ void debug_info_report_connection(const char *src, const char *ip, uint16_t port
 #define debug_info_report_connection(src, ip, port)	while (0)
 #endif
 
+void debug_init(void);
+void debug_update(void);
+void debug_destroy(void);
+
 #endif

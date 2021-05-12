@@ -92,13 +92,13 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 		"A"
 #endif
 #ifdef UBWT_CONFIG_DEBUG
-		"d"
+		"d:D"
 #endif
 		"bFhI:j:l:m:N:"
 #if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && !defined(COMPILE_WIN32)
 		"p:"
 #endif
-		"P:Rs:t:vw:"
+		"P:r:Rs:t:vw:"
 #ifdef UBWT_CONFIG_MULTI_THREADED
 		"W:"
 #endif
@@ -116,7 +116,17 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 #endif
 #ifdef UBWT_CONFIG_DEBUG
 			case 'd': {
+				assert(strlen(optarg) > 0);
+				current->config->debug_file = malloc(strlen(optarg) + 1);
+				assert(current->config->debug_file);
+				strcpy(current->config->debug_file, optarg);
 				current->config->debug = 1;
+				debug_update();
+			} break;
+
+			case 'D': {
+				current->config->debug = 1;
+				debug_update();
 			} break;
 #endif
 			case 'b': {
@@ -174,6 +184,13 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 			case 'P': {
 				strncpy(current->config->port, optarg, sizeof(current->config->port) - 1);
 				current->config->port[sizeof(current->config->port) - 1] = 0;
+			} break;
+
+			case 'r': {
+				assert(strlen(optarg) > 0);
+				current->config->pid_file = malloc(strlen(optarg) + 1);
+				assert(current->config->pid_file);
+				strcpy(current->config->pid_file, optarg);
 			} break;
 
 			case 'R': {
@@ -332,6 +349,19 @@ void config_destroy(void) {
 	if (current->config->report_json_file) {
 		memset(current->config->report_json_file, 0, strlen(current->config->report_json_file) + 1);
 		free(current->config->report_json_file);
+		current->config->report_json_file = NULL;
+	}
+
+	if (current->config->pid_file) {
+		memset(current->config->pid_file, 0, strlen(current->config->pid_file) + 1);
+		free(current->config->pid_file);
+		current->config->pid_file = NULL;
+	}
+
+	if (current->config->debug_file) {
+		memset(current->config->debug_file, 0, strlen(current->config->debug_file) + 1);
+		free(current->config->debug_file);
+		current->config->debug_file = NULL;
 	}
 
 #if 0 /* Do not wipe the entire configuration memory as it may still be required... let current_destroy() deal with it */

@@ -22,17 +22,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+EXIT_SUCCESS=0
+EXIT_FAILURE=1
 
 echo -n "Running test '${TEST_NAME} v${TEST_VER}'... "
 
-../src/ubwt ${TEST_OPTS} listener 0.0.0.0 2> /dev/null 1> /dev/null &
+../src/ubwt ${TEST_OPTS} -r /tmp/ubwt_test_listener.pid listener 0.0.0.0 2> /dev/null > /dev/null &
 sleep 1
-../src/ubwt ${TEST_OPTS} connector 127.0.0.1 2> /dev/null 1> /dev/null
+../src/ubwt ${TEST_OPTS} -r /tmp/ubwt_test_connector.pid connector 127.0.0.1 2> /dev/null > /dev/null
 
 if [ $? -ne 0 ]; then
+	kill `cat /tmp/ubwt_test_listener.pid` 2> /dev/null > /dev/null
+	kill `cat /tmp/ubwt_test_connector.pid` 2> /dev/null > /dev/null
+
+	rm -f /tmp/ubwt_test_listener.pid
+	rm -f /tmp/ubwt_test_connector.pid
+
 	echo "Failed"
-	exit 1
+	exit ${EXIT_FAILURE}
 fi
 
+rm -f /tmp/ubwt_test_listener.pid
+rm -f /tmp/ubwt_test_connector.pid
+
 echo "OK"
+
+exit ${EXIT_SUCCESS}
 

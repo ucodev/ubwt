@@ -130,16 +130,8 @@ int worker_barrier_wait(ubwt_worker_barrier_t *barrier) {
 
 	worker_mutex_lock(&barrier->mutex[0]);
 
-	barrier->entering ++;
-
-	/* Prevent a thread from racing across the barrier multiple times while
-	 * other are still waiting to re-enter the barrier.
-	 */
-	while (barrier->entering > barrier->total)
-		worker_cond_wait(&barrier->cond[0], &barrier->mutex[0]);
-
 	/* Wait if this barrier is still in use by a previous call */
-	while (barrier->count != barrier->total)
+	while (barrier->block_r)
 		worker_cond_wait(&barrier->cond[0], &barrier->mutex[0]);
 
 	worker_mutex_lock(&barrier->mutex[1]);
@@ -155,22 +147,31 @@ int worker_barrier_wait(ubwt_worker_barrier_t *barrier) {
 	assert(barrier->count == barrier->waiting);
 
 	/* First thread released, broadcasts the condition */
-	if (barrier->count == barrier->total)
+	if (barrier->count == barrier->total) {
+		worker_mutex_lock(&barrier->mutex[0]);
+
+		barrier->block_r = 1;
+
+		worker_mutex_unlock(&barrier->mutex[0]);
+
 		worker_cond_broadcast(&barrier->cond[1]);
+	}
 
 	barrier->count --;
 	barrier->waiting --;
 
-	worker_mutex_lock(&barrier->mutex[0]);
-
-	barrier->entering --;
-
-	worker_mutex_unlock(&barrier->mutex[0]);
-
 	/* Last thread released, resets the barrier */
 	if (!barrier->count) {
+		worker_mutex_lock(&barrier->mutex[0]);
+
+		barrier->block_r = 0;
+
 		barrier->count = barrier->total;
+
 		worker_cond_broadcast(&barrier->cond[0]);
+
+		worker_mutex_unlock(&barrier->mutex[0]);
+
 		serial = 1;
 	}
 

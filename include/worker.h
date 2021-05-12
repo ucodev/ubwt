@@ -47,7 +47,7 @@ typedef pthread_mutex_t ubwt_worker_mutex_t;
 typedef pthread_cond_t ubwt_worker_cond_t;
 #ifdef UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER
 typedef struct ubwt_worker_barrier {
-	unsigned int total, count, waiting, entering;
+	unsigned int total, count, waiting, block_r;
 	ubwt_worker_mutex_t mutex[2];
 	ubwt_worker_cond_t cond[2];
 } ubwt_worker_barrier_t;

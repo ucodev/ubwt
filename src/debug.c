@@ -41,10 +41,13 @@
  #include "worker.h"
 #endif
 
+static unsigned __debug_custom_fp = 0;
+static FILE *__debug_fpout = NULL;
+
 void debug_info_talk_op(ubwt_talk_ops_t op, const char *msg) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config->debug)
+	if (!current->config->debug || !__debug_fpout)
 		return;
 
 	datetime_now_str(time_str);
@@ -52,7 +55,7 @@ void debug_info_talk_op(ubwt_talk_ops_t op, const char *msg) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	assert(current->worker_id == worker_self());
 
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 " <-> R#%" PRIu64 "]: DEBUG => INFO => %s/%s => TALK: %s => %s\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 " <-> R#%" PRIu64 "]: DEBUG => INFO => %s/%s => TALK: %s => %s\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
@@ -62,7 +65,7 @@ void debug_info_talk_op(ubwt_talk_ops_t op, const char *msg) {
 		msg
 	);
 #else
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/%s => TALK: %s => %s\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/%s => TALK: %s => %s\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
 		process_get_reverse() ? "reverse" : "straight",
@@ -70,12 +73,14 @@ void debug_info_talk_op(ubwt_talk_ops_t op, const char *msg) {
 		msg
 	);
 #endif
+
+	fflush(__debug_fpout);
 }
 
 void debug_info_talk_latency(uint64_t dt) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config->debug)
+	if (!current->config->debug || !__debug_fpout)
 		return;
 
 	datetime_now_str(time_str);
@@ -83,7 +88,7 @@ void debug_info_talk_latency(uint64_t dt) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	assert(current->worker_id == worker_self());
 
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/%s => TALK: LATENCY: %" PRIu64 " us\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/%s => TALK: LATENCY: %" PRIu64 " us\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
@@ -92,19 +97,21 @@ void debug_info_talk_latency(uint64_t dt) {
 		dt
 	);
 #else
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/%s => TALK: LATENCY: %" PRIu64 " us\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/%s => TALK: LATENCY: %" PRIu64 " us\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
 		process_get_reverse() ? "reverse" : "straight",
 		dt
 	);
 #endif
+
+	fflush(__debug_fpout);
 }
 
 void debug_info_config_show(void) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config->debug)
+	if (!current->config->debug || !__debug_fpout)
 		return;
 
 	datetime_now_str(time_str);
@@ -112,35 +119,35 @@ void debug_info_config_show(void) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	assert(current->worker_id == worker_self());
 
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/main => CONFIG: Mode      : %s\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/main => CONFIG: Mode      : %s\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
 		net_im_connector() ? "connector" : "listener",
 		current->config->im_connector ? "connector" : "listener"
 	);
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/main => CONFIG: Address   : %s\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/main => CONFIG: Address   : %s\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
 		net_im_connector() ? "connector" : "listener",
 		current->config->addr
 	);
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/main => CONFIG: Port      : %s\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/main => CONFIG: Port      : %s\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
 		net_im_connector() ? "connector" : "listener",
 		current->config->port
 	);
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/main => CONFIG: Protocol  : %s\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/main => CONFIG: Protocol  : %s\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
 		net_im_connector() ? "connector" : "listener",
 		current->config->net_l4_proto_name
 	);
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/main => CONFIG: Time (us) : %" PRIu64 "\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/main => CONFIG: Time (us) : %" PRIu64 "\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
@@ -148,38 +155,40 @@ void debug_info_config_show(void) {
 		current_time_start()
 	);
 #else
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/main => CONFIG: Mode      : %s\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/main => CONFIG: Mode      : %s\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
 		current->config->im_connector ? "connector" : "listener"
 	);
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/main => CONFIG: Address   : %s\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/main => CONFIG: Address   : %s\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
 		current->config->addr
 	);
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/main => CONFIG: Port      : %s\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/main => CONFIG: Port      : %s\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
 		current->config->port
 	);
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/main => CONFIG: Protocol  : %s\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/main => CONFIG: Protocol  : %s\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
 		current->config->net_l4_proto_name
 	);
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/main => CONFIG: Time (us) : %" PRIu64 "\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/main => CONFIG: Time (us) : %" PRIu64 "\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
 		current_time_start();
 	);
 #endif
+
+	fflush(__debug_fpout);
 }
 
 void debug_info_stage_show(void) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config->debug)
+	if (!current->config->debug || !__debug_fpout)
 		return;
 
 	datetime_now_str(time_str);
@@ -187,7 +196,7 @@ void debug_info_stage_show(void) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	assert(current->worker_id == worker_self());
 
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/%s => STAGE: %s, ITER: %zu\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/%s => STAGE: %s, ITER: %zu\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
@@ -201,7 +210,7 @@ void debug_info_stage_show(void) {
 		current->stage.iter
 	);
 #else
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/%s => STAGE: %s, ITER: %zu\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/%s => STAGE: %s, ITER: %zu\n",
 		time_str,
 		stage_get() > UBWT_STAGE_STATE_INIT_CONFIG && stage_get() < UBWT_STAGE_STATE_DESTROY_CONFIG
 			? net_im_connector() ? "connector" : "listener",
@@ -213,12 +222,14 @@ void debug_info_stage_show(void) {
 		current->stage.iter
 	);
 #endif
+
+	fflush(__debug_fpout);
 }
 
 void debug_info_report_latency(uint32_t dt) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config->debug)
+	if (!current->config->debug || !__debug_fpout)
 		return;
 
 	datetime_now_str(time_str);
@@ -226,7 +237,7 @@ void debug_info_report_latency(uint32_t dt) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	assert(current->worker_id == worker_self());
 
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/%s => REPORT: Latency: %" PRIu32 " usec(s)\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/%s => REPORT: Latency: %" PRIu32 " usec(s)\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
@@ -235,19 +246,21 @@ void debug_info_report_latency(uint32_t dt) {
 		dt
 	);
 #else
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/%s => REPORT: Latency: %" PRIu32 " usec(s)\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/%s => REPORT: Latency: %" PRIu32 " usec(s)\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
 		process_get_reverse() ? "reverse" : "straight",
 		dt
 	);
 #endif
+
+	fflush(__debug_fpout);
 }
 
 void debug_info_report_count(uint32_t count) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config->debug)
+	if (!current->config->debug || !__debug_fpout)
 		return;
 
 	datetime_now_str(time_str);
@@ -255,7 +268,7 @@ void debug_info_report_count(uint32_t count) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	assert(current->worker_id == worker_self());
 
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/%s => REPORT: Count: %" PRIu32 "\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/%s => REPORT: Count: %" PRIu32 "\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
@@ -264,19 +277,21 @@ void debug_info_report_count(uint32_t count) {
 		count
 	);
 #else
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/%s => REPORT: Count: %" PRIu32 "\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/%s => REPORT: Count: %" PRIu32 "\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
 		process_get_reverse() ? "reverse" : "straight",
 		count
 	);
 #endif
+
+	fflush(__debug_fpout);
 }
 
 void debug_info_report_connection(const char *src, const char *ip, uint16_t port) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 };
 
-	if (!current->config->debug)
+	if (!current->config->debug || !__debug_fpout)
 		return;
 
 	datetime_now_str(time_str);
@@ -284,7 +299,7 @@ void debug_info_report_connection(const char *src, const char *ip, uint16_t port
 #ifdef UBWT_CONFIG_MULTI_THREADED
 	assert(current->worker_id == worker_self());
 
-	fprintf(stderr, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/%s => REPORT: %s connection: %s:%" PRIu32 "\n",
+	fprintf(__debug_fpout, "[%s]: [%c#%" PRIu64 "]: DEBUG => INFO => %s/%s => REPORT: %s connection: %s:%" PRIu32 "\n",
 		time_str,
 		current_im_main() ? 'M' : 'L',
 		(uint64_t) worker_self(),
@@ -295,7 +310,7 @@ void debug_info_report_connection(const char *src, const char *ip, uint16_t port
 		port
 	);
 #else
-	fprintf(stderr, "[%s]: DEBUG => INFO => %s/%s => REPORT: %s connection: %s:%" PRIu32 "\n",
+	fprintf(__debug_fpout, "[%s]: DEBUG => INFO => %s/%s => REPORT: %s connection: %s:%" PRIu32 "\n",
 		time_str,
 		net_im_connector() ? "connector" : "listener",
 		process_get_reverse() ? "reverse" : "straight",
@@ -304,6 +319,39 @@ void debug_info_report_connection(const char *src, const char *ip, uint16_t port
 		port
 	);
 #endif
+
+	fflush(__debug_fpout);
 }
 
 #endif
+
+void debug_init(void) {
+	__debug_fpout = stderr;
+}
+
+void debug_update(void) {
+	FILE *fp = NULL;
+
+	assert(current);
+	assert(current->config);
+
+	if (current->config->debug) {
+		if (current->config->debug_file) {
+			if (!(fp = fopen(current->config->debug_file, "a+")))
+				error_abort(__FILE__, __LINE__, "debug_update");
+
+			__debug_custom_fp = 1;
+			__debug_fpout = fp;
+		} else {
+			__debug_fpout = stderr;
+		}
+	}
+}
+
+void debug_destroy(void) {
+	if (__debug_custom_fp)
+		fclose(__debug_fpout);
+
+	__debug_fpout = NULL;
+}
+
