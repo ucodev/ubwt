@@ -14,6 +14,7 @@ all:
 	@for obj in ${OBJS}; do \
 		echo " * [CC] $${obj}"; \
 		${CC} ${ECFLAGS} ${CCFLAGS} ${ARCHFLAGS} ${INCLUDEDIRS} -c $${obj}.c; \
+		if [ $${?} -ne 0 ]; then exit 1; fi \
 	done
 	@echo
 	@echo " * [LD] ${TARGET}"

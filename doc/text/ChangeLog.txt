@@ -1,3 +1,8 @@
+v0.1-beta
+
+ - Minor fixes
+
+
 v0.1-alpha-04
 
  - Minor fixes
