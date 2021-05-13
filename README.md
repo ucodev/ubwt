@@ -49,7 +49,7 @@ Also, ubwt is architecture independent - it was also successfully tested under *
 
 DISCLAIMER: This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-ubwt is currently in its alpha stage of development - it is usable, but not extensively tested, so there isn't a version that can be considered "stable", yet.
+ubwt is currently in its beta stage of development - it is usable, but not extensively tested, so there isn't a version that can be considered "stable", yet.
 
 
 ## Installation
@@ -83,7 +83,7 @@ IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the 
              -I MSEC             Interval between latency measurements (default: 1 msec).
              -j FILE             Export report in JSON format to file.
              -m OCTETS           Link MTU (default: 1500 octets).
-	     -M MULTIPLIER       Talk count multiplier (default: auto).
+             -M MULTIPLIER       Talk count multiplier (default: auto).
              -N ITERATIONS       Number of handshake iterations (default: 20 iterations).
              -P PORT             TCP or UDP port to listen/connect to (default: 19991).
              -r FILE             Store the running PID into the specified file.
