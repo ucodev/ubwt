@@ -914,26 +914,30 @@ void talk_sender(void) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 			if (worker_barrier_wait(&current->worker_barrier_global[process_get_reverse()]) && _talk_weak_stream_needs_recount()) {
 #endif
-				t = current->talk[process_get_reverse()].weak_time;
+				if (current->config->talk_count_mul) {
+					mul = current->config->talk_count_mul;
+				} else {
+					t = current->talk[process_get_reverse()].weak_time;
 
-				if (!t) t = 1; /* 1us at least */
+					if (!t) t = 1; /* 1us at least */
 
-				/* We need a higher tolerance for asynchronous mode, as we cannot
-				 * accuratelly predict if all the workers' streams will be considered
-				 * weak at any given point in time due to link conditions, and we may end
-				 * up in a very long retry loop in order to get a consistent non-weak stream.
-				 * On the other hand, a very high tolerance, such as doubling the count value,
-				 * may create a higher disparity between the upload and download streams, so
-				 * the tolerance of the multiplier needs to sit somewhere between 1.25 and 1.75.
-				 * After several tests under different link conditions on both simmetric and
-				 * assimetric links, a tolerance of 1.35 for the assincronous mode and 1.20 for
-				 * all the other modes seems to be a good compromise between accuracy and
-				 * performance.
-				 */
-				mul = ((current->config->talk_stream_minimum_time * 1000000) / (double) t) * (current->config->asynchronous ? 1.35 : 1.20);
+					/* We need a higher tolerance for asynchronous mode, as we cannot
+					 * accuratelly predict if all the workers' streams will be considered
+					 * weak at any given point in time due to link conditions, and we may end
+					 * up in a very long retry loop in order to get a consistent non-weak stream.
+					 * On the other hand, a very high tolerance, such as doubling the count value,
+					 * may create a higher disparity between the upload and download streams, so
+					 * the tolerance of the multiplier needs to sit somewhere between 1.25 and 1.75.
+					 * After several tests under different link conditions on both simmetric and
+					 * assimetric links, a tolerance of 1.35 for the assincronous mode and 1.20 for
+					 * all the other modes seems to be a good compromise between accuracy and
+					 * performance.
+					 */
+					mul = ((current->config->talk_stream_minimum_time * 1000000) / (double) t) * (current->config->asynchronous ? 1.35 : 1.20);
 
-				if (mul < (current->config->asynchronous ? 1.35 : 1.20))
-					mul = (current->config->asynchronous ? 1.35 : 1.20);
+					if (mul < (current->config->asynchronous ? 1.35 : 1.20))
+						mul = (current->config->asynchronous ? 1.35 : 1.20);
+				}
 
 				current->talk[process_get_reverse()].count *= mul;
 

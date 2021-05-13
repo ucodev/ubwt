@@ -54,6 +54,7 @@ void usage_show(char *const *argv, int success) {
 		"       -I MSEC             Interval between latency measurements (default: %u msec).\n"
 		"       -j FILE             Export report in JSON format to file.\n"
 		"       -m OCTETS           Link MTU (default: %u octets).\n"
+		"       -M MULTIPLIER       Talk count multiplier (default: auto).\n"
 		"       -N ITERATIONS       Number of handshake iterations (default: %u iterations).\n"
 #if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)
 		"       -p PROTOCOL         L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
@@ -223,6 +224,16 @@ void usage_check_optarg(int opt, char *optarg) {
 				errno = EINVAL;
 
 				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -m must be between 508 and 65535"); /* TODO: Implement string fmt on error_handler() */
+
+				error_no_return();
+			}
+		} break;
+
+		case 'M': {
+			if (atoi(optarg) <= 1 || atoi(optarg) >= UBWT_CONFIG_TALK_COUNT_MUL_MAX) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -M must be greater than 1 and less than 10000000"); /* TODO: Implement string fmt on error_handler() */
 
 				error_no_return();
 			}

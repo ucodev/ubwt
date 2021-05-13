@@ -1,3 +1,11 @@
+v0.1-beta-01
+
+ - Included support for custom talk count multiplier (-M)
+ - Included custom multiplier test into tests/ directory
+ - Updated man page
+ - Updated README.md
+
+
 v0.1-beta
 
  - Minor fixes

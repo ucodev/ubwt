@@ -28,7 +28,7 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.1-beta"
+#define UBWT_CONFIG_VERSION_STR				"0.1-beta-02"
 #define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120
@@ -49,6 +49,8 @@
 #define UBWT_CONFIG_TALK_HANDSHAKE_ITER			20
 #define UBWT_CONFIG_TALK_COUNT_DEFAULT			100
 #define UBWT_CONFIG_TALK_COUNT_MAX			1000000000
+#define UBWT_CONFIG_TALK_COUNT_MUL_DEFAULT		0
+#define UBWT_CONFIG_TALK_COUNT_MUL_MAX			(UBWT_CONFIG_TALK_COUNT_MAX / UBWT_CONFIG_TALK_COUNT_DEFAULT)
 #define UBWT_CONFIG_TALK_PAYLOAD_DEFAULT_SIZE		1432
 #define UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE		508
 #define UBWT_CONFIG_TALK_PAYLOAD_MAX_SIZE		8192
@@ -170,6 +172,7 @@ struct ubwt_config {
 	uint32_t talk_count_current;
 	uint32_t talk_count_default;
 	uint32_t talk_count_max;
+	uint32_t talk_count_mul;
 	uint16_t talk_payload_current_size;
 	uint16_t talk_payload_default_size;
 	uint16_t talk_payload_max_size;

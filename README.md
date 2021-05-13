@@ -83,6 +83,7 @@ IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the 
              -I MSEC             Interval between latency measurements (default: 1 msec).
              -j FILE             Export report in JSON format to file.
              -m OCTETS           Link MTU (default: 1500 octets).
+	     -M MULTIPLIER       Talk count multiplier (default: auto).
              -N ITERATIONS       Number of handshake iterations (default: 20 iterations).
              -P PORT             TCP or UDP port to listen/connect to (default: 19991).
              -r FILE             Store the running PID into the specified file.

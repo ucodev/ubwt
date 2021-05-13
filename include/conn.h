@@ -42,7 +42,8 @@ typedef enum UBWT_CONN_CONFIG_FLAGS {
 	UBWT_CONN_CONFIG_FLAG_CTIMEO,
 	UBWT_CONN_CONFIG_FLAG_STIME,
 	UBWT_CONN_CONFIG_FLAG_PLSIZE,
-	UBWT_CONN_CONFIG_FLAG_WRKCNT
+	UBWT_CONN_CONFIG_FLAG_WRKCNT,
+	UBWT_CONN_CONFIG_FLAG_CNTMUL
 } ubwt_conn_config_flag_t;
 
 #ifndef UBWT_CONFIG_NO_PRAGMA_PACK
@@ -66,6 +67,7 @@ ubwt_conn_payload {
 	uint16_t config_handshake_iter;
 	uint16_t config_handshake_interval;
 	uint32_t config_stream_time;
+	uint32_t config_count_mul;
 } ubwt_conn_payload_t;
 #ifndef UBWT_CONFIG_NO_PRAGMA_PACK
  #pragma pack(pop)
