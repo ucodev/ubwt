@@ -600,7 +600,7 @@ static int _talk_receiver_stream(uint32_t count) {
 
 	for (i = 0; i < count; i ++) {
 		if ((ret = _talk_recv(&p)) < 0) {
-#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
 			if (errno == EAGAIN)
 				break; /* NOTE: Timeout (likely...) */
 #endif

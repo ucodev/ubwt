@@ -90,6 +90,7 @@ IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the 
              -R                  Reverse stream testing first.
              -s OCTETS           L4 payload size (default: 1432).
              -t SECONDS          Minimum stream time (default: 3 seconds).
+             -T SECONDS          Maximum wait time between stream packets (default: 5 seconds).
              -v                  Display version information.
              -w SECONDS          Connection timeout (default: 120 seconds).
              -W COUNT            Maximum number of workers (default: 1). TCP only.

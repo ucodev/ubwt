@@ -212,7 +212,7 @@ int net_listener_accept(void) {
 }
 
 int net_timeout_set(sock_t fd, time_t timeout) {
-#if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
 	struct timeval tv = { 0, 0 };
 
 	tv.tv_sec = timeout;
@@ -507,14 +507,14 @@ static int _net_listener_start(void) {
 		current->net.listener.slen = rcur->ai_addrlen;
 		memcpy(&current->net.listener.saddr, rcur->ai_addr, rcur->ai_addrlen);
 
-#if defined(UBWT_CONFIG_NET_REUSE_ADDRESS) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)
+#ifdef UBWT_CONFIG_NET_REUSE_ADDRESS
 		if (current->config->net_reuseaddr) {
 			if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &current->config->net_reuseaddr, sizeof(current->config->net_reuseaddr)) < 0)
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_REUSEADDR_FAILED, "net_listener_start(): setsockopt()");
 		}
 #endif
 
-#if defined(UBWT_CONFIG_NET_REUSE_PORT) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)
+#ifdef UBWT_CONFIG_NET_REUSE_PORT
 		if (current->config->net_reuseport) {
 			if (setsockopt(fd, SOL_SOCKET, SO_REUSEPORT, &current->config->net_reuseport, sizeof(current->config->net_reuseport)) < 0)
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_REUSEPORT_FAILED, "net_listener_start(): setsockopt()");

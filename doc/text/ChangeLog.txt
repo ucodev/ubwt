@@ -1,3 +1,11 @@
+v0.1-beta-04
+
+ - Included support for custom stream run timeout value (-T)
+ - Minor pre-processor refactoring
+ - Updated man page
+ - Updated README.md
+
+
 v0.1-beta-03
 
  - Updated README.md

@@ -56,7 +56,7 @@ void usage_show(char *const *argv, int success) {
 		"       -m OCTETS           Link MTU (default: %u octets).\n"
 		"       -M MULTIPLIER       Talk count multiplier (default: auto).\n"
 		"       -N ITERATIONS       Number of handshake iterations (default: %u iterations).\n"
-#if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT)
+#ifndef UBWT_CONFIG_NET_NO_UDP
 		"       -p PROTOCOL         L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
 #endif
 		"       -P PORT             TCP or UDP port to listen/connect to (default: %s).\n"
@@ -64,8 +64,11 @@ void usage_show(char *const *argv, int success) {
 		"       -R                  Reverse stream testing first.\n"
 		"       -s OCTETS           L4 payload size (default: %u).\n"
 		"       -t SECONDS          Minimum stream time (default: %u seconds).\n"
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
+		"       -T SECONDS          Maximum wait time between stream packets (default: %u seconds).\n"
+#endif
 		"       -v                  Display version information.\n"
-#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
 		"       -w SECONDS          Connection timeout (default: %u seconds).\n"
 #endif
 #ifdef UBWT_CONFIG_MULTI_THREADED
@@ -87,8 +90,9 @@ void usage_show(char *const *argv, int success) {
 		UBWT_CONFIG_PORT_DEFAULT,
 		UBWT_CONFIG_TALK_PAYLOAD_DEFAULT_SIZE,
 		UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME
-#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
 		,
+		UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_RUN,
 		UBWT_CONFIG_NET_TIMEOUT_DEFAULT
 #endif
 #ifdef UBWT_CONFIG_MULTI_THREADED
@@ -309,7 +313,17 @@ void usage_check_optarg(int opt, char *optarg) {
 			}
 		} break;
 
-#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
+		case 'T': {
+			if (atoi(optarg) <= 0 || atoi(optarg) >= UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -T must be between 1 and 20"); /* TODO: Implement string fmt on error_handler() */
+
+				error_no_return();
+			}
+		} break;
+
 		case 'w': {
 			if (atoi(optarg) <= 0 || atoi(optarg) >= 65536) {
 				errno = EINVAL;

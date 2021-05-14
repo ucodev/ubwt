@@ -44,6 +44,7 @@ static void _config_sanity(void) {
 
 	assert(current->config->net_mtu >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
 	assert(current->config->net_timeout_default > 0);
+	assert(current->config->net_timeout_talk_stream_run > 0 && current->config->net_timeout_talk_stream_run < current->config->net_timeout_talk_stream_end);
 	assert(current->config->net_l4_proto_value != 0);
 
 	assert(current->config->process_reverse_delay > 0);
@@ -101,8 +102,12 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 #ifndef UBWT_CONFIG_NET_NO_UDP
 		"p:"
 #endif
-		"P:r:Rs:t:v"
-#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
+		"P:r:Rs:t:"
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
+		"T:"
+#endif
+		"v"
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
 		"w:"
 #endif
 #ifdef UBWT_CONFIG_MULTI_THREADED
@@ -182,7 +187,7 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 
 				if (!strcmp(optarg, "tcp")) {
 					current->config->net_l4_proto_value = UBWT_NET_PROTO_L4_TCP;
-#if !defined(UBWT_CONFIG_NET_NO_UDP) && defined(UBWT_CONFIG_NET_USE_SETSOCKOPT) && !defined(COMPILE_WIN32)
+#ifndef UBWT_CONFIG_NET_NO_UDP
 				} else if (!strcmp(optarg, "udp")) {
 					current->config->net_l4_proto_value = UBWT_NET_PROTO_L4_UDP;
 #endif
@@ -218,12 +223,18 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 				current->config->talk_stream_minimum_time = (uint16_t) atoi(optarg);
 			} break;
 
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
+			case 'T': {
+				assert(atoi(optarg) > 0 && atoi(optarg) < UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END);
+				current->config->net_timeout_talk_stream_run = (uint16_t) atoi(optarg);
+			} break;
+#endif
 			case 'v': {
 				usage_version();
 				error_no_return();
 			} break;
 
-#ifdef UBWT_CONFIG_NET_USE_SETSOCKOPT
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
 			case 'w': {
 				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
 				current->config->net_timeout_default = (uint16_t) atoi(optarg);
