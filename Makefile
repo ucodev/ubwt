@@ -8,8 +8,9 @@ test:
 
 clean:
 	cd src && make clean && cd ..
+	cd doc && make clean && cd ..
 
-install:
+install_all:
 	cd src && make install && cd ..
 
 install_doc:

@@ -1,1 +1,1 @@
--DUBWT_CONFIG_DEBUG=1 -fPIC -D_REENTRANT -fstrict-aliasing -pedantic -Wall -Werror -g
+-DUBWT_CONFIG_DEBUG=1 -D_REENTRANT -fstrict-aliasing -pedantic -Wall -Werror -g

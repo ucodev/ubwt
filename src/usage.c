@@ -56,6 +56,7 @@ void usage_show(char *const *argv, int success) {
 		"       -m OCTETS           Link MTU (default: %u octets).\n"
 		"       -M MULTIPLIER       Talk count multiplier (default: auto).\n"
 		"       -N ITERATIONS       Number of handshake iterations (default: %u iterations).\n"
+		"       -o SECONDS          Process reverse delay. Sets -b (default: %u seconds).\n"
 #ifndef UBWT_CONFIG_NET_NO_UDP
 		"       -p PROTOCOL         L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
 #endif
@@ -87,6 +88,7 @@ void usage_show(char *const *argv, int success) {
 		UBWT_CONFIG_TALK_HANDSHAKE_INTERVAL_MSEC,
 		UBWT_CONFIG_NET_MTU,
 		UBWT_CONFIG_TALK_HANDSHAKE_ITER,
+		UBWT_CONFIG_PROCESS_REVERSE_DELAY_SEC,
 		UBWT_CONFIG_PORT_DEFAULT,
 		UBWT_CONFIG_TALK_PAYLOAD_DEFAULT_SIZE,
 		UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME
@@ -213,6 +215,26 @@ void usage_check_optarg(int opt, char *optarg) {
 			}
 		} break;
 
+		case 'm': {
+			if (atoi(optarg) < UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE || atoi(optarg) >= 65536) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -m must be between %u and 65535", UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
+
+				error_no_return();
+			}
+		} break;
+
+		case 'M': {
+			if (atoi(optarg) <= 1 || atoi(optarg) >= UBWT_CONFIG_TALK_COUNT_MUL_MAX) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -M must be greater than 1 and less than %u", UBWT_CONFIG_TALK_COUNT_MUL_MAX);
+
+				error_no_return();
+			}
+		} break;
+
 		case 'N': {
 			if (atoi(optarg) <= 0 || atoi(optarg) >= 65536) {
 				errno = EINVAL;
@@ -223,21 +245,11 @@ void usage_check_optarg(int opt, char *optarg) {
 			}
 		} break;
 
-		case 'm': {
-			if (atoi(optarg) < UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE || atoi(optarg) >= 65536) {
+		case 'o': {
+			if (atoi(optarg) < 1 || atoi(optarg) >= UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END) {
 				errno = EINVAL;
 
-				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -m must be between 508 and 65535"); /* TODO: Implement string fmt on error_handler() */
-
-				error_no_return();
-			}
-		} break;
-
-		case 'M': {
-			if (atoi(optarg) <= 1 || atoi(optarg) >= UBWT_CONFIG_TALK_COUNT_MUL_MAX) {
-				errno = EINVAL;
-
-				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -M must be greater than 1 and less than 10000000"); /* TODO: Implement string fmt on error_handler() */
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -o must be greater than 0 and less than %u", UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END);
 
 				error_no_return();
 			}
@@ -297,7 +309,7 @@ void usage_check_optarg(int opt, char *optarg) {
 			if (atoi(optarg) < UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE || atoi(optarg) >= 65536) {
 				errno = EINVAL;
 
-				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -s must be between 508 and 65535"); /* TODO: Implement string fmt on error_handler() */
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -s must be between %u and 65535", UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
 
 				error_no_return();
 			}
@@ -318,7 +330,7 @@ void usage_check_optarg(int opt, char *optarg) {
 			if (atoi(optarg) <= 0 || atoi(optarg) >= UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END) {
 				errno = EINVAL;
 
-				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -T must be between 1 and 20"); /* TODO: Implement string fmt on error_handler() */
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -T must be between 1 and %u", UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END);
 
 				error_no_return();
 			}
@@ -353,7 +365,13 @@ void usage_check_optarg(int opt, char *optarg) {
 			}
 		} break;
 
-		default: error_abort(__FILE__, __LINE__, "usage_check_optarg");
+		default: {
+			errno = EINVAL;
+
+			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPT_INVALID, "usage_check_optarg(): An unrecognized command-line option was used");
+
+			error_no_return();
+		}
 	}
 }
 

@@ -1,3 +1,13 @@
+v0.1-beta-05
+
+ - Included support for variable argument lists on error handler
+ - Included support for Cygwin (NT-10)
+ - Included support for custom process reverse delay value (-o)
+ - Fixed install and cleanup procedures
+ - Updated man page
+ - Updated README.md
+
+
 v0.1-beta-04
 
  - Included support for custom stream run timeout value (-T)

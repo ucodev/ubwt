@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <errno.h>
 
 #include <sys/types.h>
@@ -96,14 +97,22 @@ static void _error_post_nonfatal(void) {
 	return;
 }
 
-void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char *origin) {
+void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char *origin_fmt, ...) {
 	char time_str[UBWT_CONFIG_CTIME_SIZE] = { 0 }, level_str[16] = { 0 };
 	void (*post_process) (void) = &_error_post_fatal;
 #ifdef COMPILE_WIN32
 	char wsaerr_str[32] = { 0 };
 #endif
+	char origin[UBWT_ERROR_MSG_SIZE_MAX + 1] = { 0 };
+	va_list ap;
 
 	current->error.l_errno = errno;
+
+	if (origin_fmt) {
+		va_start(ap, origin_fmt);
+		vsnprintf(origin, sizeof(origin) - 1, origin_fmt, ap);
+		va_end(ap);
+	}
 
 	if (!datetime_now_str(time_str))
 		time_str[0] = 0;
@@ -139,12 +148,12 @@ void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char 
 
 			snprintf(wsaerr_str, sizeof(wsaerr_str) - 1, "%ld", current->error.l_wsaerr);
 
-			fprintf(stderr, __errors[type], time_str, level_str, origin ? origin : "unknown_origin", wsaerr_str);
+			fprintf(stderr, __errors[type], time_str, level_str, origin[0] ? origin : "unknown_origin", wsaerr_str);
 		} else {
-			fprintf(stderr, __errors[type], time_str, level_str, origin ? origin : "unknown_origin", current->error.l_eai ? gai_strerror(current->error.l_eai) : strerror(current->error.l_errno));
+			fprintf(stderr, __errors[type], time_str, level_str, origin[0] ? origin : "unknown_origin", current->error.l_eai ? gai_strerror(current->error.l_eai) : strerror(current->error.l_errno));
 		}
 #else
-		fprintf(stderr, __errors[type], time_str, level_str, origin ? origin : "unknown_origin", current->error.l_eai ? gai_strerror(current->error.l_eai) : strerror(current->error.l_errno));
+		fprintf(stderr, __errors[type], time_str, level_str, origin[0] ? origin : "unknown_origin", current->error.l_eai ? gai_strerror(current->error.l_eai) : strerror(current->error.l_errno));
 #endif
 	}
 

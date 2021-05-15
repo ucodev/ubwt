@@ -48,6 +48,8 @@
  #endif
 #endif
 
+#define UBWT_ERROR_MSG_SIZE_MAX		1024
+
 typedef enum UBWT_ERROR_TYPES {
 	UBWT_ERROR_TYPE_NO_ERROR = 0,
 	UBWT_ERROR_TYPE_CURRENT_FORK_FAILED,
@@ -97,7 +99,7 @@ typedef struct ubwt_error {
 #endif
 } ubwt_error_t;
 
-void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char *origin);
+void error_handler(ubwt_error_level_t level, ubwt_error_type_t type, const char *origin_fmt, ...);
 #if !defined(__GNUC__) && !defined(__clang__)
 _Noreturn
 #endif

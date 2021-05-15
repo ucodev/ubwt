@@ -47,7 +47,7 @@ static void _config_sanity(void) {
 	assert(current->config->net_timeout_talk_stream_run > 0 && current->config->net_timeout_talk_stream_run < current->config->net_timeout_talk_stream_end);
 	assert(current->config->net_l4_proto_value != 0);
 
-	assert(current->config->process_reverse_delay > 0);
+	assert(current->config->process_reverse_delay > 0 && current->config->process_reverse_delay <= 65535);
 
 	//assert(current->config->talk_handshake_interval >= 0);
 	assert(current->config->talk_handshake_iter > 0);
@@ -98,7 +98,7 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 #ifdef UBWT_CONFIG_DEBUG
 		"d:D"
 #endif
-		"bFhI:j:l:m:M:N:"
+		"bFhI:j:l:m:M:N:o:"
 #ifndef UBWT_CONFIG_NET_NO_UDP
 		"p:"
 #endif
@@ -165,11 +165,6 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 				strcpy(current->config->report_json_file, optarg);
 			} break;
 
-			case 'N': {
-				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
-				current->config->talk_handshake_iter = (uint16_t) atoi(optarg);
-			} break;
-
 			case 'm': {
 				assert(atoi(optarg) >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE && atoi(optarg) < 65536);
 				current->config->net_mtu = (uint16_t) atoi(optarg);
@@ -178,6 +173,17 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 			case 'M': {
 				assert(atoi(optarg) > 1 && atoi(optarg) < UBWT_CONFIG_TALK_COUNT_MUL_MAX);
 				current->config->talk_count_mul = atoi(optarg);
+			} break;
+
+			case 'N': {
+				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
+				current->config->talk_handshake_iter = (uint16_t) atoi(optarg);
+			} break;
+
+			case 'o': {
+				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
+				current->config->process_reverse_delay = (uint16_t) atoi(optarg);
+				current->config->bidirectional = 1;
 			} break;
 
 			case 'p': {

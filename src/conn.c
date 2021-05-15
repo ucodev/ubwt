@@ -56,6 +56,7 @@ void conn_payload_hton(ubwt_conn_payload_t *p) {
 	p->config_handshake_iter = htons(p->config_handshake_iter);
 	p->config_handshake_interval = htons(p->config_handshake_interval);
 	p->config_stream_run_timeout = htons(p->config_stream_run_timeout);
+	p->config_reverse_delay = htons(p->config_reverse_delay);
 	p->config_stream_time = htonl(p->config_stream_time);
 	p->config_count_mul = htonl(p->config_count_mul);
 }
@@ -73,6 +74,7 @@ void conn_payload_ntoh(ubwt_conn_payload_t *p) {
 	p->config_handshake_iter = ntohs(p->config_handshake_iter);
 	p->config_handshake_interval = ntohs(p->config_handshake_interval);
 	p->config_stream_run_timeout = ntohs(p->config_stream_run_timeout);
+	p->config_reverse_delay = ntohs(p->config_reverse_delay);
 	p->config_stream_time = ntohl(p->config_stream_time);
 	p->config_count_mul = ntohl(p->config_count_mul);
 }
@@ -114,6 +116,9 @@ void conn_payload_create(ubwt_conn_payload_t *p) {
 
 	bit_set(&p->config_flags, UBWT_CONN_CONFIG_FLAG_STIME);
 	p->config_stream_time = current->config->talk_stream_minimum_time;
+
+	bit_set(&p->config_flags, UBWT_CONN_CONFIG_FLAG_REVDLY);
+	p->config_reverse_delay = current->config->process_reverse_delay;
 
 	bit_set(&p->config_flags, UBWT_CONN_CONFIG_FLAG_CNTMUL);
 	p->config_count_mul = current->config->talk_count_mul;

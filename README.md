@@ -40,7 +40,7 @@ See [LICENSE](https://github.com/ucodev/ubwt/blob/main/doc/text/LICENSE)
 
 ## Portability
 
-ubwt is designed to be compliant with any POSIX-based operating system. It was successfully tested under **GNU Linux**, **GNU Hurd**, **FreeBSD**, **NetBSD**, **OpenBSD**, **SunOS**, **Minix** and **Darwin**. Microsoft Windows operating systems are not officially supported by ubwt - but they will, in a near future.
+ubwt is designed to be compliant with any POSIX-based operating system. It was successfully tested under **GNU Linux**, **GNU Hurd**, **FreeBSD**, **NetBSD**, **OpenBSD**, **SunOS**, **Minix** and **Darwin**. A native implementation for Microsoft Windows operating systems is not included yet - but it will in a near future. Meanwhile, **Cygwin** can be used to build and run ubwt, as it is fully supported in this platform.
 
 Also, ubwt is architecture independent - it was also successfully tested under **x86/64**, **ARM**, **MIPS (mips/mipsel)** and **SPARC**.
 
@@ -85,6 +85,7 @@ IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the 
              -m OCTETS           Link MTU (default: 1500 octets).
              -M MULTIPLIER       Talk count multiplier (default: auto).
              -N ITERATIONS       Number of handshake iterations (default: 20 iterations).
+             -o SECONDS          Process reverse delay. Sets -b (default: 3 seconds).
              -P PORT             TCP or UDP port to listen/connect to (default: 19991).
              -r FILE             Store the running PID into the specified file.
              -R                  Reverse stream testing first.
