@@ -64,7 +64,7 @@ char *datetime_now_str(char *buf) {
 	}
 
 #ifdef COMPILE_WIN32
-	if (!ctime_s(buf, UBWT_CONFIG_CTIME_SIZE, &t)) {
+	if (ctime_s(buf, UBWT_CONFIG_CTIME_SIZE, &t)) {
 #else
 	if (!ctime_r(&t, buf)) {
 #endif

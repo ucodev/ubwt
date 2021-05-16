@@ -42,6 +42,12 @@ static uint32_t _report_bandwidth_theoretical_mbps(uint32_t bandwidth_effective)
 	if (bandwidth_effective < 10000) return 10000;
 	if (bandwidth_effective < 20000) return 20000;
 	if (bandwidth_effective < 40000) return 40000;
+	if (bandwidth_effective < 100000) return 100000;
+	if (bandwidth_effective < 200000) return 200000;
+	if (bandwidth_effective < 400000) return 400000;
+	if (bandwidth_effective < 800000) return 800000;
+	if (bandwidth_effective < 1000000) return 1000000;
+	if (bandwidth_effective < 1600000) return 1600000;
 
 	return bandwidth_effective;
 }

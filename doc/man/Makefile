@@ -1,11 +1,21 @@
 SYSMANDIR=`cat ../../.dirman`
 
 all:
-	gzip man8/*.8 2> /dev/null || true
+	@echo
+	@echo " * [GZ] ubwt.8"
+	@gzip man8/ubwt.8 2> /dev/null || true
+	@echo
+
 
 install:
-	cp man8/* ${SYSMANDIR}/man8/
+	@echo
+	@echo " * [CP] ubwt.8"
+	@cp man8/ubwt.8.gz ${SYSMANDIR}/man8/
+	@echo
 
 clean:
-	gunzip man8/*.gz 2> /dev/null || true
+	@echo
+	@echo " * [UZ] ubwt.8"
+	@gunzip man8/ubwt.8.gz 2> /dev/null || true
+	@echo
 

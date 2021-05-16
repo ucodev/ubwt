@@ -43,11 +43,13 @@ static void _config_sanity(void) {
 	assert(strlen(current->config->port) <= 5 && atoi(current->config->port) >= 1 && (atoi(current->config->port) <= 65535));
 
 	assert(current->config->net_mtu >= UBWT_CONFIG_TALK_PAYLOAD_MIN_SIZE);
-	assert(current->config->net_timeout_default > 0);
+	assert(current->config->net_timeout_default > 0 && current->config->net_timeout_default <= 65535);
+	assert(current->config->net_timeout_talk_stream_end > 0 && current->config->net_timeout_talk_stream_end < current->config->net_timeout_default);
 	assert(current->config->net_timeout_talk_stream_run > 0 && current->config->net_timeout_talk_stream_run < current->config->net_timeout_talk_stream_end);
+
 	assert(current->config->net_l4_proto_value != 0);
 
-	assert(current->config->process_reverse_delay > 0 && current->config->process_reverse_delay <= 65535);
+	assert(current->config->process_reverse_delay > 0 && current->config->process_reverse_delay < current->config->net_timeout_talk_stream_end);
 
 	//assert(current->config->talk_handshake_interval >= 0);
 	assert(current->config->talk_handshake_iter > 0);
@@ -89,6 +91,56 @@ static void _config_sanity(void) {
 #endif
 }
 
+static void _config_consistency(void) {
+	if (current->config->net_timeout_talk_stream_run >= current->config->net_timeout_talk_stream_end) {
+		errno = EINVAL;
+
+		error_handler(
+			UBWT_ERROR_LEVEL_FATAL,
+			UBWT_ERROR_TYPE_CONFIG_CONSISTENCY_FAILED,
+			"_config_consistency(): "
+			"The specified stream run timeout value (%" PRIu16 ") "
+			"cannot be equal or greater than the stream end timeout value (%" PRIu16 ")",
+			current->config->net_timeout_talk_stream_run,
+			current->config->net_timeout_talk_stream_end
+		);
+
+		error_no_return();
+	}
+
+	if (current->config->net_timeout_talk_stream_end >= current->config->net_timeout_default) {
+		errno = EINVAL;
+
+		error_handler(
+			UBWT_ERROR_LEVEL_FATAL,
+			UBWT_ERROR_TYPE_CONFIG_CONSISTENCY_FAILED,
+			"_config_consistency(): "
+			"The specified stream end timeout value (%" PRIu16 ") "
+			"cannot be equal or greater than the connection timeout value (%" PRIu16 ")",
+			current->config->net_timeout_talk_stream_end,
+			current->config->net_timeout_default
+		);
+
+		error_no_return();
+	}
+
+	if (current->config->process_reverse_delay >= current->config->net_timeout_talk_stream_end) {
+		errno = EINVAL;
+
+		error_handler(
+			UBWT_ERROR_LEVEL_FATAL,
+			UBWT_ERROR_TYPE_CONFIG_CONSISTENCY_FAILED,
+			"_config_consistency(): "
+			"The specified delay time for process reverse (%" PRIu16 ") "
+			"cannot be equal or greater than the stream end timeout value (%" PRIu16 ")",
+			current->config->process_reverse_delay,
+			current->config->net_timeout_talk_stream_end
+		);
+
+		error_no_return();
+	}
+}
+
 static void _config_cmdopt_process(int argc, char *const *argv) {
 	int opt = 0;
 	const char *flags =
@@ -99,6 +151,9 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 		"d:D"
 #endif
 		"bFhI:j:l:m:M:N:o:"
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
+		"O:"
+#endif
 #ifndef UBWT_CONFIG_NET_NO_UDP
 		"p:"
 #endif
@@ -185,6 +240,13 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 				current->config->process_reverse_delay = (uint16_t) atoi(optarg);
 				current->config->bidirectional = 1;
 			} break;
+
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
+			case 'O': {
+				assert(atoi(optarg) > 0 && atoi(optarg) < 65536);
+				current->config->net_timeout_talk_stream_end = (uint16_t) atoi(optarg);
+			} break;
+#endif
 
 			case 'p': {
 				assert(strlen(optarg) < sizeof(current->config->net_l4_proto_name));
@@ -368,6 +430,8 @@ void config_init(int argc, char *const *argv) {
 		current->config->worker_reverse_first_count = 0;
 	}
 #endif
+
+	_config_consistency();
 
 	_config_sanity();
 

@@ -22,6 +22,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #if !defined(__GNUC__) && !defined(__clang__)
 #include <stdnoreturn.h>
@@ -57,6 +58,9 @@ void usage_show(char *const *argv, int success) {
 		"       -M MULTIPLIER       Talk count multiplier (default: auto).\n"
 		"       -N ITERATIONS       Number of handshake iterations (default: %u iterations).\n"
 		"       -o SECONDS          Process reverse delay. Sets -b (default: %u seconds).\n"
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
+		"       -O SECONDS          Maximum wait time before next stream (default: %u seconds).\n"
+#endif
 #ifndef UBWT_CONFIG_NET_NO_UDP
 		"       -p PROTOCOL         L4 protocol: 'tcp' or 'udp' (default: tcp).\n"
 #endif
@@ -89,6 +93,9 @@ void usage_show(char *const *argv, int success) {
 		UBWT_CONFIG_NET_MTU,
 		UBWT_CONFIG_TALK_HANDSHAKE_ITER,
 		UBWT_CONFIG_PROCESS_REVERSE_DELAY_SEC,
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
+		UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END,
+#endif
 		UBWT_CONFIG_PORT_DEFAULT,
 		UBWT_CONFIG_TALK_PAYLOAD_DEFAULT_SIZE,
 		UBWT_CONFIG_TALK_STREAM_MINIMUM_TIME
@@ -158,6 +165,9 @@ void usage_check_optarg(int opt, char *optarg) {
 
 				error_no_return();
 			}
+
+			if (!strcmp(optarg, "stderr") || !strcmp(optarg, "stdout"))
+				break;
 
 			if (!(fp = fopen(optarg, "a+"))) {
 				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -d valid file path with write permissions");
@@ -246,15 +256,26 @@ void usage_check_optarg(int opt, char *optarg) {
 		} break;
 
 		case 'o': {
-			if (atoi(optarg) < 1 || atoi(optarg) >= UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END) {
+			if (atoi(optarg) < 1 || atoi(optarg) >= 65536) {
 				errno = EINVAL;
 
-				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -o must be greater than 0 and less than %u", UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END);
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -o must be between 1 and 65535");
 
 				error_no_return();
 			}
 		} break;
 
+#ifndef UBWT_CONFIG_NET_NO_TIMEOUT
+		case 'O': {
+			if (atoi(optarg) < 1 || atoi(optarg) >= 65536) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -O must be between 1 and 65535");
+
+				error_no_return();
+			}
+		} break;
+#endif
 		case 'p': {
 			if (strlen(optarg) >= sizeof(current->config->net_l4_proto_name)) {
 				errno = EINVAL;
@@ -327,10 +348,10 @@ void usage_check_optarg(int opt, char *optarg) {
 
 #ifndef UBWT_CONFIG_NET_NO_TIMEOUT
 		case 'T': {
-			if (atoi(optarg) <= 0 || atoi(optarg) >= UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END) {
+			if (atoi(optarg) <= 0 || atoi(optarg) >= 65536) {
 				errno = EINVAL;
 
-				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -T must be between 1 and %u", UBWT_CONFIG_NET_TIMEOUT_TALK_STREAM_END);
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -T must be between 1 and 65535");
 
 				error_no_return();
 			}
@@ -365,10 +386,16 @@ void usage_check_optarg(int opt, char *optarg) {
 			}
 		} break;
 
-		default: {
+		case '?': {
 			errno = EINVAL;
 
-			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPT_INVALID, "usage_check_optarg(): An unrecognized command-line option was used");
+			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPT_INVALID, "usage_check_optarg(): An unrecognized command-line option was used (-%c)", optopt);
+
+			error_no_return();
+		} break;
+
+		default: {
+			error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPT_INVALID, "usage_cehck_optarg(): Unknown value returned by getopt(): 0%o", opt);
 
 			error_no_return();
 		}

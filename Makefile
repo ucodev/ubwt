@@ -1,6 +1,7 @@
 all:
-	@if [ ! -e ".compiler" ]; then echo; echo "Please read the doc/text/INSTALL file for instructions."; echo; exit 1; fi
+	@if [ ! -e ".compiler" ]; then echo; echo "Please read the doc/text/INSTALL.txt file for instructions."; echo; exit 1; fi
 	cd src && make && cd ..
+	cd doc && make && cd ..
 
 test:
 	@if [ ! -e .done ]; then echo; echo "Cannot run tests without building the project first."; echo; exit 1; fi

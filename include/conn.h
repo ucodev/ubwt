@@ -45,6 +45,7 @@ typedef enum UBWT_CONN_CONFIG_FLAGS {
 	UBWT_CONN_CONFIG_FLAG_WRKCNT,
 	UBWT_CONN_CONFIG_FLAG_CNTMUL,
 	UBWT_CONN_CONFIG_FLAG_STIMEO,
+	UBWT_CONN_CONFIG_FLAG_ETIMEO,
 	UBWT_CONN_CONFIG_FLAG_REVDLY
 } ubwt_conn_config_flag_t;
 
@@ -69,6 +70,7 @@ ubwt_conn_payload {
 	uint16_t config_handshake_iter;
 	uint16_t config_handshake_interval;
 	uint16_t config_stream_run_timeout;
+	uint16_t config_stream_end_timeout;
 	uint16_t config_reverse_delay;
 	uint32_t config_stream_time;
 	uint32_t config_count_mul;

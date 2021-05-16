@@ -41,7 +41,7 @@
  #include "worker.h"
 #endif
 
-static unsigned __debug_custom_fp = 0;
+static unsigned __debug_fs_fp = 0;
 static FILE *__debug_fpout = NULL;
 
 void debug_info_talk_op(ubwt_talk_ops_t op, const char *msg) {
@@ -326,6 +326,7 @@ void debug_info_report_connection(const char *src, const char *ip, uint16_t port
 #endif
 
 void debug_init(void) {
+	__debug_fs_fp = 0;
 	__debug_fpout = stderr;
 }
 
@@ -335,21 +336,28 @@ void debug_update(void) {
 	assert(current);
 	assert(current->config);
 
-	if (current->config->debug) {
-		if (current->config->debug_file) {
+	if (current->config->debug && current->config->debug_file) {
+		if (!strcmp(current->config->debug_file, "stderr")) {
+			__debug_fs_fp = 0;
+			__debug_fpout = stderr;
+		} else if (!strcmp(current->config->debug_file, "stdout")) {
+			__debug_fs_fp = 0;
+			__debug_fpout = stdout;
+		} else {
 			if (!(fp = fopen(current->config->debug_file, "a+")))
 				error_abort(__FILE__, __LINE__, "debug_update");
 
-			__debug_custom_fp = 1;
+			__debug_fs_fp = 1;
 			__debug_fpout = fp;
-		} else {
-			__debug_fpout = stderr;
 		}
+	} else {
+		__debug_fs_fp = 0;
+		__debug_fpout = stderr;
 	}
 }
 
 void debug_destroy(void) {
-	if (__debug_custom_fp)
+	if (__debug_fs_fp)
 		fclose(__debug_fpout);
 
 	__debug_fpout = NULL;

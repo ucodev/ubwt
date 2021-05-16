@@ -1,3 +1,14 @@
+v0.1-beta-06
+
+ - Minor changes in user messages
+ - Enhanced configuration checks
+ - Included support for custom stream end timeout value (-O)
+ - Included timeout options tests
+ - Updated man page
+ - Updated README.md
+ - Updated doc make files
+
+
 v0.1-beta-05
 
  - Included support for variable argument lists on error handler

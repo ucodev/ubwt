@@ -28,7 +28,7 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.1-beta-05"
+#define UBWT_CONFIG_VERSION_STR				"0.1-beta-06"
 #define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120

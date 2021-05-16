@@ -66,7 +66,7 @@ or see [INSTALL.txt](https://github.com/ucodev/ubwt/blob/main/doc/text/INSTALL.t
 
 ## Command-Line Usage Examples
 
-IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the same command-line options - by failing to do so, the behaviour of the application is undefined.
+IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the same command-line options - by failing to do so, either the client and/or the listener will reject the test.
 
 ### Usage ###
 
@@ -86,6 +86,7 @@ IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the 
              -M MULTIPLIER       Talk count multiplier (default: auto).
              -N ITERATIONS       Number of handshake iterations (default: 20 iterations).
              -o SECONDS          Process reverse delay. Sets -b (default: 3 seconds).
+             -O SECONDS          Maximum wait time before next stream (default: 20 seconds).
              -P PORT             TCP or UDP port to listen/connect to (default: 19991).
              -r FILE             Store the running PID into the specified file.
              -R                  Reverse stream testing first.
