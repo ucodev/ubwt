@@ -52,6 +52,11 @@ DISCLAIMER: This is free software; see the source for copying conditions. There 
 ubwt is currently in its beta stage of development - it is usable, but not extensively tested, so there isn't a version that can be considered "stable", yet.
 
 
+## Progress
+
+Please refer to [ChangeLog.txt](https://github.com/ucodev/ubwt/blob/main/doc/text/ChangeLog.txt)
+
+
 ## Installation
 
 Install ubwt with the following commands:

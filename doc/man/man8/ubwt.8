@@ -88,10 +88,62 @@ Connection timeout (default: 120 seconds).
 \fB\-W\fR \fICOUNT\fR
 Maximum number of workers (default: 1). TCP only.
 .SH EXAMPLE
-.TP
+.EX
+
 alice@serv.my.lan ~ $ ubwt listener 0.0.0.0
-.TP
+
 bob@client.my.lan ~ $ ubwt connector serv.my.lan
+
+.SH NOTES
+.IP \(bu 3
+This tool is not meant to be used as a system
+service - it is not a daemon, and wasn't designed
+to become one.
+.IP \(bu
+If you need to auto-restart the listener, use
+a loop in the shell, for example:
+.EX
+
+    while :; do
+        ubwt listener 0.0.0.0
+        if [ ${?} -ne 0 ]; then
+            break;
+        fi
+    done
+
+.IP \(bu
+If you are running the test in a system with
+poor real time measurements, use \fB\-M\fR with a
+reasonable multiplier value, for example, 10.
+.IP \(bu
+Asynchronous full-duplex test mode may not be
+completely fair. Use it to get estimates, not
+precise measurements.
+.IP \(bu
+Avoid using UDP tests unless you really know
+what you are doing.
+.IP \(bu
+Balance the number of workers properly - more
+workers is usually good, until too much workers
+become very bad. Start with something like 4 or 8.
+.IP \(bu
+To adjust precision, make sure MTU and L4 payload
+size are properly set for the network under test.
+Usually the default values are OK, but fine 
+tunning these values may yield better results.
+.IP \(bu
+When testing symmetric links with bidirectional
+tests and you find out that there's a considerable
+difference between the download and upload
+measurements, slightly increase the default value
+of \fB\-o\fR (to 5 or 10 seconds). This assumes that you
+already excluded any other reasons, such as traffic
+from other sources present in the network that is
+tampering the bandwidth test.
+.IP \(bu
+If a measurement doens't feel right, start by
+increasing the minimum stream time with the \fB\-t\fR
+option.
 .SH AUTHOR
 Written by Pedro A. Hortas (pah@ucodev.org).
 .SH "REPORTING BUGS"

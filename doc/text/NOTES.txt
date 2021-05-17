@@ -1,0 +1,35 @@
+ - This tool is not meant to sued as a system service - it is not a daemon,
+   and wasn't designed to become one.
+
+ - If you need to auto-restart the listener, use a loop in the shell, eg:
+
+       while :; do
+         ubwt listener 0.0.0.0
+	 if [ ${?} -ne 0 ]; then break; fi
+       done
+
+ - If you are running the test in a system with poor real time measurements,
+   use -M with a reasonable multiplier value, for example, 10.
+
+ - Asynchronous full-duplex test mode may not be completely fair.
+   Use it to get estimates, not precise measurements.
+
+ - Avoid using UDP tests unless you really know what you are doing.
+
+ - Balance the number of workers properly - more workers is usually good,
+   until too much workers become very bad. Start with something like 4 or 8.
+
+ - To adjust precision, make sure MTU and L4 payload size are properly set
+   for the network under test. Usually the default values are OK, but
+   fine tunning these values may yield better results.
+
+ - When testing symmetric links with bidirectional tests and you find out
+   that there's a considerable difference between the download and upload
+   measurements, slightly increase the default value of -o (to 5 or 10
+   seconds). This assumes that you already excluded any other reasons,
+   such as traffic from other sources present in the network that is
+   tampering the bandwidth test.
+
+ - If a measurement doens't feel right, start by increasing the minimum stream
+   time with the -t option.
+

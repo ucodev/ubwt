@@ -182,7 +182,6 @@ void usage_check_optarg(int opt, char *optarg) {
 			}
 		} break;
 
-
 		case 'R': {
 			if (current->config->asynchronous) {
 				errno = EINVAL;

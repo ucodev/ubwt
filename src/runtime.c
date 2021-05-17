@@ -57,7 +57,7 @@ static void _runtime_display_progress(const char *section) {
 }
 
 static void _runtime_display_done(const char *section) {
-	fprintf(stderr, "\r [*] %s...\n", section);
+	fprintf(stdout, "\r [*] %s...\n", section);
 }
 
 static void _runtime_wait_worker_flag(const char *section, unsigned int flag, unsigned int count) {
@@ -153,7 +153,10 @@ void runtime_do(void) {
 #else
 	_runtime_write_pid_file();
 
+	puts("Running bandwidth test - this may take a while...");
+
 	process_run(current->config->reverse_first /* 0: straight first, 1: reverse first */);
+
 	process_report();
 #endif
 
