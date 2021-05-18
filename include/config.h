@@ -28,7 +28,7 @@
 #include "error.h"
 #include "net.h"
 
-#define UBWT_CONFIG_VERSION_STR				"0.1-beta-07"
+#define UBWT_CONFIG_VERSION_STR				"0.1-beta-08"
 #define UBWT_CONFIG_CTIME_SIZE				32
 #define UBWT_CONFIG_PORT_DEFAULT			"19991"
 #define UBWT_CONFIG_NET_TIMEOUT_DEFAULT			120
@@ -163,6 +163,7 @@ struct ubwt_config {
 	char *report_json_file;
 	char *pid_file;
 	char *debug_file;
+	char *net_payload_buffer_file;
 
 	ubwt_error_level_t error_log_min_level;
 
@@ -178,6 +179,7 @@ struct ubwt_config {
 	uint16_t net_l4_hdr_size;
 	char     net_l4_proto_name[16];
 	uint8_t  net_l4_proto_value;
+	uint32_t net_payload_buffer_size;
 
 	uint16_t process_reverse_delay;
 

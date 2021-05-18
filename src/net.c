@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <inttypes.h>
 #include <errno.h>
 #include <unistd.h>
 #include <assert.h>
@@ -240,25 +242,26 @@ uint16_t net_sockaddr_port(const struct sockaddr_storage *n) {
 
 ssize_t net_read_from_connector(void *buf, size_t len) {
 	ssize_t count = 0, ret = 0;
+	struct ubwt_current *c = current;
 
 	while (count < (ssize_t) len) {
-		if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+		if (c->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
-			ret = recv(current->net.fd, ((char *) buf + count), len - count, MSG_WAITALL);
+			ret = recv(c->net.fd, ((char *) buf + count), len - count, MSG_WAITALL);
 #else
-			ret = read(current->net.fd, ((char *) buf + count), len - count);
+			ret = read(c->net.fd, ((char *) buf + count), len - count);
 #endif
 		} else {
-			ret = recv(current->net.fd, ((char *) buf + count), len - count, 0);
+			ret = recv(c->net.fd, ((char *) buf + count), len - count, 0);
 		}
 
 		if (ret < 0) {
 			if (errno == EINTR)
 				continue;
 
-			if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+			if (c->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
-				current->error.l_wsaerr = WSAGetLastError();
+				c->error.l_wsaerr = WSAGetLastError();
 
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_connector(): recv()");
 #else
@@ -279,25 +282,26 @@ ssize_t net_read_from_connector(void *buf, size_t len) {
 
 ssize_t net_read_from_listener(void *buf, size_t len) {
 	ssize_t count = 0, ret = 0;
+	struct ubwt_current *c = current;
 
 	while (count < (ssize_t) len) {
-		if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+		if (c->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
-			ret = recv(current->net.fd, ((char *) buf + count), len - count, MSG_WAITALL);
+			ret = recv(c->net.fd, ((char *) buf + count), len - count, MSG_WAITALL);
 #else
-			ret = read(current->net.fd, ((char *) buf + count), len - count);
+			ret = read(c->net.fd, ((char *) buf + count), len - count);
 #endif
 		} else {
-			ret = recv(current->net.fd, ((char *) buf + count), len - count, 0);
+			ret = recv(c->net.fd, ((char *) buf + count), len - count, 0);
 		}
 
 		if (ret < 0) {
 			if (errno == EINTR)
 				continue;
 
-			if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+			if (c->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
-				current->error.l_wsaerr = WSAGetLastError();
+				c->error.l_wsaerr = WSAGetLastError();
 
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_RECV_FAILED, "net_read_from_listener(): recv()");
 #else
@@ -318,16 +322,17 @@ ssize_t net_read_from_listener(void *buf, size_t len) {
 
 ssize_t net_write_to_connector(const void *buf, size_t len) {
 	ssize_t count = 0, ret = 0;
+	struct ubwt_current *c = current;
 
 	while (count < (ssize_t) len) {
-		if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+		if (c->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
-			ret = send(current->net.fd, ((const char *) buf) + count, len - count, 0);
+			ret = send(c->net.fd, ((const char *) buf) + count, len - count, 0);
 #else
-			ret = write(current->net.fd, ((const char *) buf) + count, len - count);
+			ret = write(c->net.fd, ((const char *) buf) + count, len - count);
 #endif
 		} else {
-			ret = sendto(current->net.fd, ((const char *) buf) + count, len - count, 0, (struct sockaddr *) &current->net.connector.saddr, current->net.connector.slen);
+			ret = sendto(c->net.fd, ((const char *) buf) + count, len - count, 0, (struct sockaddr *) &c->net.connector.saddr, c->net.connector.slen);
 		}
 
 		if (ret < 0) {
@@ -341,9 +346,9 @@ ssize_t net_write_to_connector(const void *buf, size_t len) {
 				continue;
 			}
 #endif
-			if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+			if (c->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
-				current->error.l_wsaerr = WSAGetLastError();
+				c->error.l_wsaerr = WSAGetLastError();
 
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED, "net_write_to_connector(): send()");
 #else
@@ -364,19 +369,20 @@ ssize_t net_write_to_connector(const void *buf, size_t len) {
 
 ssize_t net_write_to_listener(const void *buf, size_t len) {
 	ssize_t count = 0, ret = 0;
+	struct ubwt_current *c = current;
 
 	while (count < (ssize_t) len) {
-		if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+		if (c->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
-			ret = send(current->net.fd, ((const char *) buf) + count, len - count, 0);
+			ret = send(c->net.fd, ((const char *) buf) + count, len - count, 0);
 #else
-			ret = write(current->net.fd, ((const char *) buf) + count, len - count);
+			ret = write(c->net.fd, ((const char *) buf) + count, len - count);
 #endif
 		} else {
 #ifdef UBWT_CONFIG_NET_UDP_CONNECT
-			ret = send(current->net.fd, ((const char *) buf) + count, len - count, 0);
+			ret = send(c->net.fd, ((const char *) buf) + count, len - count, 0);
 #else
-			ret = sendto(current->net.fd, ((const char *) buf) + count, len - count, 0 /*MSG_CONFIRM*/, (struct sockaddr *) &current->net.listener.saddr, current->net.listener.slen);
+			ret = sendto(c->net.fd, ((const char *) buf) + count, len - count, 0 /*MSG_CONFIRM*/, (struct sockaddr *) &c->net.listener.saddr, c->net.listener.slen);
 #endif
 		}
 
@@ -392,9 +398,9 @@ ssize_t net_write_to_listener(const void *buf, size_t len) {
 			}
 #endif
 
-			if (current->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
+			if (c->config->net_l4_proto_value == UBWT_NET_PROTO_L4_TCP) {
 #ifdef COMPILE_WIN32
-				current->error.l_wsaerr = WSAGetLastError();
+				c->error.l_wsaerr = WSAGetLastError();
 
 				error_handler(UBWT_ERROR_LEVEL_WARNING, UBWT_ERROR_TYPE_NET_SEND_FAILED, "net_write_to_listener(): send()");
 #else
@@ -570,7 +576,23 @@ static void _net_connector_stop(void) {
 #endif
 }
 
+void *net_buf_fill(void *buf, size_t count) {
+	struct ubwt_current *c = current;
+
+	assert(count <= c->config->net_payload_buffer_size);
+
+	if ((c->net.buf_idx + count) > c->config->net_payload_buffer_size)
+		c->net.buf_idx = 0;
+
+	memcpy((char *) buf, ((char *) c->net.buf) + c->net.buf_idx, count);
+
+	c->net.buf_idx += count;
+
+	return buf;
+}
+
 void net_init(void) {
+	FILE *fp = NULL;
 #ifdef COMPILE_WIN32
 	WORD wVer;
 	WSADATA wsaData;
@@ -589,6 +611,43 @@ void net_init(void) {
 		error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_NET_INIT, "net_init()");
 		error_no_return();
 	}
+
+	if (current->config->net_payload_buffer_size) {
+		if (!(fp = fopen(current->config->net_payload_buffer_file, "r"))) {
+			error_handler(
+				UBWT_ERROR_LEVEL_FATAL,
+				UBWT_ERROR_TYPE_NET_INIT,
+				"net_init(): fopen(\"%s\", \"r\")",
+				current->config->net_payload_buffer_file
+			);
+
+			error_no_return();
+		}
+
+		if (!(current->net.buf = malloc(current->config->net_payload_buffer_size))) {
+			error_handler(
+				UBWT_ERROR_LEVEL_FATAL,
+				UBWT_ERROR_TYPE_NET_INIT,
+				"net_init(): malloc(%" PRIu32 ")",
+				current->config->net_payload_buffer_size
+			);
+
+			error_no_return();
+		}
+
+		if (fread(current->net.buf, current->config->net_payload_buffer_size, 1, fp) != 1) {
+			error_handler(
+				UBWT_ERROR_LEVEL_FATAL,
+				UBWT_ERROR_TYPE_NET_INIT,
+				"net_init(): fread(..., %" PRIu32 ", 1, ...)",
+				current->config->net_payload_buffer_size
+			);
+
+			error_no_return();
+		}
+
+		fclose(fp);
+	}
 }
 
 void net_destroy(void) {
@@ -603,6 +662,12 @@ void net_destroy(void) {
 #ifdef COMPILE_WIN32
 	WSACleanup();
 #endif
+
+	if (current->config->net_payload_buffer_size) {
+		memset(current->net.buf, 0, current->config->net_payload_buffer_size);
+		free(current->net.buf);
+	}
+
 	memset(&current->net, 0, sizeof(current->net));
 }
 

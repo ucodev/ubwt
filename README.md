@@ -80,9 +80,11 @@ IMPORTANT NOTE: When using ubwt, both listener and connector mode MUST have the 
       OPTIONS
 
              -A                  Asynchronous bi-directional full-duplex test. TCP only.
+             -b                  Perform a bi-directional test.
+             -B OCTETS           Size of the round-robin buffer used for payload. Requires -C.
+             -C FILE             Creates a buffer from file to fill the payload. Requires -B.
              -d FILE             Append debugging output to a file (default: stderr).
              -D                  Enable debugging.
-             -b                  Perform a bi-directional test.
              -F                  Enable full/extended reporting.
              -h                  Display this help.
              -I MSEC             Interval between latency measurements (default: 1 msec).

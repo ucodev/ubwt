@@ -95,11 +95,12 @@ static int _talk_weak_stream_needs_recount(void) {
 static ssize_t _talk_send(const ubwt_talk_payload_t *pkt) {
 	size_t len = 0, hdr_size = offsetof(ubwt_talk_payload_t, buf);
 	ubwt_talk_payload_t pktbuf = { 0, 0, 0, 0, 0, 0, { 0 } };
+	struct ubwt_current *c = current;
 
 	if (stage_get() == UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE) {
 		len = hdr_size;
 	} else {
-		len = current->config->talk_payload_current_size;
+		len = c->config->talk_payload_current_size;
 		memcpy(((char *) &pktbuf) + hdr_size, ((const char *) pkt) + hdr_size, len - hdr_size);
 	}
 
@@ -111,17 +112,18 @@ static ssize_t _talk_send(const ubwt_talk_payload_t *pkt) {
 	pktbuf.worker_id = net_htonll((uint64_t) worker_self());
 #endif
 
-	return net_im_connector() ?
+	return net_im_connector_f(c) ?
 		net_write_to_listener(&pktbuf, len) :
 		net_write_to_connector(&pktbuf, len);
 }
 
 static ssize_t _talk_recv(ubwt_talk_payload_t *pkt) {
 	ssize_t ret = 0, len = 0, hdr_size = offsetof(ubwt_talk_payload_t, buf);
+	struct ubwt_current *c = current;
 
-	len = stage_get() == UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE ? hdr_size : current->config->talk_payload_current_size;
+	len = stage_get() == UBWT_STAGE_STATE_RUNTIME_TALK_HANDSHAKE ? hdr_size : c->config->talk_payload_current_size;
 
-	ret = net_im_connector() ?
+	ret = net_im_connector_f(c) ?
 		net_read_from_listener(pkt, len) :
 		net_read_from_connector(pkt, len);
 
@@ -132,7 +134,7 @@ static ssize_t _talk_recv(ubwt_talk_payload_t *pkt) {
 		pkt->weak_time = net_ntohll(pkt->weak_time);
 #ifdef UBWT_CONFIG_MULTI_THREADED
 		pkt->worker_id = net_ntohll(pkt->worker_id);
-		current->remote_worker_id = (ubwt_worker_t) pkt->worker_id;
+		c->remote_worker_id = (ubwt_worker_t) pkt->worker_id;
 #endif
 	}
 
@@ -363,7 +365,8 @@ static int _talk_receiver_negotiate(uint32_t *count, uint32_t *latency) {
 static int _talk_sender_stream(uint32_t count) {
 	uint32_t i = 0;
 	ubwt_talk_payload_t p = { 0, 0, 0, 0, 0, 0, { 0 } };
-
+	uint32_t payload_size = current->config->talk_payload_current_size;
+	int payload_fill = current->config->net_payload_buffer_size ? 1 : 0;
 
 	/* Wait for STREAM START op */
 
@@ -425,6 +428,9 @@ static int _talk_sender_stream(uint32_t count) {
 		debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "SEND");
 
 		for (i = 0; i < count; i ++, p.count ++) {
+			if (payload_fill)
+				net_buf_fill(p.buf, payload_size);
+
 			if (_talk_send(&p) < 0) {
 				debug_info_talk_op(UBWT_TALK_OP_STREAM_RUN, "FAIL");
 

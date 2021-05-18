@@ -33,3 +33,19 @@
  - If a measurement doens't feel right, start by increasing the minimum stream
    time with the -t option.
 
+ - When performing tests over compressed links and compression is not desired,
+   make use of the -B and -C options so the sender payload is not set to 0
+   (which it is by default). Using /dev/random as the source for -C usually
+   delivers good results in these situationsi, but a test with /dev/zero
+   should be performed first to serve as a base comparision, as well as to
+   exclude any processing overhead that is added by the sending routine while
+   reading from the buffer, and writting to the payload, for each transmission
+   unit. Note that -B and -C options have no effect on the receiver side.
+
+ - A connector is a sender by default, unless -R is set, making it a receiver.
+
+ - A listener is a receiver by default, unless -R is set, making it a sender.
+
+ - When using -b, both connector and listener will act as a sender and as a
+   receiver.
+

@@ -51,6 +51,9 @@
 
 #define net_im_connector() current->config->im_connector
 #define net_im_listener() current->config->im_listener
+#define net_im_connector_f(c) c->config->im_connector
+#define net_im_listener_f(c) c->config->im_listener
+
 
 #if defined(__clang__) && !defined(__cplusplus)
 #define net_htonll(hostlonglong) 	(*(unsigned char *) (unsigned int [1]) { 1 }) ? ((uint64_t) htonl(((uint32_t *) &((uint64_t [1]) { (hostlonglong) }[0]))[0]) << 32) | htonl(((uint32_t *) &((uint64_t [1]) { (hostlonglong) }[0]))[1]) : (hostlonglong)
@@ -91,6 +94,9 @@ struct ubwt_net {
 	int type;
 	int protocol;
 
+	char     *buf;    /* round-robin buffer used to fill the stream payload */
+	uint32_t buf_idx; /* current buffer position */
+
 	struct ubwt_net_endpoint listener;
 	struct ubwt_net_endpoint connector;
 };
@@ -104,6 +110,7 @@ ssize_t net_read_from_connector(void *buf, size_t len);
 ssize_t net_read_from_listener(void *buf, size_t len);
 ssize_t net_write_to_connector(const void *buf, size_t len);
 ssize_t net_write_to_listener(const void *buf, size_t len);
+void *net_buf_fill(void *buf, size_t count);
 void net_init(void);
 void net_destroy(void);
 

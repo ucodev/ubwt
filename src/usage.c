@@ -45,11 +45,13 @@ void usage_show(char *const *argv, int success) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 		"       -A                  Asynchronous bi-directional full-duplex test. TCP only.\n"
 #endif
+		"       -b                  Perform a bi-directional test.\n"
+		"       -B OCTETS           Size of the round-robin buffer used for payload. Requires -C.\n"
+		"       -C FILE             Creates a buffer from file to fill the payload. Requires -B.\n"
 #ifdef UBWT_CONFIG_DEBUG
 		"       -d FILE             Append debugging output to a file (default: stderr).\n"
 		"       -D                  Enable debugging.\n"
 #endif
-		"       -b                  Perform a bi-directional test.\n"
 		"       -F                  Enable full/extended reporting.\n"
 		"       -h                  Display this help.\n"
 		"       -I MSEC             Interval between latency measurements (default: %u msec).\n"
@@ -154,6 +156,34 @@ void usage_check_optarg(int opt, char *optarg) {
 				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Option -A is not supported when using UDP protocol");
 
 				error_no_return();
+			}
+		} break;
+
+		case 'B': {
+			if (atol(optarg) < 0 || atol(optarg) > 2147483647) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -B must be between 0 and 2147483647");
+
+				error_no_return();
+			}
+		} break;
+
+		case 'C': {
+			if (!strlen(optarg)) {
+				errno = EINVAL;
+
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -C cannot be empty");
+
+				error_no_return();
+			}
+
+			if (!(fp = fopen(optarg, "r"))) {
+				error_handler(UBWT_ERROR_LEVEL_FATAL, UBWT_ERROR_TYPE_CONFIG_ARGV_OPTARG_INVALID, "usage_check_optarg(): Value for -C valid file path with read permissions");
+
+				error_no_return();
+			} else {
+				fclose(fp);
 			}
 		} break;
 

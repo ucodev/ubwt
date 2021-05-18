@@ -22,14 +22,20 @@ The available command line \fBOPTIONS\fR are:
 \fB\-A\fR
 Asynchronous bi-directional full-duplex test. TCP only.
 .TP
+\fB\-b\fR
+Perform a bi-directional test.
+.TP
+\fB\-B\fR \fIOCTETS\fR
+Size of the round-robin buffer used for payload. Requires \fB\-C\fR.
+.TP
+\fB\-C\fR \fIFILE\fR
+Creates a buffer from file to fill the payload. Requires \fB\-B\fR.
+.TP
 \fB\-d\fR \fIFILE\fR
 Append debugging output to a file (default: stderr).
 .TP
 \fB\-D\fR
 Enable debugging.
-.TP
-\fB\-b\fR
-Perform a bi-directional test.
 .TP
 \fB\-F\fR
 Enable full/extended reporting.
@@ -93,15 +99,12 @@ Maximum number of workers (default: 1). TCP only.
 alice@serv.my.lan ~ $ ubwt listener 0.0.0.0
 
 bob@client.my.lan ~ $ ubwt connector serv.my.lan
-
+.EE
 .SH NOTES
 .IP \(bu 3
-This tool is not meant to be used as a system
-service - it is not a daemon, and wasn't designed
-to become one.
+This tool is not meant to be used as a system service - it is not a daemon, and wasn't designed to become one.
 .IP \(bu
-If you need to auto-restart the listener, use
-a loop in the shell, for example:
+If you need to auto-restart the listener, use a loop in the shell, for example:
 .EX
 
     while :; do
@@ -110,40 +113,29 @@ a loop in the shell, for example:
             break;
         fi
     done
-
+.EE
 .IP \(bu
-If you are running the test in a system with
-poor real time measurements, use \fB\-M\fR with a
-reasonable multiplier value, for example, 10.
+If you are running the test in a system with poor real time measurements, use \fB\-M\fR with a reasonable multiplier value, for example, 10.
 .IP \(bu
-Asynchronous full-duplex test mode may not be
-completely fair. Use it to get estimates, not
-precise measurements.
+Asynchronous full-duplex test mode may not be completely fair. Use it to get estimates, not precise measurements.
 .IP \(bu
-Avoid using UDP tests unless you really know
-what you are doing.
+Avoid using UDP tests unless you really know what you are doing.
 .IP \(bu
-Balance the number of workers properly - more
-workers is usually good, until too much workers
-become very bad. Start with something like 4 or 8.
+Balance the number of workers properly - more workers is usually good, until too much workers become very bad. Start with something like 4 or 8.
 .IP \(bu
-To adjust precision, make sure MTU and L4 payload
-size are properly set for the network under test.
-Usually the default values are OK, but fine 
-tunning these values may yield better results.
+To adjust precision, make sure MTU and L4 payload size are properly set for the network under test. Usually the default values are OK, but fine tunning these values may yield better results.
 .IP \(bu
-When testing symmetric links with bidirectional
-tests and you find out that there's a considerable
-difference between the download and upload
-measurements, slightly increase the default value
-of \fB\-o\fR (to 5 or 10 seconds). This assumes that you
-already excluded any other reasons, such as traffic
-from other sources present in the network that is
-tampering the bandwidth test.
+When testing symmetric links with bidirectional tests and you find out that there's a considerable difference between the download and upload measurements, slightly increase the default value of \fB\-o\fR (to 5 or 10 seconds). This assumes that you already excluded any other reasons, such as traffic from other sources present in the network that is tampering the bandwidth test.
 .IP \(bu
-If a measurement doens't feel right, start by
-increasing the minimum stream time with the \fB\-t\fR
-option.
+If a measurement doens't feel right, start by increasing the minimum stream time with the \fB\-t\fR option.
+.IP \(bu
+When performing tests over compressed links and compression is not desired, make use of the \fB-B\fR and \fB-C\fR options so the sender payload is not set to 0 (which it is by default). Using \fI/dev/random\fR as the source for \fB-C\fR usually delivers good results in these situations, but a test with \fI/dev/zero\fR should be performed first to serve as a base comparision, as well as to exclude any processing overhead that is added by the sending routine while reading from the buffer, and writting to the payload, for each transmission unit. Note that \fB\-B\fR and \fB\-C\fR options have no effect on the receiver side.
+.IP \(bu
+A connector is a sender by default, unless \fB\-R\fR is set, making it a receiver.
+.IP \(bu
+A listener is a receiver by default, unless \fB\-R\fR is set, making it a sender.
+.IP \(bu
+When using \fB\-b\fR, both connector and listener will act as a sender and as a receiver.
 .SH AUTHOR
 Written by Pedro A. Hortas (pah@ucodev.org).
 .SH "REPORTING BUGS"

@@ -71,6 +71,10 @@ static void _config_sanity(void) {
 	assert(current->config->talk_payload_max_size >= current->config->talk_payload_current_size);
 	assert(current->config->talk_payload_max_size >= current->config->talk_payload_default_size);
 
+	if (current->config->net_payload_buffer_size) {
+		assert(current->config->net_payload_buffer_size >= current->config->talk_payload_default_size);
+	}
+
 	assert(current->config->talk_stream_minimum_time > 0);
 
 #ifdef UBWT_CONFIG_MULTI_THREADED
@@ -139,6 +143,52 @@ static void _config_consistency(void) {
 
 		error_no_return();
 	}
+
+	if (current->config->net_payload_buffer_size && !current->config->net_payload_buffer_file) {
+		errno = EINVAL;
+
+		error_handler(
+			UBWT_ERROR_LEVEL_FATAL,
+			UBWT_ERROR_TYPE_CONFIG_CONSISTENCY_FAILED,
+			"_config_consistency(): "
+			"A payload buffer size was specified (-B %" PRIu32 ") "
+			"without a source file (-C)",
+			current->config->net_payload_buffer_size
+		);
+
+		error_no_return();
+	}
+
+	if (!current->config->net_payload_buffer_size && current->config->net_payload_buffer_file) {
+		errno = EINVAL;
+
+		error_handler(
+			UBWT_ERROR_LEVEL_FATAL,
+			UBWT_ERROR_TYPE_CONFIG_CONSISTENCY_FAILED,
+			"_config_consistency(): "
+			"A source file was specified (-C %s) "
+			"without a buffer size (-B)",
+			current->config->net_payload_buffer_file
+		);
+
+		error_no_return();
+	}
+
+	if (current->config->net_payload_buffer_size && current->config->net_payload_buffer_size < current->config->talk_payload_default_size) {
+		errno = EINVAL;
+
+		error_handler(
+			UBWT_ERROR_LEVEL_FATAL,
+			UBWT_ERROR_TYPE_CONFIG_CONSISTENCY_FAILED,
+			"_config_consistency(): "
+			"The specified buffer size (%" PRIu32 ") "
+			"cannot be smaller than the payload size (%" PRIu16 ")",
+			current->config->net_payload_buffer_size,
+			current->config->talk_payload_default_size
+		);
+
+		error_no_return();
+	}
 }
 
 static void _config_cmdopt_process(int argc, char *const *argv) {
@@ -147,10 +197,11 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 #ifdef UBWT_CONFIG_MULTI_THREADED
 		"A"
 #endif
+		"bB:C:"
 #ifdef UBWT_CONFIG_DEBUG
 		"d:D"
 #endif
-		"bFhI:j:l:m:M:N:o:"
+		"FhI:j:l:m:M:N:o:"
 #ifndef UBWT_CONFIG_NET_NO_TIMEOUT
 		"O:"
 #endif
@@ -180,6 +231,22 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 				current->config->bidirectional = 1;
 			} break;
 #endif
+			case 'b': {
+				current->config->bidirectional = 1;
+			} break;
+
+			case 'B': {
+				assert(atol(optarg) >= 0 && atol(optarg) <= 2147483647);
+				current->config->net_payload_buffer_size = (uint32_t) atol(optarg);
+			} break;
+
+			case 'C': {
+				assert(strlen(optarg) > 0);
+				current->config->net_payload_buffer_file = malloc(strlen(optarg) + 1);
+				assert(current->config->net_payload_buffer_file);
+				strcpy(current->config->net_payload_buffer_file, optarg);
+			} break;
+
 #ifdef UBWT_CONFIG_DEBUG
 			case 'd': {
 				assert(strlen(optarg) > 0);
@@ -195,10 +262,6 @@ static void _config_cmdopt_process(int argc, char *const *argv) {
 				debug_update();
 			} break;
 #endif
-			case 'b': {
-				current->config->bidirectional = 1;
-			} break;
-
 			case 'F': {
 				current->config->report_full = 1;
 			} break;
@@ -457,6 +520,13 @@ void config_destroy(void) {
 		memset(current->config->debug_file, 0, strlen(current->config->debug_file) + 1);
 		free(current->config->debug_file);
 		current->config->debug_file = NULL;
+	}
+
+	if (current->config->net_payload_buffer_file) {
+		memset(current->config->net_payload_buffer_file, 0, strlen(current->config->net_payload_buffer_file));
+		free(current->config->net_payload_buffer_file);
+		current->config->net_payload_buffer_file = NULL;
+		current->config->net_payload_buffer_size = 0;
 	}
 
 #if 0 /* Do not wipe the entire configuration memory as it may still be required... let current_destroy() deal with it */

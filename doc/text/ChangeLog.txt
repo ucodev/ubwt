@@ -1,3 +1,11 @@
+v0.1-beta-08
+
+ - Updated man page
+ - Updated README.md
+ - Included support for custom payload (-C) and payload buffer size (-B)
+ - Optimized sender and receiver routines
+
+
 v0.1-beta-07
 
  - Updated man page
