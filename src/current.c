@@ -50,7 +50,15 @@ struct ubwt_current __current;
 struct ubwt_current *current = &__current;
 #else
 struct ubwt_current *current_get(ubwt_worker_t worker_id) {
+#ifndef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
 	struct ubwt_current *c = &__current;
+#else
+	struct ubwt_current *c = worker_getspecific(__worker_key_cptr);
+
+	if (c) return c;
+
+	c = &__current;
+#endif
 
 	do {
 		if (c->worker_id == worker_id)
@@ -58,6 +66,11 @@ struct ubwt_current *current_get(ubwt_worker_t worker_id) {
 	} while ((c = c->next));
 
 	assert(c != NULL);
+
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
+	if (!current_im_main()) /* Don't use local thread storage for main thread */
+		worker_setspecific(__worker_key_cptr, c);
+#endif
 
 	return c;
 }
@@ -73,6 +86,7 @@ void current_init(void) {
 	__current.worker_mutex_global = &__worker_mutex_global;
 	__current.worker_mutex_cond = &__worker_mutex_cond;
 	__current.worker_cond_global = &__worker_cond_global;
+	__current.worker_key_cptr = &__worker_key_cptr;
 	__current.worker_forking = &__worker_forking;
 
 	worker_mutex_init(&__current.worker_mutex_local);
@@ -155,6 +169,7 @@ void current_fork(ubwt_worker_task_t *t) {
 	c->worker_mutex_global = &__worker_mutex_global;
 	c->worker_mutex_cond = &__worker_mutex_cond;
 	c->worker_cond_global = &__worker_cond_global;
+	c->worker_key_cptr = &__worker_key_cptr;
 	c->worker_forking = &__worker_forking;
 
 	worker_mutex_init(&c->worker_mutex_local);

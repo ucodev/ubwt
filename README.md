@@ -22,6 +22,7 @@ It consists of a single tool, that can be executed as a listener on one end, and
  * Configurable number of connections
  * Configurable testing time
  * Configurable payload size
+ * Configurable payload contents
  * Configurable timeouts
  * Configurable handshake iterations and intervals
  * Brief summary report or full extended report

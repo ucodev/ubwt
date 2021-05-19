@@ -54,6 +54,9 @@ typedef struct ubwt_worker_barrier {
 #else
 typedef pthread_barrier_t ubwt_worker_barrier_t;
 #endif
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
+typedef pthread_key_t ubwt_worker_key_t;
+#endif
 
 typedef struct ubwt_worker_task {
 	ubwt_worker_task_type_t type;
@@ -78,6 +81,9 @@ extern ubwt_worker_mutex_t   __worker_mutex_global;
 extern ubwt_worker_mutex_t   __worker_mutex_cond;
 extern ubwt_worker_cond_t    __worker_cond_global;
 extern unsigned int          __worker_forking;
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
+extern ubwt_worker_key_t     __worker_key_cptr;
+#endif
 
 ubwt_worker_t worker_task_create(ubwt_worker_task_t *t);
 void worker_task_running_set(void);
@@ -103,7 +109,14 @@ ubwt_worker_t worker_self(void);
 int worker_im_cancelled(void);
 int worker_is_cancelled(ubwt_worker_t tid);
 void worker_cancel(ubwt_worker_t worker_id);
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
+void worker_key_create(ubwt_worker_key_t *key);
+void worker_key_delete(ubwt_worker_key_t key);
+void *worker_getspecific(ubwt_worker_key_t key);
+void worker_setspecific(ubwt_worker_key_t key, const void *value);
 #endif
+
+#endif /* UBWT_CONFIG_MULTI_THREADED */
 
 void worker_init(void);
 void worker_destroy(void);

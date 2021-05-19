@@ -38,6 +38,10 @@ ubwt_worker_mutex_t   __worker_mutex_global; /* used by 'current' handlers */
 ubwt_worker_mutex_t   __worker_mutex_cond;
 ubwt_worker_cond_t    __worker_cond_global;
 unsigned int          __worker_forking = 0;
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
+ubwt_worker_key_t     __worker_key_cptr;
+#endif
+
 
 static void *_worker_task_init(void *arg) {
 	ubwt_worker_task_t *t = arg;
@@ -281,6 +285,24 @@ void worker_cancel(ubwt_worker_t tid) {
 	if (pthread_cancel(tid)) error_abort(__FILE__, __LINE__, "pthread_cancel");
 }
 
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
+void worker_key_create(ubwt_worker_key_t *key) {
+	if (pthread_key_create(key, NULL)) error_abort(__FILE__, __LINE__, "pthread_key_create");
+}
+
+void worker_key_delete(ubwt_worker_key_t key) {
+	if (pthread_key_delete(key)) error_abort(__FILE__, __LINE__, "pthread_key_delete");
+}
+
+void *worker_getspecific(ubwt_worker_key_t key) {
+	return pthread_getspecific(key);
+}
+
+void worker_setspecific(ubwt_worker_key_t key, const void *value) {
+	if (pthread_setspecific(key, value)) error_abort(__FILE__, __LINE__, "pthread_setspecific");
+}
+#endif
+
 void worker_init(void) {
 	if (current->config->worker_straight_first_count && current->config->bidirectional) {
 		worker_barrier_init(&__worker_barrier_global[0], current->config->worker_straight_first_count);
@@ -304,6 +326,10 @@ void worker_init(void) {
 	worker_mutex_init(&__worker_mutex_global);
 	worker_mutex_init(&__worker_mutex_cond);
 	worker_cond_init(&__worker_cond_global);
+
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
+	worker_key_create(&__worker_key_cptr);
+#endif
 }
 
 void worker_destroy(void) {
@@ -319,6 +345,10 @@ void worker_destroy(void) {
 	worker_mutex_destroy(&__worker_mutex_global);
 	worker_mutex_destroy(&__worker_mutex_cond);
 	worker_cond_destroy(&__worker_cond_global);
+
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
+	worker_key_delete(__worker_key_cptr);
+#endif
 }
 
 #else
