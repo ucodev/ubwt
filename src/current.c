@@ -86,7 +86,9 @@ void current_init(void) {
 	__current.worker_mutex_global = &__worker_mutex_global;
 	__current.worker_mutex_cond = &__worker_mutex_cond;
 	__current.worker_cond_global = &__worker_cond_global;
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
 	__current.worker_key_cptr = &__worker_key_cptr;
+#endif
 	__current.worker_forking = &__worker_forking;
 
 	worker_mutex_init(&__current.worker_mutex_local);
@@ -169,7 +171,9 @@ void current_fork(ubwt_worker_task_t *t) {
 	c->worker_mutex_global = &__worker_mutex_global;
 	c->worker_mutex_cond = &__worker_mutex_cond;
 	c->worker_cond_global = &__worker_cond_global;
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
 	c->worker_key_cptr = &__worker_key_cptr;
+#endif
 	c->worker_forking = &__worker_forking;
 
 	worker_mutex_init(&c->worker_mutex_local);

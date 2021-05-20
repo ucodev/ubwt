@@ -45,7 +45,7 @@ typedef enum UBWT_WORKER_FLAGS {
 typedef pthread_t ubwt_worker_t;
 typedef pthread_mutex_t ubwt_worker_mutex_t;
 typedef pthread_cond_t ubwt_worker_cond_t;
-#ifdef UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER
+#ifdef UBWT_CONFIG_PTHREAD_CUSTOM_BARRIER
 typedef struct ubwt_worker_barrier {
 	unsigned int total, count, waiting, block_r;
 	ubwt_worker_mutex_t mutex[2];

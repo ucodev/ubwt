@@ -114,7 +114,7 @@ ubwt_worker_t worker_task_create(ubwt_worker_task_t *t) {
 }
 
 void worker_barrier_init(ubwt_worker_barrier_t *barrier, unsigned count) {
-#ifdef UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER
+#ifdef UBWT_CONFIG_PTHREAD_CUSTOM_BARRIER
 	memset(barrier, 0, sizeof(ubwt_worker_barrier_t));
 
 	barrier->total = barrier->count = count;
@@ -129,7 +129,7 @@ void worker_barrier_init(ubwt_worker_barrier_t *barrier, unsigned count) {
 }
 
 int worker_barrier_wait(ubwt_worker_barrier_t *barrier) {
-#ifdef UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER
+#ifdef UBWT_CONFIG_PTHREAD_CUSTOM_BARRIER
 	int serial = 0;
 
 	worker_mutex_lock(&barrier->mutex[0]);
@@ -188,7 +188,7 @@ int worker_barrier_wait(ubwt_worker_barrier_t *barrier) {
 }
 
 void worker_barrier_destroy(ubwt_worker_barrier_t *barrier) {
-#ifdef UBWT_CONFIG_CUSTOM_PTHREAD_BARRIER
+#ifdef UBWT_CONFIG_PTHREAD_CUSTOM_BARRIER
 	worker_mutex_destroy(&barrier->mutex[0]);
 	worker_mutex_destroy(&barrier->mutex[1]);
 	worker_cond_destroy(&barrier->cond[0]);

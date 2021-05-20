@@ -1,3 +1,9 @@
+v0.1-beta-10
+
+ - Fixed single-threaded pre-processor conditions
+ - Renamed some pre-processor definitions
+
+
 v0.1-beta-09
 
  - Added thread local storage for current handlers

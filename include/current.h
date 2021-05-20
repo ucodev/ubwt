@@ -71,7 +71,9 @@ struct ubwt_current {
 	ubwt_worker_mutex_t *worker_mutex_cond;
 	ubwt_worker_cond_t *worker_cond_global;
 	ubwt_worker_mutex_t worker_mutex_local;
+#ifdef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
 	ubwt_worker_key_t *worker_key_cptr;
+#endif
 	unsigned int *worker_forking;
 
 	ubwt_worker_task_t *worker_task;
