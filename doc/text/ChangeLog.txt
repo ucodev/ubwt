@@ -1,3 +1,9 @@
+v0.1-beta-11
+
+ - Fixed issues with the new thread local storage implementation
+ - Included support (uconf) for thread local storage on Darwin build
+
+
 v0.1-beta-10
 
  - Fixed single-threaded pre-processor conditions

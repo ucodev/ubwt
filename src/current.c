@@ -53,7 +53,10 @@ struct ubwt_current *current_get(ubwt_worker_t worker_id) {
 #ifndef UBWT_CONFIG_PTHREAD_LOCAL_STORAGE
 	struct ubwt_current *c = &__current;
 #else
-	struct ubwt_current *c = worker_getspecific(__worker_key_cptr);
+	struct ubwt_current *c = NULL;
+
+	if (!current_im_main()) /* Don't use local thread storage for main thread */
+		c = worker_getspecific(__worker_key_cptr);
 
 	if (c) return c;
 
