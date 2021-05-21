@@ -1,3 +1,10 @@
+v0.1-beta-12
+
+ - Updated tests
+ - Included support (uconf) for thread local storage on NetBSD,
+   OpenBSD, FreeBSD, SunOS, GNU/Hurd and CygWin
+
+
 v0.1-beta-11
 
  - Fixed issues with the new thread local storage implementation
